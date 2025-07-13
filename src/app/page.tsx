@@ -31,16 +31,17 @@ export default function HomePage() {
                 <span className="text-primary">AI Tarot</span>
               </h1>
               <p className="body-large mb-8 text-neutral-content">
-                Unlock mystical insights and guidance through the power of AI-enhanced tarot readings. 
-                Connect with your inner wisdom and explore what the cards reveal about your journey.
+                Unlock mystical insights and guidance through the power of
+                AI-enhanced tarot readings. Connect with your inner wisdom and
+                explore what the cards reveal about your journey.
               </p>
-              
+
               <SignedIn>
                 <Link href="/ask" className="btn btn-mystical btn-lg">
                   Start Reading
                 </Link>
               </SignedIn>
-              
+
               <SignedOut>
                 <SignInButton mode="modal">
                   <button className="btn btn-mystical btn-lg">
@@ -58,22 +59,28 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="card card-mystical">
               <div className="card-body text-center">
-                <h3 className="heading-3 text-primary mb-4">AI-Powered Insights</h3>
+                <h3 className="heading-3 text-primary mb-4">
+                  AI-Powered Insights
+                </h3>
                 <p className="body-normal">
-                  Our advanced AI interprets traditional tarot wisdom with modern understanding
+                  Our advanced AI interprets traditional tarot wisdom with
+                  modern understanding
                 </p>
               </div>
             </div>
-            
+
             <div className="card card-mystical">
               <div className="card-body text-center">
-                <h3 className="heading-3 text-primary mb-4">Personalized Readings</h3>
+                <h3 className="heading-3 text-primary mb-4">
+                  Personalized Readings
+                </h3>
                 <p className="body-normal">
-                  Each reading is tailored to your unique situation and spiritual journey
+                  Each reading is tailored to your unique situation and
+                  spiritual journey
                 </p>
               </div>
             </div>
-            
+
             <div className="card card-mystical">
               <div className="card-body text-center">
                 <h3 className="heading-3 text-primary mb-4">24/7 Guidance</h3>
