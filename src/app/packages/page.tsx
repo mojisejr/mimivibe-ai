@@ -1,5 +1,6 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 
 export default function PackagesPage() {
   const packages = [
@@ -28,7 +29,7 @@ export default function PackagesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300">
+    <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
       {/* Header */}
       <header className="navbar bg-base-100/90 backdrop-blur-sm shadow-lg">
         <div className="navbar-start">
@@ -40,7 +41,7 @@ export default function PackagesPage() {
       </header>
 
       {/* Main Content */}
-      <main className="content-container">
+      <main className="content-container flex-1 pb-20 md:pb-6">
         <div className="text-center mb-8">
           <h1 className="heading-1 mb-4">Credit Packages</h1>
           <p className="body-large text-neutral-content">
@@ -142,19 +143,8 @@ export default function PackagesPage() {
       </main>
 
       {/* Mobile Navigation */}
-      <div className="btm-nav mobile-only">
-        <Link href="/ask" className="btm-nav-item">
-          <span className="text-xs">Ask</span>
-        </Link>
-        <Link href="/history" className="btm-nav-item">
-          <span className="text-xs">History</span>
-        </Link>
-        <Link href="/profile" className="btm-nav-item">
-          <span className="text-xs">Profile</span>
-        </Link>
-        <Link href="/packages" className="btm-nav-item active">
-          <span className="text-xs">Credits</span>
-        </Link>
+      <div className="md:hidden">
+        <BottomNavigation />
       </div>
     </div>
   );
