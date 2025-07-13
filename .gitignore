@@ -1,0 +1,6 @@
+.env
+.env.local
+/node_modules
+/context-files
+.next
+.DS_Store
