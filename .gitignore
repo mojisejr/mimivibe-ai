@@ -4,3 +4,4 @@
 /context-files
 .next
 .DS_Store
+/generated/prisma

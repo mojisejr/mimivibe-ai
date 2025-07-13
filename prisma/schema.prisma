@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model ActivityBonus {
+  activityCode     String
+  level            Int
+  bonusExp         Int                @default(0)
+  bonusCoins       Int                @default(0)
+  LevelConfig      LevelConfig        @relation(fields: [level], references: [level])
+  DailyLoginReward DailyLoginReward[]
+
+  @@id([activityCode, level])
+}
+
+model Card {
+  id             Int           @id @default(autoincrement())
+  name           String        @unique
+  displayName    String
+  arcana         String
+  shortMeaning   String
+  longMeaning    String
+  longMeaningRaw String
+  keywords       String
+  imageUrl       String
+  ReadingCard    ReadingCard[]
+}
+
+model CoinExchange {
+  id             Int      @id @default(autoincrement())
+  userId         String
+  exchangeType   String
+  coinAmount     Int
+  receivedItem   String
+  receivedAmount Int
+  metadata       Json?
+  status         String   @default("completed")
+  createdAt      DateTime @default(now())
+  User           User     @relation(fields: [userId], references: [id])
+}
+
+model DailyLoginCampaign {
+  id               String             @id
+  campaignCode     String             @unique
+  title            String
+  startDate        DateTime
+  endDate          DateTime
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @default(now())
+  DailyLoginReward DailyLoginReward[]
+  UserDailyLogin   UserDailyLogin[]
+}
+
+model DailyLoginReward {
+  id                 String             @id
+  campaignId         String
+  dayNumber          Int
+  activityCode       String
+  createdAt          DateTime           @default(now())
+  level              Int
+  ActivityBonus      ActivityBonus      @relation(fields: [activityCode, level], references: [activityCode, level])
+  DailyLoginCampaign DailyLoginCampaign @relation(fields: [campaignId], references: [id])
+}
+
+model ExchangeSetting {
+  id           Int      @id @default(autoincrement())
+  exchangeType String
+  receivedItem String
+  coinPerUnit  Int
+  isActive     Boolean  @default(true)
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+}
+
+model LevelConfig {
+  level         Int             @id
+  expRequired   Int
+  expTotal      Int
+  ActivityBonus ActivityBonus[]
+}
+
+model Pack {
+  id             Int              @id @default(autoincrement())
+  title          String
+  subtitle       String?
+  ctaText        String           @default("ซื้อเลย")
+  price          Int
+  creditAmount   Int
+  metadata       Json?
+  active         Boolean          @default(true)
+  PaymentHistory PaymentHistory[]
+}
+
+model PaymentHistory {
+  id        String   @id
+  userId    String
+  packId    Int?
+  status    String
+  chargeId  String?  @unique
+  createdAt DateTime @default(now())
+  Pack      Pack?    @relation(fields: [packId], references: [id])
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model PointTransaction {
+  id         String   @id
+  userId     String
+  eventType  String
+  deltaPoint Int      @default(0)
+  deltaCoins Int      @default(0)
+  deltaExp   Int      @default(0)
+  createdAt  DateTime @default(now())
+  User       User     @relation(fields: [userId], references: [id])
+}
+
+model Reading {
+  id          String        @id
+  userId      String
+  createdAt   DateTime      @default(now())
+  question    String
+  answer      String
+  type        String
+  isDeleted   Boolean       @default(false)
+  isReviewed  Boolean       @default(false)
+  suggest     String?
+  User        User          @relation(fields: [userId], references: [id])
+  ReadingCard ReadingCard[]
+  Review      Review[]
+}
+
+model ReadingCard {
+  id        Int     @id @default(autoincrement())
+  readingId String
+  cardId    Int
+  position  Int
+  Card      Card    @relation(fields: [cardId], references: [id])
+  Reading   Reading @relation(fields: [readingId], references: [id])
+}
+
+model ReferralCode {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  code      String   @unique
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model ReferralTransaction {
+  id                                        Int      @id @default(autoincrement())
+  referrerId                                String
+  referredId                                String
+  code                                      String
+  rewarded                                  Boolean  @default(false)
+  createdAt                                 DateTime @default(now())
+  User_ReferralTransaction_referredIdToUser User     @relation("ReferralTransaction_referredIdToUser", fields: [referredId], references: [id], map: "fk_referral_referred")
+  User_ReferralTransaction_referrerIdToUser User     @relation("ReferralTransaction_referrerIdToUser", fields: [referrerId], references: [id], map: "fk_referral_referrer")
+}
+
+model RequestLog {
+  id        Int      @id @default(autoincrement())
+  userId    String?
+  ip        String
+  endpoint  String
+  createdAt DateTime @default(now())
+
+  @@index([ip, endpoint, createdAt])
+  @@index([userId, endpoint, createdAt])
+}
+
+model Review {
+  id            Int      @id @default(autoincrement())
+  readingId     String
+  userId        String
+  liked         Boolean  @default(false)
+  accurateLevel Float?
+  createdAt     DateTime @default(now())
+  reviewPeriod  Int?
+  Reading       Reading  @relation(fields: [readingId], references: [id])
+  User          User     @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id                                                       String                @id
+  lineId                                                   String?               @unique
+  email                                                    String?               @unique
+  name                                                     String?
+  tel                                                      String?
+  imageUrl                                                 String?
+  createdAt                                                DateTime              @default(now())
+  updatedAt                                                DateTime
+  stars                                                    Int                   @default(0)
+  coins                                                    Int                   @default(0)
+  exp                                                      Int                   @default(0)
+  level                                                    Int                   @default(1)
+  freePoint                                                Int                   @default(0)
+  role                                                     UserRole              @default(USER)
+  prestigeLevel                                            Int                   @default(0)
+  prestigePoints                                           Int                   @default(0)
+  CoinExchange                                             CoinExchange[]
+  PaymentHistory                                           PaymentHistory[]
+  PointTransaction                                         PointTransaction[]
+  Reading                                                  Reading[]
+  ReferralCode                                             ReferralCode[]
+  ReferralTransaction_ReferralTransaction_referredIdToUser ReferralTransaction[] @relation("ReferralTransaction_referredIdToUser")
+  ReferralTransaction_ReferralTransaction_referrerIdToUser ReferralTransaction[] @relation("ReferralTransaction_referrerIdToUser")
+  Review                                                   Review[]
+  UserDailyLogin                                           UserDailyLogin[]
+  UserLimit                                                UserLimit[]
+}
+
+model UserDailyLogin {
+  id                 String             @id
+  userId             String
+  campaignId         String
+  dayNumber          Int
+  receivedAt         DateTime
+  DailyLoginCampaign DailyLoginCampaign @relation(fields: [campaignId], references: [id])
+  User               User               @relation(fields: [userId], references: [id])
+}
+
+model UserLimit {
+  id      Int      @id @default(autoincrement())
+  userId  String
+  window  String
+  max     Int
+  used    Int      @default(0)
+  resetAt DateTime
+  User    User     @relation(fields: [userId], references: [id])
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum TransactionType {
+  COIN_TO_STAR
+  STRIPE_TOPUP
+  REWARD
+  REFERRAL
+  EXCHANGE
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
