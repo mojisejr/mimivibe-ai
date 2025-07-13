@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^4.29.1",
+    "@langchain/core": "^0.3.62",
+    "@langchain/google-genai": "^0.2.14",
+    "@langchain/langgraph": "^0.3.8",
     "@prisma/client": "^6.11.1",
     "clsx": "^2.1.1",
     "daisyui": "^4.4.0",
