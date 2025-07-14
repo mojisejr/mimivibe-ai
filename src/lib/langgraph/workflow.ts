@@ -76,8 +76,8 @@ async function cardPickerNode(state: typeof ReadingState.State) {
   }
 }
 
-// Node 3: Question Analysis - Analyzes mood, topic, and timeframe
-async function questionAnalysisNode(state: typeof ReadingState.State) {
+// Node 3: Question Analyzer - Analyzes mood, topic, and timeframe
+async function questionAnalyzerNode(state: typeof ReadingState.State) {
   try {
     console.log('🔮 Question Analysis Node - Analyzing question')
     
@@ -174,15 +174,15 @@ export function createReadingWorkflow() {
   const workflow = new StateGraph(ReadingState)
     .addNode('questionFilter', questionFilterNode)
     .addNode('cardPicker', cardPickerNode)
-    .addNode('questionAnalysis', questionAnalysisNode)
+    .addNode('questionAnalyzer', questionAnalyzerNode)
     .addNode('readingAgent', readingAgentNode)
     .addEdge(START, 'questionFilter')
     .addConditionalEdges('questionFilter', shouldContinue, {
       cardPicker: 'cardPicker',
       [END]: END
     })
-    .addEdge('cardPicker', 'questionAnalysis')
-    .addEdge('questionAnalysis', 'readingAgent')
+    .addEdge('cardPicker', 'questionAnalyzer')
+    .addEdge('questionAnalyzer', 'readingAgent')
     .addEdge('readingAgent', END)
 
   return workflow.compile()
