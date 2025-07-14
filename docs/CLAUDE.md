@@ -1,83 +1,337 @@
 # MiMiVibes - AI Development Context
 
 ## 🎯 Project Overview
+
 [Keep existing content...]
+
+---
+
+## 🏷️ Logo Integration Strategy
+
+### Logo Asset Information
+
+**Location:** `src/public/images/logo.webp`  
+**Format:** WebP for optimal performance  
+**Fallback:** PNG format for browser compatibility  
+**Purpose:** Brand identification and trust building across all user touchpoints
+
+### Logo Usage Guidelines
+
+```typescript
+const logoIntegrationStrategy = {
+  // Primary Brand Touchpoints
+  headerLogo: {
+    size: "32px x 32px",
+    placement: "Chat header, navigation bars",
+    style: "Rounded corners, subtle shadow",
+    purpose: "Primary brand identification",
+  },
+
+  // Welcome/Entry Points
+  welcomeLogo: {
+    size: "64px x 64px",
+    placement: "Welcome screens, onboarding",
+    style: "Centered, prominent display",
+    purpose: "First impression and trust building",
+  },
+
+  // Modal/Overlay Branding
+  modalLogo: {
+    size: "48px x 48px",
+    placement: "Payment modals, confirmation dialogs",
+    style: "Subtle, non-intrusive",
+    purpose: "Brand reinforcement during key actions",
+  },
+
+  // Footer/Secondary Areas
+  footerLogo: {
+    size: "24px x 24px",
+    placement: "Footer, secondary navigation",
+    style: "Minimal, clean",
+    purpose: "Consistent brand presence",
+  },
+};
+```
+
+### Logo Component Implementation
+
+```typescript
+// Reusable Logo Component
+const Logo = ({
+  size = "md",
+  className = "",
+  showText = true,
+}: {
+  size?: "sm" | "md" | "lg" | "xl";
+  className?: string;
+  showText?: boolean;
+}) => {
+  const sizeClasses = {
+    sm: "w-6 h-6",
+    md: "w-8 h-8",
+    lg: "w-12 h-12",
+    xl: "w-16 h-16",
+  };
+
+  return (
+    <div className={`flex items-center space-x-2 ${className}`}>
+      <img
+        src="/images/logo.webp"
+        alt="MiMiVibes"
+        className={`${sizeClasses[size]} object-contain`}
+        loading="lazy"
+        onError={(e) => {
+          // Fallback to PNG if WebP fails
+          e.currentTarget.src = "/images/logo.png";
+        }}
+      />
+      {showText && (
+        <span className="font-semibold text-base-content">MiMiVibes</span>
+      )}
+    </div>
+  );
+};
+```
+
+### Logo Placement Strategy
+
+```typescript
+const logoPlacement = {
+  // Primary Locations
+  primary: {
+    chatHeader: "Left side, next to 'แม่หมอมีมี่' text",
+    welcomeScreen: "Centered above Mimi avatar",
+    paymentModals: "Top-left corner for brand trust",
+    errorPages: "Centered for brand reassurance",
+    loadingStates: "Centered with loading animation",
+  },
+
+  // Secondary Locations
+  secondary: {
+    bottomNavigation: "Minimal logo in center",
+    profilePage: "Header branding",
+    historyPage: "Page header",
+    packagesPage: "Trust indicator in payment section",
+  },
+
+  // Contextual Usage
+  contexts: {
+    trustBuilding: "Show logo prominently for security trust",
+    firstImpression: "Large logo for welcome experience",
+    brandConsistency: "Small logo for navigation elements",
+    errorRecovery: "Show logo to maintain brand connection",
+  },
+};
+```
+
+### Mobile-First Logo Strategy
+
+```typescript
+const mobileLogoStrategy = {
+  // Minimum touch target: 44px
+  minimumSize: "44px x 44px",
+
+  // Responsive breakpoints
+  breakpoints: {
+    mobile: "32px x 32px",
+    tablet: "40px x 40px",
+    desktop: "48px x 48px",
+  },
+
+  // Performance optimization
+  loading: "lazy",
+  format: "WebP for performance",
+  fallback: "PNG if WebP fails",
+};
+```
+
+### Logo Integration in UI Components
+
+#### Chat Interface
+
+- **ChatHeader**: Logo + "แม่หมอมีมี่" text combination
+- **ChatWelcome**: Large logo centered above Mimi avatar
+- **Error States**: Logo with error icons for brand reassurance
+
+#### Payment System
+
+- **Payment Modals**: Logo + success/error icons for trust
+- **Package Selection**: Logo in header for brand consistency
+- **Transaction History**: Logo in page headers
+
+#### Gamification
+
+- **Level Up Modal**: Logo + celebration animations
+- **Daily Rewards**: Logo + gift icons for engagement
+- **Achievement Screens**: Logo for brand reinforcement
+
+#### Error Handling
+
+- **Error Boundaries**: Logo + error icons for reassurance
+- **Network Errors**: Logo + warning icons for guidance
+- **Loading States**: Logo with loading animations
+
+### Logo Performance Optimization
+
+```typescript
+const logoOptimization = {
+  // Image Optimization
+  format: "WebP with PNG fallback",
+  loading: "Lazy loading for performance",
+  sizing: "Responsive sizing with Tailwind classes",
+
+  // Accessibility
+  altText: "MiMiVibes logo",
+  contrast: "Works with existing color scheme",
+  focus: "Proper focus indicators for keyboard navigation",
+
+  // Mobile Optimization
+  touchTargets: "Minimum 44px touch targets",
+  responsive: "Adaptive sizing for different screen sizes",
+  performance: "Optimized file size and loading",
+};
+```
 
 ---
 
 ## 📚 Modular Context Strategy
 
 ### Context File Architecture
+
 ```typescript
 const contextArchitecture = {
   core: {
     file: "CLAUDE.md",
     purpose: "Master reference, always included",
     size: "~6,500 tokens",
-    contains: ["Project overview", "Tech stack", "Business logic", "Round structure"]
+    contains: [
+      "Project overview",
+      "Tech stack",
+      "Business logic",
+      "Round structure",
+    ],
   },
-  
+
   supplements: {
     maxPerRound: 1,
     size: "~2,000-3,000 tokens each",
     totalPerRound: "~9,000 tokens (optimal for Claude)",
-    
+
     files: {
       "UI-SYSTEM.md": "Design system, colors, typography, base components",
-      "UI-COMPONENTS.md": "Chat UI, cards, complex interaction patterns", 
+      "UI-COMPONENTS.md": "Chat UI, cards, complex interaction patterns",
       "API-AUTH.md": "Authentication, user management, middleware",
       "API-READINGS.md": "LangGraph workflow, AI integration, reading system",
       "API-PAYMENTS.md": "Stripe integration, credit management, transactions",
-      "API-FEATURES.md": "Gamification, daily rewards, referral system"
-    }
-  }
+      "API-FEATURES.md": "Gamification, daily rewards, referral system",
+    },
+  },
 };
 ```
 
 ### Round-Specific Context Mapping
+
 ```typescript
 const roundContextMap = {
+  // Phase 1: Core Platform (COMPLETED ✅)
   Round1: {
     files: ["CLAUDE.md", "UI-SYSTEM.md"],
     focus: "Foundation + Design System",
     tokens: "~9,000",
-    rationale: "Need design system for theme setup and component structure"
+    rationale: "Need design system for theme setup and component structure",
+    status: "COMPLETED ✅",
   },
-  
+
   Round2: {
-    files: ["CLAUDE.md", "API-AUTH.md"], 
+    files: ["CLAUDE.md", "API-AUTH.md"],
     focus: "Database + Authentication",
     tokens: "~8,500",
-    rationale: "Need auth patterns and user management for database layer"
+    rationale: "Need auth patterns and user management for database layer",
+    status: "COMPLETED ✅",
   },
-  
+
   Round3: {
     files: ["CLAUDE.md", "API-READINGS.md"],
-    focus: "LangGraph + AI Integration", 
+    focus: "LangGraph + AI Integration",
     tokens: "~9,000",
-    rationale: "Need complete AI workflow and reading generation patterns"
+    rationale: "Need complete AI workflow and reading generation patterns",
+    status: "COMPLETED ✅",
   },
-  
+
   Round4: {
     files: ["CLAUDE.md", "UI-COMPONENTS.md"],
     focus: "Chat UI + User Experience",
-    tokens: "~9,500", 
-    rationale: "Need complex UI patterns for chat and card interactions"
+    tokens: "~9,500",
+    rationale: "Need complex UI patterns for chat and card interactions",
+    status: "COMPLETED ✅",
   },
-  
+
   Round5: {
     files: ["CLAUDE.md", "API-PAYMENTS.md"],
     focus: "Payment + Credit System",
     tokens: "~8,500",
-    rationale: "Need Stripe integration and transaction management"
+    rationale: "Need Stripe integration and transaction management",
+    status: "COMPLETED ✅",
   },
-  
+
   Round6: {
     files: ["CLAUDE.md", "API-FEATURES.md"],
-    focus: "Gamification + Advanced Features", 
+    focus: "Gamification + Advanced Features",
     tokens: "~9,000",
-    rationale: "Need EXP system, campaigns, and referral logic"
-  }
+    rationale: "Need EXP system, campaigns, and referral logic",
+    status: "COMPLETED ✅",
+  },
+
+  // Phase 2: Enhanced Features (PLANNED 🚀)
+  Round7: {
+    files: ["CLAUDE.md", "UI-INTEGRATION.md"],
+    focus: "Frontend API Integration",
+    tokens: "~9,000",
+    rationale: "Need API integration patterns and loading states for real data",
+    status: "PLANNED 🚀",
+  },
+
+  Round8: {
+    files: ["CLAUDE.md", "PAYMENT-UI.md"],
+    focus: "Stripe Payment UI Integration",
+    tokens: "~8,500",
+    rationale: "Need Stripe Elements and payment flow UI components",
+    status: "PLANNED 🚀",
+  },
+
+  Round9: {
+    files: ["CLAUDE.md", "GAMIFICATION-UI.md"],
+    focus: "Gamification UI Components",
+    tokens: "~9,000",
+    rationale:
+      "Need EXP display, daily rewards, coin exchange, and referral UI",
+    status: "PLANNED 🚀",
+  },
+
+  Round10: {
+    files: ["CLAUDE.md", "UI-INTEGRATION.md"],
+    focus: "Error Handling & Loading States",
+    tokens: "~8,500",
+    rationale: "Need comprehensive error handling and loading state patterns",
+    status: "PLANNED 🚀",
+  },
+
+  Round11: {
+    files: ["CLAUDE.md", "UI-INTEGRATION.md"],
+    focus: "Performance Optimization",
+    tokens: "~8,500",
+    rationale: "Need performance optimization and caching strategies",
+    status: "PLANNED 🚀",
+  },
+
+  Round12: {
+    files: ["CLAUDE.md", "UI-INTEGRATION.md"],
+    focus: "Final Integration & Testing",
+    tokens: "~9,000",
+    rationale:
+      "Need final integration testing and user experience optimization",
+    status: "PLANNED 🚀",
+  },
 };
 ```
 
@@ -86,26 +340,31 @@ const roundContextMap = {
 ## 🔄 Optimized Round Templates
 
 ### Round Execution Pattern (Updated)
+
 ```bash
 # Optimized pattern with modular context
 claude → [paste CLAUDE.md + specific supplement file] → implement → test → commit → next round
 ```
 
 ### Round 1: Foundation Setup (COMPLETED ✅)
+
 **Status:** ✅ **COMPLETED** - January 2025  
 **Context Files:** `CLAUDE.md` + `UI-SYSTEM.md`  
 **Duration:** 2-3 hours (Actual)  
 **Why This Combination:** Need project overview + design system for theming and component structure
 
 **Completed Tasks:**
+
 - **Task A**: ✅ Next.js 14 + Clerk authentication + LINE LIFF integration
 - **Task B**: ✅ DaisyUI theme + MiMiVibes colors + responsive layout
 
-**Context Scope:** 
+**Context Scope:**
+
 - From CLAUDE.md: Project overview, tech stack, business objectives
 - From UI-SYSTEM.md: Color system, typography, component patterns, responsive design
 
 **Implementation Results:**
+
 - ✅ Next.js 14 with TypeScript and App Router
 - ✅ Clerk authentication configured with real API keys
 - ✅ Complete routing structure: `/ask`, `/history`, `/profile`, `/packages`
@@ -122,20 +381,24 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 ---
 
 ### Round 2: Database Layer & Authentication APIs (COMPLETED ✅)
+
 **Status:** ✅ **COMPLETED** - January 2025  
 **Context Files:** `CLAUDE.md` + `API-AUTH.md`  
 **Duration:** 3-4 hours (Actual)  
 **Why This Combination:** Need auth patterns and database models for complete user management system
 
 **Completed Tasks:**
+
 - **Task A**: ✅ Prisma ORM + PostgreSQL + database models + card data verification
 - **Task B**: ✅ User management APIs + authentication middleware + transaction system
 
 **Context Scope:**
+
 - From CLAUDE.md: Project overview, tech stack, business objectives
 - From API-AUTH.md: Database models, API endpoints, authentication patterns, error handling
 
 **Implementation Results:**
+
 - ✅ Prisma ORM configured with Supabase PostgreSQL
 - ✅ Comprehensive database schema (8 models: User, Card, Reading, etc.)
 - ✅ 78 tarot cards verified and accessible via API
@@ -147,6 +410,7 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 - ✅ Manual testing verified all endpoints working
 
 **API Endpoints Implemented:**
+
 - `GET /api/health` - Database connection health check
 - `GET/PUT /api/user/profile` - User profile management
 - `GET /api/user/stats` - User statistics with EXP/level calculation
@@ -161,20 +425,24 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 ---
 
 ### Round 3: LangGraph Integration & AI Reading System (COMPLETED ✅)
+
 **Status:** ✅ **COMPLETED** - January 2025  
 **Context Files:** `CLAUDE.md` + `API-READINGS.md`  
 **Duration:** 4-5 hours (Actual)  
 **Why This Combination:** Need complete AI workflow and reading generation patterns for core functionality
 
 **Completed Tasks:**
+
 - **Task A**: ✅ LangGraph workflow + Gemini AI + question filtering + card picker algorithm
 - **Task B**: ✅ Reading generation API + SSE streaming + credit deduction + rewards system
 
 **Context Scope:**
+
 - From CLAUDE.md: Project overview, tech stack, business objectives
 - From API-READINGS.md: LangGraph workflow, AI configuration, reading endpoints, streaming patterns
 
 **Implementation Results:**
+
 - ✅ Complete LangGraph workflow with 4 nodes (filter → picker → analysis → agent)
 - ✅ Gemini 2.0 Flash AI integration with optimized temperature (0.7)
 - ✅ Intelligent question filtering for appropriate tarot queries
@@ -189,17 +457,20 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 - ✅ TypeScript strict compliance and successful build
 
 **AI Workflow Architecture:**
+
 1. **Question Filter Node**: Validates question appropriateness and content
 2. **Card Picker Node**: Randomly selects 3-5 tarot cards from 78-card dataset
 3. **Question Analysis Node**: Analyzes mood, topic, and timeframe
 4. **Reading Agent Node**: Generates personalized Thai tarot reading
 
 **API Endpoints Implemented:**
+
 - `POST /api/readings/ask` - Generate new tarot reading (with optional SSE streaming)
-- `GET /api/readings/history` - Paginated reading history 
+- `GET /api/readings/history` - Paginated reading history
 - `POST /api/readings/history` - Get specific reading by ID
 
 **Key Features:**
+
 - **Credit System**: Smart deduction (freePoint first, then stars)
 - **Database Storage**: JSON format for complex reading data
 - **Streaming Support**: Real-time progress updates in Thai
@@ -213,20 +484,24 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 ---
 
 ### Round 4: Chat UI & User Experience (COMPLETED ✅)
+
 **Status:** ✅ **COMPLETED** - January 2025  
 **Context Files:** `CLAUDE.md` + `UI-COMPONENTS.md`  
 **Duration:** 4-5 hours (Actual)  
 **Why This Combination:** Need complex UI patterns for chat and card interactions with real-time experience
 
 **Completed Tasks:**
+
 - **Task A**: ✅ Gemini-style chat interface + real-time messaging + typing indicators + SSE integration
 - **Task B**: ✅ Tarot card display + 3D animations + reading result presentation + mobile optimization
 
 **Context Scope:**
+
 - From CLAUDE.md: Project overview, tech stack, business objectives
 - From UI-COMPONENTS.md: Chat components, card displays, interaction patterns, responsive design
 
 **Implementation Results:**
+
 - ✅ Complete Gemini-quality chat interface with real-time messaging
 - ✅ SSE streaming integration with Round 3 APIs and progress indicators
 - ✅ 3D tarot card animations with flip effects and staggered reveals
@@ -240,6 +515,7 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 - ✅ TypeScript strict compliance and successful build
 
 **Chat System Components:**
+
 - `ChatContainer` - Main orchestrator with SSE streaming and message management
 - `ChatHeader` - User avatar display with mystical branding
 - `ChatMessages` - Message routing system supporting multiple message types
@@ -247,23 +523,27 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 - `TypingIndicator` - Animated loading state with Thai progress messages
 
 **Card Display System:**
+
 - `TarotCard` - 3D flip animations with backface visibility and click interactions
 - `TarotCardGrid` - Responsive grid with staggered reveal animations (300ms delays)
 - `CardDetailModal` - Detailed card information display with keywords and meanings
 
 **Message Types:**
+
 - `UserMessage` - Right-aligned messages with user avatar integration
 - `AssistantMessage` - Left-aligned MiMi responses with timestamp
 - `CardsMessage` - Embedded card grid with automatic reveal animations
 - `ReadingMessage` - Rich reading display with analysis badges and rewards
 
 **UI Enhancement Features:**
+
 - `BottomNavigation` - Mobile navigation with active states and safe areas
 - `RewardModal` - Animated reward display with staggered entrance effects
 - `Toast System` - Context-based notifications with auto-dismiss functionality
 - `Mobile Optimization` - Touch-friendly interfaces with proper safe area handling
 
 **Key Features:**
+
 - **Real-time Experience**: SSE streaming with Thai progress messages
 - **3D Animations**: Hardware-accelerated card flip effects and reveals
 - **Mobile-First**: Responsive design optimized for touch interactions
@@ -278,20 +558,24 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 ---
 
 ### Round 5: Payment System & Credit Management (COMPLETED ✅)
+
 **Status:** ✅ **COMPLETED** - January 2025  
 **Context Files:** `CLAUDE.md` + `API-PAYMENTS.md`  
 **Duration:** 4-5 hours (Actual)  
 **Why This Combination:** Need Stripe integration and transaction management for complete monetization system
 
 **Completed Tasks:**
+
 - **Task A**: ✅ Stripe integration + payment intents + webhooks + package management
 - **Task B**: ✅ Credit system + transaction logging + free trial limits + enhanced reading integration
 
 **Context Scope:**
+
 - From CLAUDE.md: Project overview, tech stack, business objectives
 - From API-PAYMENTS.md: Stripe configuration, payment flows, credit management patterns
 
 **Implementation Results:**
+
 - ✅ Complete Stripe payment integration with webhook security
 - ✅ Payment intent creation with package validation and metadata
 - ✅ Webhook handler with signature verification and atomic transactions
@@ -306,12 +590,14 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 - ✅ Manual testing verified all payment endpoints working
 
 **Stripe Integration Architecture:**
+
 1. **Payment Intent Creation**: Validates packages and creates secure payment intents
 2. **Webhook Processing**: Handles payment success/failure with signature verification
 3. **Credit Management**: Atomic transactions for credit top-ups and deductions
 4. **Package System**: 4-tier pricing with Thai language support
 
 **API Endpoints Implemented:**
+
 - `GET /api/payments/packages` - Public package listing with pricing
 - `POST /api/payments/create-intent` - Secure payment intent creation
 - `POST /api/payments/confirm` - Client-side payment confirmation
@@ -321,18 +607,21 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 - Enhanced `GET /api/credits/transactions` - Transaction history with filtering
 
 **Database Updates:**
+
 - **Pack Model**: Added isActive, popular, sortOrder fields for package management
 - **PaymentHistory Model**: Enhanced with Stripe-specific fields (stripePaymentId, amount, currency, status, creditsAdded)
 - **PointTransaction Model**: Added metadata field for rich transaction context
 - **Schema Migrations**: Applied with proper foreign key relationships
 
 **Payment Package Tiers:**
+
 1. **Starter Pack** - ₿99 (20 Stars) - Entry level for new users
 2. **Popular Pack** - ₿199 (50 Stars) - Most popular, best value
 3. **Premium Pack** - ₿399 (120 Stars) - For heavy users
 4. **Super Pack** - ₿599 (200 Stars) - Unlimited usage experience
 
 **Key Features:**
+
 - **Secure Payments**: Stripe webhook signature verification and atomic transactions
 - **Credit Management**: Smart deduction logic prioritizing free points over paid stars
 - **Free Trial System**: Daily (3) and monthly (50) limits with automatic reset tracking
@@ -341,6 +630,7 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 - **Error Handling**: Robust error recovery with proper HTTP status codes
 
 **Integration Points:**
+
 - **Round 3 Reading System**: Enhanced with metadata-rich transaction logging
 - **Authentication Middleware**: Updated to allow public access for packages and webhooks
 - **Database Transactions**: Atomic operations ensuring payment consistency
@@ -353,21 +643,25 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 ---
 
 ### Round 6: Gamification Features & Advanced User Engagement (COMPLETED ✅)
+
 **Status:** ✅ **COMPLETED** - January 2025  
 **Context Files:** `CLAUDE.md` + `API-FEATURES.md`  
 **Duration:** 3-4 hours (Actual)  
 **Why This Combination:** Need gamification patterns and user engagement systems for complete user retention strategy
 
 **Completed Tasks:**
+
 - **Task A**: ✅ EXP system + level progression + daily login campaigns + achievement unlocks
 - **Task B**: ✅ Coin exchange system + referral system + comprehensive gamification APIs
 
 **Context Scope:**
+
 - From CLAUDE.md: Project overview, tech stack, business objectives
 - From API-FEATURES.md: Gamification patterns, EXP systems, daily campaigns, coin exchange, referral logic
 
 **Implementation Results:**
-- ✅ Complete EXP and leveling system with exponential progression (level * 100 EXP)
+
+- ✅ Complete EXP and leveling system with exponential progression (level \* 100 EXP)
 - ✅ Level-based benefits and unlocks (daily bonus at 5+, exclusive content at 10+, etc.)
 - ✅ Daily login campaign system with monthly tracking and streak bonuses
 - ✅ Coin exchange system with configurable rates (10 coins = 1 star default)
@@ -379,6 +673,7 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 - ✅ Manual testing verified all gamification endpoints working
 
 **Gamification System Architecture:**
+
 1. **EXP & Leveling**: Exponential progression with automatic level-up detection and rewards
 2. **Daily Login Campaigns**: Monthly campaign tracking with JSON-based claimed days array
 3. **Coin Exchange**: Rate-limited exchange system with daily limits and transaction logging
@@ -386,23 +681,28 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 
 **API Endpoints Implemented:**
 **Gamification Core:**
+
 - `GET /api/gamification/levels` - User level info and progression calculation
 - `POST /api/gamification/level-up` - Trigger level-up rewards with bonus EXP/coins
 
 **Daily Login Campaigns:**
+
 - `GET /api/campaigns/active` - Active monthly campaigns with progress tracking
 - `POST /api/campaigns/daily-login/claim` - Claim daily login rewards with streak bonuses
 - `GET /api/campaigns/daily-login/status` - Login streak status and monthly progress
 
 **Coin Exchange System:**
+
 - `GET /api/coins/exchange-rates` - Exchange rates and daily limits with usage tracking
 - `POST /api/coins/exchange` - Convert coins to stars with rate limiting and validation
 
 **Referral System:**
+
 - `GET /api/referrals/status` - User referral code, stats, and recent referrals
 - `POST /api/referrals/process` - Process new user referrals with dual reward distribution
 
 **Database Schema Updates:**
+
 - **DailyLoginCampaign Model**: Simplified with JSON claimed days tracking and unique constraints
 - **ReferralCode Model**: Enhanced with referral chain support and anti-abuse protection
 - **User Model**: Added referral relationships (referredUsers, dailyLoginCampaigns)
@@ -410,26 +710,34 @@ claude → [paste CLAUDE.md + specific supplement file] → implement → test �
 - **Schema Migrations**: Applied with optimized foreign key relationships
 
 **Gamification Configuration:**
+
 ```typescript
 const GAMIFICATION_CONFIG = {
   dailyLogin: {
-    baseExp: 10, baseCoins: 5,
-    maxStreakMultiplier: 2.0, streakBonusRate: 0.1
+    baseExp: 10,
+    baseCoins: 5,
+    maxStreakMultiplier: 2.0,
+    streakBonusRate: 0.1,
   },
   levelSystem: {
-    expPerLevel: 100, bonusExpPerLevel: 0.1, bonusCoinsPerLevel: 0.05
+    expPerLevel: 100,
+    bonusExpPerLevel: 0.1,
+    bonusCoinsPerLevel: 0.05,
   },
   coinExchange: {
-    rate: 10, dailyLimit: 100, minExchange: 10
+    rate: 10,
+    dailyLimit: 100,
+    minExchange: 10,
   },
   referral: {
     referrerReward: { exp: 50, coins: 20 },
-    referredReward: { exp: 25, coins: 10, freeCredits: 5 }
-  }
-}
+    referredReward: { exp: 25, coins: 10, freeCredits: 5 },
+  },
+};
 ```
 
 **Key Features:**
+
 - **EXP System**: Exponential level progression with percentage-based bonuses and unlock rewards
 - **Daily Campaigns**: Streak-based multipliers with special weekly (2x) and monthly (3x) bonuses
 - **Coin Exchange**: Daily exchange limits with rate limiting and comprehensive transaction logging
@@ -438,6 +746,7 @@ const GAMIFICATION_CONFIG = {
 - **Thai Language**: Localized error messages and reward descriptions for Thai users
 
 **Integration Points:**
+
 - **Round 3 Reading System**: Enhanced with gamification rewards (+25 EXP, +5 coins per reading)
 - **Round 5 Payment System**: Integrated with coin exchange and credit management
 - **Authentication Middleware**: All gamification endpoints properly protected
@@ -452,33 +761,40 @@ const GAMIFICATION_CONFIG = {
 ## 🚀 Simplified Round Prompt Template
 
 ### New Compact Round Prompt Format
+
 ```markdown
-# Round [X]: [ROUND_NAME] 
+# Round [X]: [ROUND_NAME]
 
 **CONTEXT**: Read `CLAUDE.md` (master reference) + `[SUPPLEMENT_FILE].md` (round-specific)
 
 ## 🎯 ROUND OBJECTIVE
+
 [One-line objective from CLAUDE.md round mapping]
 
-## 🛠 PAIRED TASKS  
+## 🛠 PAIRED TASKS
+
 **Task A**: [Task A description] ([specific files])
 **Task B**: [Task B description] ([specific files])
 
 ## ✅ SUCCESS CRITERIA
+
 - [ ] [Criterion 1]
-- [ ] [Criterion 2] 
+- [ ] [Criterion 2]
 - [ ] [Criterion 3]
 
 ## 📋 IMPLEMENTATION NOTES
+
 [Only critical notes specific to this round from supplement file]
 
 ---
+
 **Execute using Paired Sub-Agent Pattern**
 **Test manually after completion**
 **Commit with clear message**
 ```
 
 ### Benefits of New Template
+
 - **50% shorter prompts**: Focus only on current round needs
 - **Clearer context**: Exactly what files to read
 - **Better focus**: No irrelevant information
@@ -491,36 +807,42 @@ const GAMIFICATION_CONFIG = {
 ### When to Use Each Supplement File
 
 **UI-SYSTEM.md** - Use when:
+
 - Setting up design foundations
 - Implementing theming
 - Creating base components
 - Responsive layout work
 
 **UI-COMPONENTS.md** - Use when:
+
 - Building complex interfaces
 - Chat or interactive features
 - Card displays and animations
 - User interaction patterns
 
 **API-AUTH.md** - Use when:
+
 - Database setup
 - User management
 - Authentication middleware
 - Protected routes
 
 **API-READINGS.md** - Use when:
+
 - AI integration
 - LangGraph workflow
 - Reading generation
 - SSE streaming
 
 **API-PAYMENTS.md** - Use when:
+
 - Stripe integration
 - Credit management
 - Transaction handling
 - Payment flows
 
 **API-FEATURES.md** - Use when:
+
 - Gamification features
 - Daily rewards
 - Referral systems

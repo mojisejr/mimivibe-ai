@@ -5,3 +5,5 @@
 .next
 .DS_Store
 /generated/prisma
+/manual-testing-guide
+/prompts

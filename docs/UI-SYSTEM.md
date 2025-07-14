@@ -12,9 +12,144 @@ MiMiVibes ใช้ design philosophy ที่เน้นการสร้า
 
 ---
 
+## 🏷️ Logo Integration Strategy
+
+### Logo Usage Guidelines
+
+```typescript
+const logoIntegration = {
+  // Primary Brand Touchpoints
+  headerLogo: {
+    size: "32px x 32px",
+    placement: "Chat header, navigation bars",
+    style: "Rounded corners, subtle shadow",
+    purpose: "Primary brand identification",
+  },
+
+  // Welcome/Entry Points
+  welcomeLogo: {
+    size: "64px x 64px",
+    placement: "Welcome screens, onboarding",
+    style: "Centered, prominent display",
+    purpose: "First impression and trust building",
+  },
+
+  // Modal/Overlay Branding
+  modalLogo: {
+    size: "48px x 48px",
+    placement: "Payment modals, confirmation dialogs",
+    style: "Subtle, non-intrusive",
+    purpose: "Brand reinforcement during key actions",
+  },
+
+  // Footer/Secondary Areas
+  footerLogo: {
+    size: "24px x 24px",
+    placement: "Footer, secondary navigation",
+    style: "Minimal, clean",
+    purpose: "Consistent brand presence",
+  },
+};
+```
+
+### Logo Component Implementation
+
+```typescript
+// Reusable Logo Component
+const Logo = ({
+  size = "md",
+  className = "",
+  showText = true,
+}: {
+  size?: "sm" | "md" | "lg" | "xl";
+  className?: string;
+  showText?: boolean;
+}) => {
+  const sizeClasses = {
+    sm: "w-6 h-6",
+    md: "w-8 h-8",
+    lg: "w-12 h-12",
+    xl: "w-16 h-16",
+  };
+
+  return (
+    <div className={`flex items-center space-x-2 ${className}`}>
+      <img
+        src="/images/logo.webp"
+        alt="MiMiVibes"
+        className={`${sizeClasses[size]} object-contain`}
+        loading="lazy"
+        onError={(e) => {
+          // Fallback to PNG if WebP fails
+          e.currentTarget.src = "/images/logo.png";
+        }}
+      />
+      {showText && (
+        <span className="font-semibold text-base-content">MiMiVibes</span>
+      )}
+    </div>
+  );
+};
+```
+
+### Logo Placement Strategy
+
+```typescript
+const logoPlacement = {
+  // Primary Locations
+  primary: {
+    chatHeader: "Left side, next to 'แม่หมอมีมี่' text",
+    welcomeScreen: "Centered above Mimi avatar",
+    paymentModals: "Top-left corner for brand trust",
+    errorPages: "Centered for brand reassurance",
+    loadingStates: "Centered with loading animation",
+  },
+
+  // Secondary Locations
+  secondary: {
+    bottomNavigation: "Minimal logo in center",
+    profilePage: "Header branding",
+    historyPage: "Page header",
+    packagesPage: "Trust indicator in payment section",
+  },
+
+  // Contextual Usage
+  contexts: {
+    trustBuilding: "Show logo prominently for security trust",
+    firstImpression: "Large logo for welcome experience",
+    brandConsistency: "Small logo for navigation elements",
+    errorRecovery: "Show logo to maintain brand connection",
+  },
+};
+```
+
+### Mobile-First Logo Strategy
+
+```typescript
+const mobileLogoStrategy = {
+  // Minimum touch target: 44px
+  minimumSize: "44px x 44px",
+
+  // Responsive breakpoints
+  breakpoints: {
+    mobile: "32px x 32px",
+    tablet: "40px x 40px",
+    desktop: "48px x 48px",
+  },
+
+  // Performance optimization
+  loading: "lazy",
+  format: "WebP for performance",
+  fallback: "PNG if WebP fails",
+};
+```
+
+---
+
 ## Color System
 
 ### Primary Theme Colors
+
 ```css
 :root {
   /* Primary - สีเขียวหลัก (ความสงบ, ธรรมชาติ, การเติบโต) */
@@ -65,13 +200,14 @@ MiMiVibes ใช้ design philosophy ที่เน้นการสร้า
 ```
 
 ### DaisyUI Theme Configuration
+
 ```javascript
 // tailwind.config.js
 module.exports = {
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {},
@@ -81,31 +217,31 @@ module.exports = {
     themes: [
       {
         mimivibes: {
-          "primary": "#629c6b",
-          "primary-focus": "#578b60", 
+          primary: "#629c6b",
+          "primary-focus": "#578b60",
           "primary-content": "#ffffff",
-          "secondary": "#66836a",
+          secondary: "#66836a",
           "secondary-focus": "#58795d",
-          "secondary-content": "#ffffff", 
-          "accent": "#de5b25",
+          "secondary-content": "#ffffff",
+          accent: "#de5b25",
           "accent-focus": "#c04f20",
           "accent-content": "#ffffff",
-          "neutral": "#bfb8b1",
+          neutral: "#bfb8b1",
           "neutral-focus": "#a8a29e",
           "neutral-content": "#1f2937",
           "base-100": "#ffffff",
-          "base-200": "#f3f2f0", 
+          "base-200": "#f3f2f0",
           "base-300": "#e0dfdc",
           "base-content": "#1f2937",
-          "info": "#2094f3",
-          "success": "#629c6b",
-          "warning": "#ffcc00", 
-          "error": "#de5b25",
+          info: "#2094f3",
+          success: "#629c6b",
+          warning: "#ffcc00",
+          error: "#de5b25",
         },
       },
     ],
   },
-}
+};
 ```
 
 ---
@@ -113,6 +249,7 @@ module.exports = {
 ## Typography System
 
 ### Font Stack
+
 ```css
 body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
@@ -121,24 +258,55 @@ body {
 ```
 
 ### Typography Scale
+
 ```css
 /* Font Sizes */
-.text-xs { font-size: 0.75rem; line-height: 1rem; } /* 12px */
-.text-sm { font-size: 0.875rem; line-height: 1.25rem; } /* 14px */
-.text-base { font-size: 1rem; line-height: 1.5rem; } /* 16px */
-.text-lg { font-size: 1.125rem; line-height: 1.75rem; } /* 18px */
-.text-xl { font-size: 1.25rem; line-height: 1.75rem; } /* 20px */
-.text-2xl { font-size: 1.5rem; line-height: 2rem; } /* 24px */
-.text-3xl { font-size: 1.875rem; line-height: 2.25rem; } /* 30px */
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+} /* 12px */
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+} /* 14px */
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+} /* 16px */
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+} /* 18px */
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+} /* 20px */
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+} /* 24px */
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+} /* 30px */
 
 /* Font Weights */
-.font-normal { font-weight: 400; } /* Body text */
-.font-medium { font-weight: 500; } /* Emphasized text */
-.font-semibold { font-weight: 600; } /* Headings */
-.font-bold { font-weight: 700; } /* Strong emphasis */
+.font-normal {
+  font-weight: 400;
+} /* Body text */
+.font-medium {
+  font-weight: 500;
+} /* Emphasized text */
+.font-semibold {
+  font-weight: 600;
+} /* Headings */
+.font-bold {
+  font-weight: 700;
+} /* Strong emphasis */
 ```
 
 ### Text Hierarchy Classes
+
 ```css
 /* Semantic Typography Classes */
 .heading-1 {
@@ -169,6 +337,7 @@ body {
 ## Spacing System
 
 ### Standard Spacing Scale
+
 ```css
 /* Tailwind Default Scale (rem) */
 /* 0.25rem = 4px, 0.5rem = 8px, 0.75rem = 12px, 1rem = 16px */
@@ -193,6 +362,7 @@ body {
 ## Component Base Styles
 
 ### Button System
+
 ```css
 /* Enhanced Button Styles */
 .btn {
@@ -219,6 +389,7 @@ body {
 ```
 
 ### Card System
+
 ```css
 /* Enhanced Card Styles */
 .card {
@@ -243,14 +414,19 @@ body {
 ```
 
 ### Input System
+
 ```css
 /* Enhanced Input Styles */
-.input, .textarea, .select {
+.input,
+.textarea,
+.select {
   @apply transition-all duration-200 ease-in-out;
   @apply focus:ring-2 focus:ring-primary focus:ring-offset-2;
 }
 
-.input:focus, .textarea:focus, .select:focus {
+.input:focus,
+.textarea:focus,
+.select:focus {
   @apply border-primary shadow-lg;
 }
 
@@ -266,6 +442,7 @@ body {
 ## Layout Utilities
 
 ### Container System
+
 ```css
 /* Responsive Container */
 .container {
@@ -297,6 +474,7 @@ body {
 ```
 
 ### Grid System
+
 ```css
 /* Responsive Grid Patterns */
 .grid-auto-fit {
@@ -330,6 +508,7 @@ body {
 ## Responsive Design
 
 ### Breakpoint System
+
 ```css
 /* Tailwind Breakpoints */
 /* sm: 640px  - Mobile landscape / Small tablet */
@@ -353,6 +532,7 @@ body {
 ```
 
 ### Safe Areas (iOS Support)
+
 ```css
 /* iPhone Safe Area Support */
 .safe-area-top {
@@ -376,6 +556,7 @@ body {
 ## Animation System
 
 ### Base Animations
+
 ```css
 /* Smooth Transitions */
 .transition-smooth {
@@ -409,10 +590,12 @@ body {
 ```
 
 ### Custom Animations
+
 ```css
 /* Mystical Animations */
 @keyframes mysticGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 5px rgba(98, 156, 107, 0.5);
   }
   50% {
@@ -425,9 +608,15 @@ body {
 }
 
 @keyframes cardFlip {
-  0% { transform: rotateY(0deg); }
-  50% { transform: rotateY(90deg); }
-  100% { transform: rotateY(180deg); }
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(90deg);
+  }
+  100% {
+    transform: rotateY(180deg);
+  }
 }
 
 .animate-card-flip {
@@ -455,6 +644,7 @@ body {
 ## Accessibility
 
 ### Focus States
+
 ```css
 /* Enhanced Focus Indicators */
 .focus-visible {
@@ -474,6 +664,7 @@ body {
 ```
 
 ### Screen Reader Support
+
 ```css
 /* Screen Reader Only */
 .sr-only {
@@ -501,6 +692,7 @@ body {
 ```
 
 ### Color Contrast
+
 ```css
 /* WCAG 2.1 AA Compliant Colors */
 .text-high-contrast {
@@ -525,25 +717,34 @@ body {
 ## Touch & Mobile Optimizations
 
 ### Touch-Friendly Design
+
 ```css
 /* Minimum Touch Target Sizes */
-.btn, .input, .select, .checkbox, .radio {
+.btn,
+.input,
+.select,
+.checkbox,
+.radio {
   min-height: 44px; /* iOS minimum */
   min-width: 44px;
 }
 
 /* Touch Feedback */
-.btn:active, .card:active {
+.btn:active,
+.card:active {
   @apply transform scale-98 transition-transform duration-100;
 }
 
 /* Prevent Zoom on Input Focus (iOS) */
-input, select, textarea {
+input,
+select,
+textarea {
   font-size: 16px; /* Prevents zoom on iOS Safari */
 }
 ```
 
 ### Mobile Navigation
+
 ```css
 /* Bottom Navigation */
 .btm-nav {
@@ -567,6 +768,7 @@ input, select, textarea {
 ## Performance Optimizations
 
 ### CSS Loading
+
 ```css
 /* Critical CSS - Inline in <head> */
 /* Non-critical CSS - Load with media="print" onload */
@@ -598,6 +800,7 @@ input, select, textarea {
 ## Utility Classes
 
 ### Spacing Utilities
+
 ```css
 /* Custom Spacing */
 .space-y-safe {
@@ -619,6 +822,7 @@ input, select, textarea {
 ```
 
 ### Display Utilities
+
 ```css
 /* Flex Utilities */
 .flex-center {
@@ -648,6 +852,7 @@ input, select, textarea {
 ```
 
 ### Text Utilities
+
 ```css
 /* Text Overflow */
 .text-ellipsis-2 {
@@ -679,6 +884,7 @@ input, select, textarea {
 ## Component Variants
 
 ### Button Variants
+
 ```css
 /* Mystical Button Styles */
 .btn-mystical-gradient {
@@ -689,9 +895,15 @@ input, select, textarea {
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .btn-ghost-mystical {
@@ -707,6 +919,7 @@ input, select, textarea {
 ```
 
 ### Card Variants
+
 ```css
 /* Tarot Card Styles */
 .card-tarot {
@@ -745,6 +958,7 @@ input, select, textarea {
 ```
 
 ### Modal Variants
+
 ```css
 /* Enhanced Modal Styles */
 .modal-mystical .modal-box {
@@ -754,9 +968,11 @@ input, select, textarea {
 
 .modal-reward .modal-box {
   @apply text-center;
-  background: linear-gradient(135deg, 
-    rgba(98, 156, 107, 0.1) 0%, 
-    rgba(222, 91, 37, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(98, 156, 107, 0.1) 0%,
+    rgba(222, 91, 37, 0.1) 100%
+  );
 }
 
 .modal-fullscreen {
@@ -773,6 +989,7 @@ input, select, textarea {
 ## Loading States
 
 ### Skeleton Components
+
 ```css
 /* Skeleton Loading */
 .skeleton {
@@ -806,16 +1023,19 @@ input, select, textarea {
 }
 
 .shimmer {
-  background: linear-gradient(90deg, 
-    rgba(243, 242, 240, 0) 0%, 
-    rgba(243, 242, 240, 0.8) 50%, 
-    rgba(243, 242, 240, 0) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(243, 242, 240, 0) 0%,
+    rgba(243, 242, 240, 0.8) 50%,
+    rgba(243, 242, 240, 0) 100%
+  );
   background-size: 200px 100%;
   animation: shimmer 1.5s infinite;
 }
 ```
 
 ### Loading Indicators
+
 ```css
 /* Custom Loading Spinners */
 .loading-mystical {
@@ -824,7 +1044,7 @@ input, select, textarea {
 
 .loading-mystical::before,
 .loading-mystical::after {
-  content: '';
+  content: "";
   @apply absolute inset-0 border-4 border-transparent rounded-full;
   animation: mysticalSpin 1.5s linear infinite;
 }
@@ -868,6 +1088,7 @@ input, select, textarea {
 ## Error States
 
 ### Error Styling
+
 ```css
 /* Error States */
 .error-state {
@@ -906,6 +1127,7 @@ input, select, textarea {
 ## Global CSS Setup
 
 ### Base Styles
+
 ```css
 /* globals.css */
 @tailwind base;
@@ -957,10 +1179,10 @@ input, select, textarea {
 
 @layer components {
   /* Import all component styles here */
-  @import 'components/buttons.css';
-  @import 'components/cards.css';
-  @import 'components/forms.css';
-  @import 'components/modals.css';
+  @import "components/buttons.css";
+  @import "components/cards.css";
+  @import "components/forms.css";
+  @import "components/modals.css";
 }
 
 @layer utilities {
@@ -988,12 +1210,13 @@ input, select, textarea {
 ## Component CSS Organization
 
 ### File Structure
+
 ```
 src/styles/
 ├── globals.css                 # Main CSS entry point
 ├── components/
 │   ├── buttons.css            # Button variants
-│   ├── cards.css              # Card variants  
+│   ├── cards.css              # Card variants
 │   ├── forms.css              # Form elements
 │   ├── modals.css             # Modal variants
 │   ├── navigation.css         # Navigation styles
@@ -1008,6 +1231,7 @@ src/styles/
 ```
 
 ### Import Strategy
+
 ```css
 /* Optimized loading order */
 /* 1. Critical CSS (inlined) */
@@ -1022,4 +1246,3 @@ src/styles/
 **Round Usage**: Round 1 (Foundation Setup)  
 **Dependencies**: DaisyUI, Tailwind CSS  
 **Estimated Tokens**: ~2,500
-  

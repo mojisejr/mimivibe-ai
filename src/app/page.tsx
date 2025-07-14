@@ -1,5 +1,6 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { Logo } from "@/components/ui";
 
 export default function HomePage() {
   return (
@@ -7,7 +8,26 @@ export default function HomePage() {
       {/* Header */}
       <header className="navbar bg-base-100/90 backdrop-blur-sm shadow-lg">
         <div className="navbar-start">
-          <h1 className="text-2xl font-bold text-primary">MiMiVibes</h1>
+          {/* Mobile: Logo only, Desktop: Logo + Text */}
+          <div className="flex items-center">
+            {/* Mobile version - logo only */}
+            <div className="sm:hidden">
+              <Logo 
+                size="md" 
+                showText={false} 
+                className="hover:scale-105 transition-transform duration-200 cursor-pointer" 
+              />
+            </div>
+            
+            {/* Desktop version - logo + text */}
+            <div className="hidden sm:flex">
+              <Logo 
+                size="lg" 
+                showText={true} 
+                className="hover:scale-105 transition-transform duration-200 cursor-pointer" 
+              />
+            </div>
+          </div>
         </div>
         <div className="navbar-end">
           <SignedIn>

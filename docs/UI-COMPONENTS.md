@@ -9,12 +9,13 @@
 ## Chat Interface Components
 
 ### Chat Container Layout
+
 ```typescript
 // src/components/chat/ChatContainer.tsx
-import { ReactNode } from 'react'
-import { ChatHeader } from './ChatHeader'
-import { ChatMessages } from './ChatMessages'
-import { ChatInput } from './ChatInput'
+import { ReactNode } from "react";
+import { ChatHeader } from "./ChatHeader";
+import { ChatMessages } from "./ChatMessages";
+import { ChatInput } from "./ChatInput";
 
 interface ChatContainerProps {
   user: User;
@@ -23,12 +24,17 @@ interface ChatContainerProps {
   isLoading?: boolean;
 }
 
-export function ChatContainer({ user, messages, onSendMessage, isLoading }: ChatContainerProps) {
+export function ChatContainer({
+  user,
+  messages,
+  onSendMessage,
+  isLoading,
+}: ChatContainerProps) {
   return (
     <div className="flex flex-col h-screen bg-base-100">
       {/* Header */}
       <ChatHeader user={user} />
-      
+
       {/* Messages Area */}
       <main className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
@@ -37,23 +43,25 @@ export function ChatContainer({ user, messages, onSendMessage, isLoading }: Chat
           <ChatMessages messages={messages} />
         )}
       </main>
-      
+
       {/* Input Area */}
-      <ChatInput 
-        onSendMessage={onSendMessage} 
+      <ChatInput
+        onSendMessage={onSendMessage}
         disabled={isLoading}
         className="sticky bottom-0 safe-area-bottom"
       />
     </div>
-  )
+  );
 }
 ```
 
 ### Chat Header Component
+
 ```typescript
 // src/components/chat/ChatHeader.tsx
-import { UserButton } from '@clerk/nextjs'
-import { User } from '@/types'
+import { UserButton } from "@clerk/nextjs";
+import { User } from "@/types";
+import { Logo } from "@/components/ui/Logo";
 
 interface ChatHeaderProps {
   user: User;
@@ -64,17 +72,15 @@ export function ChatHeader({ user }: ChatHeaderProps) {
     <header className="sticky top-0 z-10 bg-base-100/80 backdrop-blur-md border-b border-base-300 safe-area-top">
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-3">
-          <img
-            src="/mimi-avatar.webp"
-            alt="แม่หมอมีมี่"
-            className="w-10 h-10 rounded-full ring-2 ring-primary/20"
-          />
+          {/* Logo Integration */}
+          <Logo size="md" showText={false} />
+
           <div>
             <h1 className="font-semibold text-base-content">แม่หมอมีมี่</h1>
             <p className="text-sm text-neutral-content">หมอดูไพ่ทาโรต์ AI</p>
           </div>
         </div>
-        
+
         {/* User Avatar & Status */}
         <div className="flex items-center space-x-3">
           <div className="hidden md:flex items-center space-x-2 text-sm">
@@ -85,13 +91,16 @@ export function ChatHeader({ user }: ChatHeaderProps) {
         </div>
       </div>
     </header>
-  )
+  );
 }
 ```
 
 ### Chat Welcome Screen
+
 ```typescript
 // src/components/chat/ChatWelcome.tsx
+import { Logo } from "@/components/ui/Logo";
+
 interface ChatWelcomeProps {
   onSuggestedQuestion: (question: string) => void;
 }
@@ -99,16 +108,21 @@ interface ChatWelcomeProps {
 export function ChatWelcome({ onSuggestedQuestion }: ChatWelcomeProps) {
   const suggestedQuestions = [
     "ความรักของฉันเป็นยังไงบ้าง?",
-    "งานการเงินจะดีขึ้นไหม?", 
+    "งานการเงินจะดีขึ้นไหม?",
     "ฉันควรทำอะไรดีในช่วงนี้?",
-    "สิ่งที่รอคอยจะมาถึงเมื่อไหร่?"
-  ]
+    "สิ่งที่รอคอยจะมาถึงเมื่อไหร่?",
+  ];
 
   return (
     <div className="flex-1 flex flex-col justify-center items-center p-8">
       <div className="text-center max-w-md space-y-6">
-        {/* Mimi Avatar */}
+        {/* Logo + Mimi Avatar Combination */}
         <div className="relative">
+          <div className="flex items-center justify-center space-x-4 mb-6">
+            <Logo size="lg" showText={true} />
+            <div className="text-2xl">✨</div>
+          </div>
+
           <img
             src="/mimi-welcome.webp"
             alt="แม่หมอมีมี่"
@@ -157,16 +171,17 @@ export function ChatWelcome({ onSuggestedQuestion }: ChatWelcomeProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 ```
 
 ### Chat Messages Component
+
 ```typescript
 // src/components/chat/ChatMessages.tsx
-import { Message } from '@/types'
-import { MessageBubble } from './MessageBubble'
-import { TypingIndicator } from './TypingIndicator'
+import { Message } from "@/types";
+import { MessageBubble } from "./MessageBubble";
+import { TypingIndicator } from "./TypingIndicator";
 
 interface ChatMessagesProps {
   messages: Message[];
@@ -179,28 +194,29 @@ export function ChatMessages({ messages, isTyping }: ChatMessagesProps) {
       {messages.map((message) => (
         <MessageBubble key={message.id} message={message} />
       ))}
-      
+
       {isTyping && <TypingIndicator />}
     </div>
-  )
+  );
 }
 ```
 
 ### Message Bubble Component
+
 ```typescript
 // src/components/chat/MessageBubble.tsx
-import { Message } from '@/types'
-import { Copy, ThumbsUp, ThumbsDown } from 'lucide-react'
-import { TarotCardGrid } from '../cards/TarotCardGrid'
-import { ReadingContent } from './ReadingContent'
+import { Message } from "@/types";
+import { Copy, ThumbsUp, ThumbsDown } from "lucide-react";
+import { TarotCardGrid } from "../cards/TarotCardGrid";
+import { ReadingContent } from "./ReadingContent";
 
 interface MessageBubbleProps {
   message: Message;
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
-  const isUser = message.role === 'user'
-  const isAI = message.role === 'assistant'
+  const isUser = message.role === "user";
+  const isAI = message.role === "assistant";
 
   if (isUser) {
     return (
@@ -214,7 +230,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (isAI) {
@@ -227,11 +243,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             className="w-8 h-8 rounded-full"
           />
         </div>
-        
+
         <div className="flex-1 max-w-3xl space-y-4">
           {/* Text Content */}
           <div className="bg-base-200 rounded-2xl rounded-tl-md p-4">
-            {message.type === 'reading' ? (
+            {message.type === "reading" ? (
               <ReadingContent content={message.content} />
             ) : (
               <div className="prose prose-sm max-w-none">
@@ -260,47 +276,49 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
-  return null
+  return null;
 }
 ```
 
 ### Typing Indicator
+
 ```typescript
 // src/components/chat/TypingIndicator.tsx
 export function TypingIndicator() {
   return (
     <div className="flex items-start space-x-3">
-      <img 
-        src="/mimi-avatar.webp" 
-        alt="แม่หมอมีมี่" 
-        className="w-8 h-8 rounded-full" 
+      <img
+        src="/mimi-avatar.webp"
+        alt="แม่หมอมีมี่"
+        className="w-8 h-8 rounded-full"
       />
       <div className="bg-base-200 rounded-2xl rounded-tl-md p-4">
         <div className="flex space-x-1">
           <div className="w-2 h-2 bg-neutral rounded-full animate-bounce"></div>
-          <div 
-            className="w-2 h-2 bg-neutral rounded-full animate-bounce" 
-            style={{ animationDelay: '0.1s' }}
+          <div
+            className="w-2 h-2 bg-neutral rounded-full animate-bounce"
+            style={{ animationDelay: "0.1s" }}
           ></div>
-          <div 
-            className="w-2 h-2 bg-neutral rounded-full animate-bounce" 
-            style={{ animationDelay: '0.2s' }}
+          <div
+            className="w-2 h-2 bg-neutral rounded-full animate-bounce"
+            style={{ animationDelay: "0.2s" }}
           ></div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 ```
 
 ### Chat Input Component
+
 ```typescript
 // src/components/chat/ChatInput.tsx
-import { useState } from 'react'
-import { Send, Loader2 } from 'lucide-react'
+import { useState } from "react";
+import { Send, Loader2 } from "lucide-react";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -309,31 +327,33 @@ interface ChatInputProps {
   className?: string;
 }
 
-export function ChatInput({ 
-  onSendMessage, 
-  disabled = false, 
+export function ChatInput({
+  onSendMessage,
+  disabled = false,
   placeholder = "ถามคำถามเกี่ยวกับชีวิต ความรัก การงาน หรือสิ่งที่คุณสงสัย...",
-  className = ""
+  className = "",
 }: ChatInputProps) {
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (message.trim() && !disabled) {
-      onSendMessage(message.trim())
-      setMessage('')
+      onSendMessage(message.trim());
+      setMessage("");
     }
-  }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit(e)
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
     }
-  }
+  };
 
   return (
-    <div className={`bg-base-100/80 backdrop-blur-md border-t border-base-300 p-4 ${className}`}>
+    <div
+      className={`bg-base-100/80 backdrop-blur-md border-t border-base-300 p-4 ${className}`}
+    >
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
         <div className="flex items-end space-x-3">
           <div className="flex-1 relative">
@@ -346,8 +366,8 @@ export function ChatInput({
               className="textarea textarea-bordered w-full resize-none min-h-[3rem] max-h-32 pr-12 text-base"
               rows={1}
               style={{
-                height: 'auto',
-                minHeight: '3rem'
+                height: "auto",
+                minHeight: "3rem",
               }}
             />
             <button
@@ -363,17 +383,17 @@ export function ChatInput({
             </button>
           </div>
         </div>
-        
+
         {/* Character Counter */}
         <div className="flex justify-between items-center mt-2 text-xs text-neutral-content">
           <span>กด Enter เพื่อส่ง, Shift+Enter เพื่อขึ้นบรรทัดใหม่</span>
-          <span className={message.length > 450 ? 'text-warning' : ''}>
+          <span className={message.length > 450 ? "text-warning" : ""}>
             {message.length}/500
           </span>
         </div>
       </form>
     </div>
-  )
+  );
 }
 ```
 
@@ -382,10 +402,11 @@ export function ChatInput({
 ## Tarot Card Components
 
 ### Tarot Card Grid
+
 ```typescript
 // src/components/cards/TarotCardGrid.tsx
-import { Card } from '@/types'
-import { TarotCard } from './TarotCard'
+import { Card } from "@/types";
+import { TarotCard } from "./TarotCard";
 
 interface TarotCardGridProps {
   cards: Card[];
@@ -393,10 +414,15 @@ interface TarotCardGridProps {
   onCardClick?: (card: Card) => void;
 }
 
-export function TarotCardGrid({ cards, revealed = true, onCardClick }: TarotCardGridProps) {
-  const gridClass = cards.length === 3 
-    ? "grid grid-cols-3 gap-4 justify-items-center max-w-sm mx-auto"
-    : "grid grid-cols-5 gap-2 md:gap-4 justify-items-center max-w-2xl mx-auto"
+export function TarotCardGrid({
+  cards,
+  revealed = true,
+  onCardClick,
+}: TarotCardGridProps) {
+  const gridClass =
+    cards.length === 3
+      ? "grid grid-cols-3 gap-4 justify-items-center max-w-sm mx-auto"
+      : "grid grid-cols-5 gap-2 md:gap-4 justify-items-center max-w-2xl mx-auto";
 
   return (
     <div className="py-6">
@@ -413,15 +439,16 @@ export function TarotCardGrid({ cards, revealed = true, onCardClick }: TarotCard
         ))}
       </div>
     </div>
-  )
+  );
 }
 ```
 
 ### Individual Tarot Card
+
 ```typescript
 // src/components/cards/TarotCard.tsx
-import { useState, useEffect } from 'react'
-import { Card } from '@/types'
+import { useState, useEffect } from "react";
+import { Card } from "@/types";
 
 interface TarotCardProps {
   card: Card;
@@ -431,38 +458,44 @@ interface TarotCardProps {
   delay?: number;
 }
 
-export function TarotCard({ card, position, revealed = false, onClick, delay = 0 }: TarotCardProps) {
-  const [isRevealed, setIsRevealed] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
+export function TarotCard({
+  card,
+  position,
+  revealed = false,
+  onClick,
+  delay = 0,
+}: TarotCardProps) {
+  const [isRevealed, setIsRevealed] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsVisible(true)
+      setIsVisible(true);
       if (revealed) {
-        setTimeout(() => setIsRevealed(true), 300)
+        setTimeout(() => setIsRevealed(true), 300);
       }
-    }, delay)
+    }, delay);
 
-    return () => clearTimeout(timer)
-  }, [delay, revealed])
+    return () => clearTimeout(timer);
+  }, [delay, revealed]);
 
   const handleClick = () => {
     if (!isRevealed && revealed) {
-      setIsRevealed(true)
+      setIsRevealed(true);
     }
-    onClick?.()
-  }
+    onClick?.();
+  };
 
   return (
-    <div 
+    <div
       className={`group perspective-1000 transition-all duration-300 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
-      <div 
+      <div
         className={`
           relative w-24 h-36 md:w-32 md:h-48 transform-style-preserve-3d transition-transform duration-700 cursor-pointer
-          ${isRevealed ? 'rotate-y-180' : ''}
+          ${isRevealed ? "rotate-y-180" : ""}
           hover:scale-105
         `}
         onClick={handleClick}
@@ -503,15 +536,16 @@ export function TarotCard({ card, position, revealed = false, onClick, delay = 0
         </span>
       </div>
     </div>
-  )
+  );
 }
 ```
 
 ### Card Detail Modal
+
 ```typescript
 // src/components/cards/CardDetailModal.tsx
-import { Card } from '@/types'
-import { X } from 'lucide-react'
+import { Card } from "@/types";
+import { X } from "lucide-react";
 
 interface CardDetailModalProps {
   card: Card;
@@ -520,14 +554,19 @@ interface CardDetailModalProps {
   onClose: () => void;
 }
 
-export function CardDetailModal({ card, position, isOpen, onClose }: CardDetailModalProps) {
-  if (!isOpen) return null
+export function CardDetailModal({
+  card,
+  position,
+  isOpen,
+  onClose,
+}: CardDetailModalProps) {
+  if (!isOpen) return null;
 
   return (
     <dialog className="modal modal-open">
       <div className="modal-box max-w-2xl">
         <form method="dialog">
-          <button 
+          <button
             className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
             onClick={onClose}
           >
@@ -559,14 +598,18 @@ export function CardDetailModal({ card, position, isOpen, onClose }: CardDetailM
             </div>
 
             <div>
-              <h4 className="font-semibold text-base-content mb-2">ความหมายโดยย่อ</h4>
+              <h4 className="font-semibold text-base-content mb-2">
+                ความหมายโดยย่อ
+              </h4>
               <p className="text-sm text-base-content leading-relaxed">
                 {card.shortMeaning}
               </p>
             </div>
 
             <div>
-              <h4 className="font-semibold text-base-content mb-2">ความหมายละเอียด</h4>
+              <h4 className="font-semibold text-base-content mb-2">
+                ความหมายละเอียด
+              </h4>
               <p className="text-sm text-base-content leading-relaxed">
                 {card.longMeaning}
               </p>
@@ -575,7 +618,7 @@ export function CardDetailModal({ card, position, isOpen, onClose }: CardDetailM
             <div>
               <h4 className="font-semibold text-base-content mb-2">คำสำคัญ</h4>
               <div className="flex flex-wrap gap-2">
-                {card.keywords.split(',').map((keyword, index) => (
+                {card.keywords.split(",").map((keyword, index) => (
                   <span key={index} className="badge badge-primary badge-sm">
                     {keyword.trim()}
                   </span>
@@ -586,7 +629,7 @@ export function CardDetailModal({ card, position, isOpen, onClose }: CardDetailM
         </div>
       </div>
     </dialog>
-  )
+  );
 }
 ```
 
@@ -595,34 +638,37 @@ export function CardDetailModal({ card, position, isOpen, onClose }: CardDetailM
 ## Reading Content Components
 
 ### Reading Content Display
+
 ```typescript
 // src/components/chat/ReadingContent.tsx
-import { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface ReadingContentProps {
   content: string; // JSON string from AI
 }
 
 export function ReadingContent({ content }: ReadingContentProps) {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+  const [expandedSections, setExpandedSections] = useState<
+    Record<string, boolean>
+  >({
     suggestions: false,
-    final: false
-  })
+    final: false,
+  });
 
-  let reading
+  let reading;
   try {
-    reading = JSON.parse(content)
+    reading = JSON.parse(content);
   } catch {
-    return <p className="text-error">ไม่สามารถแสดงผลคำทำนายได้</p>
+    return <p className="text-error">ไม่สามารถแสดงผลคำทำนายได้</p>;
   }
 
   const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
-    }))
-  }
+      [section]: !prev[section],
+    }));
+  };
 
   return (
     <div className="space-y-6">
@@ -649,7 +695,7 @@ export function ReadingContent({ content }: ReadingContentProps) {
       {reading.suggestions && reading.suggestions.length > 0 && (
         <div className="bg-accent/5 border-l-4 border-accent rounded-r-lg p-4">
           <button
-            onClick={() => toggleSection('suggestions')}
+            onClick={() => toggleSection("suggestions")}
             className="flex items-center justify-between w-full text-left"
           >
             <h4 className="font-semibold text-accent">💡 คำแนะนำ</h4>
@@ -659,7 +705,7 @@ export function ReadingContent({ content }: ReadingContentProps) {
               <ChevronDown className="w-4 h-4 text-accent" />
             )}
           </button>
-          
+
           {expandedSections.suggestions && (
             <div className="mt-3 space-y-2">
               {reading.suggestions.map((suggestion: string, index: number) => (
@@ -679,7 +725,7 @@ export function ReadingContent({ content }: ReadingContentProps) {
       {reading.final && reading.final.length > 0 && (
         <div className="bg-success/5 border-l-4 border-success rounded-r-lg p-4">
           <button
-            onClick={() => toggleSection('final')}
+            onClick={() => toggleSection("final")}
             className="flex items-center justify-between w-full text-left"
           >
             <h4 className="font-semibold text-success">✨ ข้อความสำคัญ</h4>
@@ -689,11 +735,14 @@ export function ReadingContent({ content }: ReadingContentProps) {
               <ChevronDown className="w-4 h-4 text-success" />
             )}
           </button>
-          
+
           {expandedSections.final && (
             <div className="mt-3 space-y-2">
               {reading.final.map((finalMsg: string, index: number) => (
-                <p key={index} className="text-sm text-base-content leading-relaxed">
+                <p
+                  key={index}
+                  className="text-sm text-base-content leading-relaxed"
+                >
                   {finalMsg}
                 </p>
               ))}
@@ -720,7 +769,7 @@ export function ReadingContent({ content }: ReadingContentProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
 ```
 
@@ -729,68 +778,77 @@ export function ReadingContent({ content }: ReadingContentProps) {
 ## Navigation Components
 
 ### Mobile Bottom Navigation
+
 ```typescript
 // src/components/navigation/BottomNavigation.tsx
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { MessageCircle, History, User, CreditCard } from 'lucide-react'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { MessageCircle, History, User, CreditCard } from "lucide-react";
 
 export function BottomNavigation() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const navItems = [
-    { href: '/ask', label: 'ถามดวง', icon: MessageCircle },
-    { href: '/history', label: 'ประวัติ', icon: History },
-    { href: '/packages', label: 'เติมเครดิต', icon: CreditCard },
-    { href: '/profile', label: 'โปรไฟล์', icon: User },
-  ]
+    { href: "/ask", label: "ถามดวง", icon: MessageCircle },
+    { href: "/history", label: "ประวัติ", icon: History },
+    { href: "/packages", label: "เติมเครดิต", icon: CreditCard },
+    { href: "/profile", label: "โปรไฟล์", icon: User },
+  ];
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-base-100/95 backdrop-blur-md border-t border-base-300 z-50 safe-area-bottom">
       <div className="flex">
         {navItems.map((item) => {
-          const Icon = item.icon
-          const isActive = pathname === item.href
-          
+          const Icon = item.icon;
+          const isActive = pathname === item.href;
+
           return (
             <Link
               key={item.href}
               href={item.href}
               className={`flex-1 flex flex-col items-center py-2 px-1 transition-colors ${
-                isActive 
-                  ? 'text-primary' 
-                  : 'text-neutral-content hover:text-primary'
+                isActive
+                  ? "text-primary"
+                  : "text-neutral-content hover:text-primary"
               }`}
             >
               <Icon className="w-5 h-5" />
               <span className="text-xs mt-1 truncate">{item.label}</span>
             </Link>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }
 ```
 
 ### Desktop Sidebar Navigation
+
 ```typescript
 // src/components/navigation/Sidebar.tsx
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { MessageCircle, History, User, CreditCard, Settings, LogOut } from 'lucide-react'
-import { useClerk } from '@clerk/nextjs'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  MessageCircle,
+  History,
+  User,
+  CreditCard,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import { useClerk } from "@clerk/nextjs";
 
 export function Sidebar() {
-  const pathname = usePathname()
-  const { signOut } = useClerk()
+  const pathname = usePathname();
+  const { signOut } = useClerk();
 
   const navItems = [
-    { href: '/ask', label: 'ถามดวง', icon: MessageCircle },
-    { href: '/history', label: 'ประวัติคำทำนาย', icon: History },
-    { href: '/packages', label: 'เติมเครดิต', icon: CreditCard },
-    { href: '/profile', label: 'โปรไฟล์', icon: User },
-  ]
+    { href: "/ask", label: "ถามดวง", icon: MessageCircle },
+    { href: "/history", label: "ประวัติคำทำนาย", icon: History },
+    { href: "/packages", label: "เติมเครดิต", icon: CreditCard },
+    { href: "/profile", label: "โปรไฟล์", icon: User },
+  ];
 
   return (
     <aside className="hidden md:flex flex-col w-64 bg-base-200 border-r border-base-300 h-screen">
@@ -806,24 +864,24 @@ export function Sidebar() {
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
-            
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-primary text-primary-content'
-                      : 'text-base-content hover:bg-base-300'
+                      ? "bg-primary text-primary-content"
+                      : "text-base-content hover:bg-base-300"
                   }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
                 </Link>
               </li>
-            )
+            );
           })}
         </ul>
       </nav>
@@ -852,7 +910,7 @@ export function Sidebar() {
         </ul>
       </div>
     </aside>
-  )
+  );
 }
 ```
 
@@ -861,9 +919,10 @@ export function Sidebar() {
 ## Modal Components
 
 ### Reward Modal
+
 ```typescript
 // src/components/modals/RewardModal.tsx
-import { Gift, Star, Coins } from 'lucide-react'
+import { Gift, Star, Coins } from "lucide-react";
 
 interface RewardModalProps {
   isOpen: boolean;
@@ -877,14 +936,14 @@ interface RewardModalProps {
   description?: string;
 }
 
-export function RewardModal({ 
-  isOpen, 
-  onClose, 
-  rewards, 
+export function RewardModal({
+  isOpen,
+  onClose,
+  rewards,
   title = "ยินดีด้วย!",
-  description = "คุณได้รับรางวัล:"
+  description = "คุณได้รับรางวัล:",
 }: RewardModalProps) {
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <dialog className="modal modal-open">
@@ -905,46 +964,50 @@ export function RewardModal({
           {rewards.exp > 0 && (
             <div className="bg-primary/10 rounded-lg p-4">
               <div className="text-2xl mb-1">⚡</div>
-              <p className="text-lg font-bold text-primary">+{rewards.exp} EXP</p>
+              <p className="text-lg font-bold text-primary">
+                +{rewards.exp} EXP
+              </p>
               <p className="text-xs text-neutral-content">ประสบการณ์</p>
             </div>
           )}
-          
+
           {rewards.coins > 0 && (
             <div className="bg-accent/10 rounded-lg p-4">
               <Coins className="w-6 h-6 mx-auto mb-1 text-accent" />
-              <p className="text-lg font-bold text-accent">+{rewards.coins} Coins</p>
+              <p className="text-lg font-bold text-accent">
+                +{rewards.coins} Coins
+              </p>
               <p className="text-xs text-neutral-content">เหรียญ</p>
             </div>
           )}
-          
+
           {rewards.stars && rewards.stars > 0 && (
             <div className="bg-warning/10 rounded-lg p-4">
               <Star className="w-6 h-6 mx-auto mb-1 text-warning" />
-              <p className="text-lg font-bold text-warning">+{rewards.stars} Stars</p>
+              <p className="text-lg font-bold text-warning">
+                +{rewards.stars} Stars
+              </p>
               <p className="text-xs text-neutral-content">ดวงดาว</p>
             </div>
           )}
         </div>
 
         {/* Close Button */}
-        <button 
-          className="btn btn-primary btn-wide"
-          onClick={onClose}
-        >
+        <button className="btn btn-primary btn-wide" onClick={onClose}>
           เยี่ยม!
         </button>
       </div>
     </dialog>
-  )
+  );
 }
 ```
 
 ### Save Reading Modal
+
 ```typescript
 // src/components/modals/SaveReadingModal.tsx
-import { useState } from 'react'
-import { Save, X } from 'lucide-react'
+import { useState } from "react";
+import { Save, X } from "lucide-react";
 
 interface SaveReadingModalProps {
   isOpen: boolean;
@@ -953,28 +1016,28 @@ interface SaveReadingModalProps {
   readingQuestion: string;
 }
 
-export function SaveReadingModal({ 
-  isOpen, 
-  onClose, 
-  onSave, 
-  readingQuestion 
+export function SaveReadingModal({
+  isOpen,
+  onClose,
+  onSave,
+  readingQuestion,
 }: SaveReadingModalProps) {
-  const [saving, setSaving] = useState(false)
+  const [saving, setSaving] = useState(false);
 
   const handleSave = async (save: boolean) => {
-    setSaving(true)
-    await onSave(save)
-    setSaving(false)
-    onClose()
-  }
+    setSaving(true);
+    await onSave(save);
+    setSaving(false);
+    onClose();
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <dialog className="modal modal-open">
       <div className="modal-box">
         <form method="dialog">
-          <button 
+          <button
             className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
             onClick={onClose}
           >
@@ -983,7 +1046,7 @@ export function SaveReadingModal({
         </form>
 
         <h3 className="text-lg font-bold mb-4">บันทึกคำทำนาย</h3>
-        
+
         <div className="space-y-4">
           <div className="bg-base-200 rounded-lg p-4">
             <p className="text-sm text-neutral-content mb-2">คำถาม:</p>
@@ -991,7 +1054,7 @@ export function SaveReadingModal({
           </div>
 
           <p className="text-sm text-neutral-content">
-            คุณต้องการบันทึกคำทำนายนี้เพื่อติดตามความแม่นยำในอนาคตหรือไม่? 
+            คุณต้องการบันทึกคำทำนายนี้เพื่อติดตามความแม่นยำในอนาคตหรือไม่?
             การบันทึกจะช่วยให้คุณสามารถรีวิวและให้คะแนนความแม่นยำได้ในภายหลัง
           </p>
 
@@ -1003,14 +1066,14 @@ export function SaveReadingModal({
         </div>
 
         <div className="modal-action">
-          <button 
+          <button
             className="btn btn-ghost"
             onClick={() => handleSave(false)}
             disabled={saving}
           >
             ไม่บันทึก
           </button>
-          <button 
+          <button
             className="btn btn-primary"
             onClick={() => handleSave(true)}
             disabled={saving}
@@ -1030,7 +1093,7 @@ export function SaveReadingModal({
         </div>
       </div>
     </dialog>
-  )
+  );
 }
 ```
 
@@ -1039,6 +1102,7 @@ export function SaveReadingModal({
 ## Loading Components
 
 ### AI Processing Animation
+
 ```typescript
 // src/components/loading/AIProcessingLoader.tsx
 export function AIProcessingLoader() {
@@ -1055,16 +1119,15 @@ export function AIProcessingLoader() {
         <p className="text-lg font-medium text-base-content">
           แม่หมอกำลังดูดวงให้คุณ...
         </p>
-        <p className="text-sm text-neutral-content">
-          กรุณารอสักครู่ ✨
-        </p>
+        <p className="text-sm text-neutral-content">กรุณารอสักครู่ ✨</p>
       </div>
     </div>
-  )
+  );
 }
 ```
 
 ### Card Shuffling Animation
+
 ```typescript
 // src/components/loading/CardShufflingLoader.tsx
 export function CardShufflingLoader() {
@@ -1076,18 +1139,17 @@ export function CardShufflingLoader() {
           className="w-16 h-24 bg-gradient-to-br from-primary to-secondary rounded-lg border-2 border-primary/20 shadow-lg flex items-center justify-center"
           style={{
             animation: `shuffle 1.5s infinite ${i * 0.1}s`,
-            transform: `translateY(${Math.sin(Date.now() / 1000 + i) * 10}px)`
+            transform: `translateY(${Math.sin(Date.now() / 1000 + i) * 10}px)`,
           }}
         >
-          <div className="text-white text-2xl">
-            ✨
-          </div>
+          <div className="text-white text-2xl">✨</div>
         </div>
       ))}
-      
+
       <style jsx>{`
         @keyframes shuffle {
-          0%, 100% {
+          0%,
+          100% {
             transform: translateY(0px) rotate(0deg);
           }
           25% {
@@ -1099,7 +1161,7 @@ export function CardShufflingLoader() {
         }
       `}</style>
     </div>
-  )
+  );
 }
 ```
 
@@ -1108,10 +1170,11 @@ export function CardShufflingLoader() {
 ## Error Components
 
 ### Error Boundary
+
 ```typescript
 // src/components/error/ErrorBoundary.tsx
-import { Component, ReactNode } from 'react'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { Component, ReactNode } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -1125,41 +1188,43 @@ interface State {
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
-    super(props)
-    this.state = { hasError: false }
+    super(props);
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error }
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback || (
-        <div className="flex flex-col items-center justify-center p-8 text-center">
-          <AlertTriangle className="w-16 h-16 text-error mb-4" />
-          <h2 className="text-xl font-bold text-base-content mb-2">
-            เกิดข้อผิดพลาด
-          </h2>
-          <p className="text-neutral-content mb-6 max-w-md">
-            ขออภัย เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง
-          </p>
-          <button
-            className="btn btn-primary"
-            onClick={() => window.location.reload()}
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            โหลดหน้าใหม่
-          </button>
-        </div>
-      )
+      return (
+        this.props.fallback || (
+          <div className="flex flex-col items-center justify-center p-8 text-center">
+            <AlertTriangle className="w-16 h-16 text-error mb-4" />
+            <h2 className="text-xl font-bold text-base-content mb-2">
+              เกิดข้อผิดพลาด
+            </h2>
+            <p className="text-neutral-content mb-6 max-w-md">
+              ขออภัย เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง
+            </p>
+            <button
+              className="btn btn-primary"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              โหลดหน้าใหม่
+            </button>
+          </div>
+        )
+      );
     }
 
-    return this.props.children
+    return this.props.children;
   }
 }
 ```
@@ -1169,12 +1234,13 @@ export class ErrorBoundary extends Component<Props, State> {
 ## Toast Notifications
 
 ### Toast Provider
+
 ```typescript
 // src/components/toast/ToastProvider.tsx
-import { createContext, useContext, ReactNode } from 'react'
-import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react'
+import { createContext, useContext, ReactNode } from "react";
+import { CheckCircle, XCircle, Info, AlertTriangle } from "lucide-react";
 
-type ToastType = 'success' | 'error' | 'info' | 'warning'
+type ToastType = "success" | "error" | "info" | "warning";
 
 interface Toast {
   id: string;
@@ -1185,32 +1251,34 @@ interface Toast {
 }
 
 interface ToastContextType {
-  addToast: (toast: Omit<Toast, 'id'>) => void;
+  addToast: (toast: Omit<Toast, "id">) => void;
   removeToast: (id: string) => void;
 }
 
-const ToastContext = createContext<ToastContextType | null>(null)
+const ToastContext = createContext<ToastContextType | null>(null);
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   // Toast implementation here...
-  
+
   return (
-    <ToastContext.Provider value={{ addToast: () => {}, removeToast: () => {} }}>
+    <ToastContext.Provider
+      value={{ addToast: () => {}, removeToast: () => {} }}
+    >
       {children}
       <div className="toast toast-top toast-center">
         {/* Toast components */}
       </div>
     </ToastContext.Provider>
-  )
+  );
 }
 
 export const useToast = () => {
-  const context = useContext(ToastContext)
+  const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useToast must be used within ToastProvider')
+    throw new Error("useToast must be used within ToastProvider");
   }
-  return context
-}
+  return context;
+};
 ```
 
 ---
