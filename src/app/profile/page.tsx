@@ -1,11 +1,12 @@
 "use client";
 
-import { UserButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
 import { useProfile } from '@/hooks/useProfile';
 import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 import { Logo, ProfileLoadingState, ErrorState } from '@/components/ui';
+import { Navbar } from '@/components/layout';
 import { safeFormatDistanceToNow } from '@/lib/utils/dateUtils';
 
 export default function ProfilePage() {
@@ -15,16 +16,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
       {/* Header */}
-      <header className="navbar bg-base-100/90 backdrop-blur-sm shadow-lg">
-        <div className="navbar-start">
-          <Link href="/" className="flex items-center space-x-2">
-            <Logo size="md" showText />
-          </Link>
-        </div>
-        <div className="navbar-end">
-          <UserButton afterSignOutUrl="/" />
-        </div>
-      </header>
+      <Navbar logoSize="xl" showText={false} />
 
       {/* Main Content */}
       <main className="content-container flex-1 pb-20 md:pb-6">

@@ -1,6 +1,6 @@
-import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { BottomNavigation } from '@/components/navigation/BottomNavigation';
+import { Navbar } from '@/components/layout';
 
 export default function PackagesPage() {
   const packages = [
@@ -31,14 +31,7 @@ export default function PackagesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
       {/* Header */}
-      <header className="navbar bg-base-100/90 backdrop-blur-sm shadow-lg">
-        <div className="navbar-start">
-          <Link href="/" className="text-2xl font-bold text-primary">MiMiVibes</Link>
-        </div>
-        <div className="navbar-end">
-          <UserButton afterSignOutUrl="/" />
-        </div>
-      </header>
+      <Navbar logoSize="xl" showText={false} />
 
       {/* Main Content */}
       <main className="content-container flex-1 pb-20 md:pb-6">

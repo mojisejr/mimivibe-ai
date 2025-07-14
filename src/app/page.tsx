@@ -1,45 +1,21 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { Logo } from "@/components/ui";
+import { Navbar } from "@/components/layout";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300">
       {/* Header */}
-      <header className="navbar bg-base-100/90 backdrop-blur-sm shadow-lg">
-        <div className="navbar-start">
-          {/* Mobile: Logo only, Desktop: Logo + Text */}
-          <div className="flex items-center">
-            {/* Mobile version - logo only */}
-            <div className="sm:hidden">
-              <Logo
-                size="xl"
-                showText={false}
-                className="hover:scale-105 transition-transform duration-200 cursor-pointer"
-              />
-            </div>
+      <Navbar logoSize="xl" showText={false} />
 
-            {/* Desktop version - logo + text */}
-            <div className="hidden sm:flex">
-              <Logo
-                size="xl"
-                showText={true}
-                className="hover:scale-105 transition-transform duration-200 cursor-pointer"
-              />
-            </div>
-          </div>
+      {/* Sign In Button for Non-Authenticated Users */}
+      <SignedOut>
+        <div className="fixed top-4 right-4 z-50">
+          <SignInButton mode="modal">
+            <button className="btn btn-primary">Sign In</button>
+          </SignInButton>
         </div>
-        <div className="navbar-end">
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="btn btn-primary">Sign In</button>
-            </SignInButton>
-          </SignedOut>
-        </div>
-      </header>
+      </SignedOut>
 
       {/* Hero Section */}
       <main className="content-container">
