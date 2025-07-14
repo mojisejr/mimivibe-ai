@@ -12,19 +12,19 @@ export default function HomePage() {
           <div className="flex items-center">
             {/* Mobile version - logo only */}
             <div className="sm:hidden">
-              <Logo 
-                size="md" 
-                showText={false} 
-                className="hover:scale-105 transition-transform duration-200 cursor-pointer" 
+              <Logo
+                size="xl"
+                showText={false}
+                className="hover:scale-105 transition-transform duration-200 cursor-pointer"
               />
             </div>
-            
+
             {/* Desktop version - logo + text */}
             <div className="hidden sm:flex">
-              <Logo 
-                size="lg" 
-                showText={true} 
-                className="hover:scale-105 transition-transform duration-200 cursor-pointer" 
+              <Logo
+                size="xl"
+                showText={true}
+                className="hover:scale-105 transition-transform duration-200 cursor-pointer"
               />
             </div>
           </div>

@@ -47,8 +47,10 @@ export const Logo = ({
         }}
       />
       {showText && (
-        <span className={`font-semibold ${textSizeClasses[size]} ${textColorClasses[variant]}`}>
-          MiMiVibes
+        <span
+          className={`font-semibold ${textSizeClasses[size]} ${textColorClasses[variant]}`}
+        >
+          {/* MiMiVibes */}
         </span>
       )}
     </div>
