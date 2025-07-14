@@ -1,17 +1,26 @@
-import { UserButton, currentUser } from "@clerk/nextjs";
+"use client";
+
+import { UserButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
+import { useProfile } from '@/hooks/useProfile';
 import { BottomNavigation } from '@/components/navigation/BottomNavigation';
+import { Logo, ProfileLoadingState, ErrorState } from '@/components/ui';
+import { formatDistanceToNow } from 'date-fns';
+import { th } from 'date-fns/locale';
 
-export default async function ProfilePage() {
-  const user = await currentUser();
+export default function ProfilePage() {
+  const { user } = useUser();
+  const { data, loading, error, refresh } = useProfile();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
       {/* Header */}
       <header className="navbar bg-base-100/90 backdrop-blur-sm shadow-lg">
         <div className="navbar-start">
-          <Link href="/" className="text-2xl font-bold text-primary">MiMiVibes</Link>
+          <Link href="/" className="flex items-center space-x-2">
+            <Logo size="md" showText />
+          </Link>
         </div>
         <div className="navbar-end">
           <UserButton afterSignOutUrl="/" />
@@ -27,89 +36,174 @@ export default async function ProfilePage() {
           </p>
         </div>
 
-        <div className="max-w-2xl mx-auto space-y-6">
-          {/* User Info Card */}
-          <div className="card card-mystical">
-            <div className="card-body">
-              <h2 className="heading-3 mb-4">Account Information</h2>
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="avatar">
-                  <div className="w-16 rounded-full">
-                    <Image 
-                      src={user?.imageUrl || "/api/placeholder/64/64"} 
-                      alt="Profile"
-                      width={64}
-                      height={64}
-                      className="rounded-full"
-                    />
+        {loading ? (
+          <ProfileLoadingState />
+        ) : error ? (
+          <ErrorState
+            title="เกิดข้อผิดพลาด"
+            message={error}
+            onRetry={refresh}
+            retryText="โหลดข้อมูลใหม่"
+          />
+        ) : data ? (
+          <div className="max-w-2xl mx-auto space-y-6">
+            {/* User Info Card */}
+            <div className="card card-mystical">
+              <div className="card-body">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="heading-3">Account Information</h2>
+                  <Logo size="sm" showText={false} />
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="avatar">
+                    <div className="w-16 rounded-full">
+                      <Image 
+                        src={user?.imageUrl || "/api/placeholder/64/64"} 
+                        alt="Profile"
+                        width={64}
+                        height={64}
+                        className="rounded-full"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">
+                      {user?.firstName} {user?.lastName}
+                    </h3>
+                    <p className="text-neutral-content">
+                      {user?.emailAddresses?.[0]?.emailAddress}
+                    </p>
+                    <p className="text-xs text-neutral-content">
+                      สมาชิกเมื่อ {formatDistanceToNow(new Date(data.profile.createdAt), { 
+                        addSuffix: true, 
+                        locale: th 
+                      })}
+                    </p>
                   </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">
-                    {user?.firstName} {user?.lastName}
-                  </h3>
-                  <p className="text-neutral-content">
-                    {user?.emailAddresses?.[0]?.emailAddress}
+              </div>
+            </div>
+
+            {/* Credits Card */}
+            <div className="card card-mystical">
+              <div className="card-body">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="heading-3">Reading Credits</h2>
+                  <div className="badge badge-primary">
+                    ⭐ {data.credits.totalCredits}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{data.credits.freePoint}</div>
+                    <div className="body-small text-neutral-content">Free Points</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-secondary">{data.credits.stars}</div>
+                    <div className="body-small text-neutral-content">Stars</div>
+                  </div>
+                </div>
+                
+                {/* Usage Info */}
+                <div className="text-xs text-neutral-content mb-4">
+                  <p>Today: {data.credits.dailyUsed}/{data.credits.dailyLimit}</p>
+                  <p>This month: {data.credits.monthlyUsed}/{data.credits.monthlyLimit}</p>
+                </div>
+
+                <div className="card-actions justify-end">
+                  <Link href="/packages" className="btn btn-primary">
+                    <span className="mr-2">💳</span>
+                    Buy More Credits
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Level & Stats Card */}
+            <div className="card card-mystical">
+              <div className="card-body">
+                <h2 className="heading-3 mb-4">Your Spiritual Journey</h2>
+                
+                {/* Level Progress */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold">Level {data.stats.level}</span>
+                    <span className="text-sm text-neutral-content">
+                      {data.stats.currentExp}/{data.stats.nextLevelExp} EXP
+                    </span>
+                  </div>
+                  <div className="w-full bg-base-300 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-primary to-secondary h-2 rounded-full transition-all duration-300"
+                      style={{ 
+                        width: `${(data.stats.currentExp / data.stats.nextLevelExp) * 100}%` 
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-neutral-content mt-1">
+                    {data.stats.expToNextLevel} EXP to next level
                   </p>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Credits Card */}
-          <div className="card card-mystical">
-            <div className="card-body">
-              <h2 className="heading-3 mb-4">Reading Credits</h2>
-              <div className="flex justify-between items-center mb-4">
-                <span className="body-large">Available Credits:</span>
-                <span className="text-2xl font-bold text-primary">5</span>
-              </div>
-              <div className="card-actions justify-end">
-                <Link href="/packages" className="btn btn-primary">
-                  Buy More Credits
-                </Link>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{data.stats.totalReadings}</div>
+                    <div className="body-small text-neutral-content">Total Readings</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-secondary">{data.stats.totalCoins}</div>
+                    <div className="body-small text-neutral-content">Coins Earned</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-accent">{data.stats.currentStreak}</div>
+                    <div className="body-small text-neutral-content">Current Streak</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-warning">{data.stats.daysActive}</div>
+                    <div className="body-small text-neutral-content">Days Active</div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Stats Card */}
-          <div className="card card-mystical">
-            <div className="card-body">
-              <h2 className="heading-3 mb-4">Your Journey</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-secondary">12</div>
-                  <div className="body-small text-neutral-content">Total Readings</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-accent">7</div>
-                  <div className="body-small text-neutral-content">Days Active</div>
+            {/* Preferences Card */}
+            <div className="card card-mystical">
+              <div className="card-body">
+                <h2 className="heading-3 mb-4">Preferences</h2>
+                <div className="space-y-4">
+                  <div className="form-control">
+                    <label className="label cursor-pointer">
+                      <span className="label-text flex items-center">
+                        <span className="mr-2">📧</span>
+                        Email notifications
+                      </span>
+                      <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                    </label>
+                  </div>
+                  <div className="form-control">
+                    <label className="label cursor-pointer">
+                      <span className="label-text flex items-center">
+                        <span className="mr-2">🔔</span>
+                        Daily reading reminders
+                      </span>
+                      <input type="checkbox" className="toggle toggle-primary" />
+                    </label>
+                  </div>
+                  <div className="form-control">
+                    <label className="label cursor-pointer">
+                      <span className="label-text flex items-center">
+                        <span className="mr-2">🌙</span>
+                        Dark mode
+                      </span>
+                      <input type="checkbox" className="toggle toggle-primary" />
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Preferences Card */}
-          <div className="card card-mystical">
-            <div className="card-body">
-              <h2 className="heading-3 mb-4">Preferences</h2>
-              <div className="space-y-4">
-                <div className="form-control">
-                  <label className="label cursor-pointer">
-                    <span className="label-text">Email notifications</span>
-                    <input type="checkbox" className="toggle toggle-primary" defaultChecked />
-                  </label>
-                </div>
-                <div className="form-control">
-                  <label className="label cursor-pointer">
-                    <span className="label-text">Daily reading reminders</span>
-                    <input type="checkbox" className="toggle toggle-primary" />
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        ) : null}
       </main>
 
       {/* Mobile Navigation */}

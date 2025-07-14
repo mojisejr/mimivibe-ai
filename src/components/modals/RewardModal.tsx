@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Gift, Star, Coins, X, Sparkles } from 'lucide-react'
+import { Logo } from '@/components/ui'
 
 export interface Reward {
   exp: number
@@ -46,6 +47,10 @@ export function RewardModal({ reward, isOpen, onClose }: RewardModalProps) {
 
         {/* Header */}
         <div className="bg-gradient-to-br from-primary to-secondary p-6 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <Logo size="sm" showText={false} variant="white" />
+          </div>
+          
           <div className={`transition-all duration-1000 ${
             showAnimation ? 'scale-100 rotate-0' : 'scale-0 rotate-180'
           }`}>
