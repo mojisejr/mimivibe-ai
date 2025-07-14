@@ -92,22 +92,28 @@ model Pack {
   title          String
   subtitle       String?
   ctaText        String           @default("ซื้อเลย")
-  price          Int
-  creditAmount   Int
+  price          Int              // in cents (satang)
+  creditAmount   Int              // stars to add
   metadata       Json?
-  active         Boolean          @default(true)
+  isActive       Boolean          @default(true)
+  popular        Boolean          @default(false)
+  sortOrder      Int              @default(0)
   PaymentHistory PaymentHistory[]
 }
 
 model PaymentHistory {
-  id        String   @id
-  userId    String
-  packId    Int?
-  status    String
-  chargeId  String?  @unique
-  createdAt DateTime @default(now())
-  Pack      Pack?    @relation(fields: [packId], references: [id])
-  User      User     @relation(fields: [userId], references: [id])
+  id                String   @id @default(cuid())
+  userId            String
+  stripePaymentId   String   @unique
+  packId            Int
+  amount            Int      // in cents (satang)
+  currency          String   @default("thb")
+  status            String   // succeeded, failed, pending
+  creditsAdded      Int
+  createdAt         DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pack Pack @relation(fields: [packId], references: [id])
 }
 
 model PointTransaction {
@@ -117,6 +123,7 @@ model PointTransaction {
   deltaPoint Int      @default(0)
   deltaCoins Int      @default(0)
   deltaExp   Int      @default(0)
+  metadata   Json?
   createdAt  DateTime @default(now())
   User       User     @relation(fields: [userId], references: [id])
 }

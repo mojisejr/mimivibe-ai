@@ -22,11 +22,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100) // Max 100 per page
+    const type = searchParams.get('type')
     const offset = (page - 1) * limit
+
+    const where: any = { userId }
+    if (type) {
+      where.eventType = type
+    }
 
     const [transactions, total] = await Promise.all([
       prisma.pointTransaction.findMany({
-        where: { userId },
+        where,
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
@@ -36,11 +42,12 @@ export async function GET(request: NextRequest) {
           deltaPoint: true,
           deltaCoins: true,
           deltaExp: true,
+          metadata: true,
           createdAt: true
         }
       }),
       prisma.pointTransaction.count({
-        where: { userId }
+        where
       })
     ])
 
@@ -49,11 +56,12 @@ export async function GET(request: NextRequest) {
       data: {
         transactions,
         pagination: {
+          total,
           page,
           limit,
-          total,
-          pages: Math.ceil(total / limit),
-          hasMore: offset + transactions.length < total
+          totalPages: Math.ceil(total / limit),
+          hasNext: page * limit < total,
+          hasPrev: page > 1
         }
       }
     })
@@ -150,7 +158,8 @@ export async function POST(request: NextRequest) {
           eventType,
           deltaPoint,
           deltaCoins,
-          deltaExp
+          deltaExp,
+          metadata
         }
       })
 

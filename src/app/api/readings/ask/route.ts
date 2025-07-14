@@ -264,7 +264,14 @@ async function processReading(userId: string, question: string) {
         eventType: 'READING_SPEND',
         deltaPoint: deltaStars,
         deltaCoins: 0,
-        deltaExp: 25 // Reward EXP for reading
+        deltaExp: 25, // Reward EXP for reading
+        metadata: {
+          reason: 'Tarot reading generation',
+          readingId: reading.id,
+          freePointUsed: -deltaFreePoint,
+          starsUsed: -deltaStars,
+          questionLength: question.length
+        }
       }
     })
 

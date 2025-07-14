@@ -43,6 +43,32 @@ export async function GET() {
       )
     }
 
+    // Calculate daily/monthly limits
+    const now = new Date()
+    const startOfDay = new Date(now.setHours(0, 0, 0, 0))
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+    // Get today's usage
+    const todayUsage = await prisma.pointTransaction.count({
+      where: {
+        userId,
+        eventType: 'READING_SPEND',
+        createdAt: { gte: startOfDay }
+      }
+    })
+
+    // Get this month's usage
+    const monthUsage = await prisma.pointTransaction.count({
+      where: {
+        userId,
+        eventType: 'READING_SPEND', 
+        createdAt: { gte: startOfMonth }
+      }
+    })
+
+    const dailyFreeLimit = 3
+    const monthlyFreeLimit = 50
+
     return NextResponse.json({
       success: true,
       data: {
@@ -51,7 +77,19 @@ export async function GET() {
         freePoint: user.freePoint,
         level: user.level,
         exp: user.exp,
-        total: user.stars + user.freePoint // Total available credits for readings
+        total: user.stars + user.freePoint, // Total available credits for readings
+        limits: {
+          dailyFree: {
+            used: Math.min(todayUsage, dailyFreeLimit),
+            max: dailyFreeLimit,
+            resetAt: new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000).toISOString()
+          },
+          monthlyFree: {
+            used: Math.min(monthUsage, monthlyFreeLimit),
+            max: monthlyFreeLimit,
+            resetAt: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 1).toISOString()
+          }
+        }
       }
     })
   } catch (error) {
