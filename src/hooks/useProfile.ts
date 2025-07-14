@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useUser } from '@clerk/nextjs';
 
 interface UserProfile {
   id: string;
@@ -50,6 +51,7 @@ interface ProfileState {
 }
 
 export const useProfile = () => {
+  const { user, isLoaded } = useUser();
   const [state, setState] = useState<ProfileState>({
     data: null,
     loading: true,
@@ -167,8 +169,18 @@ export const useProfile = () => {
   };
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    // Only fetch if user is loaded and authenticated
+    if (isLoaded && user) {
+      fetchProfile();
+    } else if (isLoaded && !user) {
+      // User is not authenticated, set appropriate state
+      setState({
+        data: null,
+        loading: false,
+        error: 'Authentication required'
+      });
+    }
+  }, [isLoaded, user]);
 
   return {
     ...state,

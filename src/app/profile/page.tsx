@@ -10,8 +10,37 @@ import { Navbar } from "@/components/layout";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 
 export default function ProfilePage() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const { data, loading, error, refresh } = useProfile();
+
+  // Debug authentication state
+  console.log('🔐 Authentication state:', {
+    isLoaded,
+    userId: user?.id,
+    isSignedIn: !!user
+  });
+
+  // Don't render until auth is loaded
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex items-center justify-center">
+        <div className="loading loading-spinner loading-lg"></div>
+      </div>
+    );
+  }
+
+  // Redirect to sign-in if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="heading-1 mb-4">Authentication Required</h1>
+          <p className="body-normal text-neutral-content mb-4">Please sign in to view your profile</p>
+          <Link href="/sign-in" className="btn btn-primary">Sign In</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">

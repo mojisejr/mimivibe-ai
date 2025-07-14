@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useUser } from '@clerk/nextjs';
 
 interface Card {
   id: number;
@@ -45,6 +46,7 @@ interface HistoryState {
 }
 
 export const useHistory = (initialLimit = 6) => {
+  const { user, isLoaded } = useUser();
   const [state, setState] = useState<HistoryState>({
     data: null,
     loading: true,
@@ -172,8 +174,19 @@ export const useHistory = (initialLimit = 6) => {
   }, []);
 
   useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
+    // Only fetch if user is loaded and authenticated
+    if (isLoaded && user) {
+      fetchHistory();
+    } else if (isLoaded && !user) {
+      // User is not authenticated, set appropriate state
+      setState({
+        data: null,
+        loading: false,
+        error: 'Authentication required',
+        loadingMore: false
+      });
+    }
+  }, [isLoaded, user, fetchHistory]);
 
   return {
     ...state,
