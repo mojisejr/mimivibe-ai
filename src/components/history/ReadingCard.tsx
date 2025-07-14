@@ -18,12 +18,12 @@ interface Reading {
   id: string;
   question: string;
   cards: Card[];
-  analysis: {
-    mood: string;
-    topic: string;
-    timeframe: string;
+  analysis?: {
+    mood?: string;
+    topic?: string;
+    timeframe?: string;
   };
-  reading: string;
+  reading: any; // Can be string or object from database
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
@@ -35,12 +35,28 @@ interface ReadingCardProps {
 }
 
 export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
-  const truncateReading = (text: string, maxLength = 120) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength).trim() + "...";
+  const truncateReading = (text: any, maxLength = 120) => {
+    // Handle different data types that might come from database
+    let textString: string;
+    
+    if (typeof text === 'string') {
+      textString = text;
+    } else if (typeof text === 'object' && text !== null) {
+      // If it's an object, try to extract reading text
+      if (text.reading) {
+        textString = text.reading;
+      } else {
+        textString = JSON.stringify(text);
+      }
+    } else {
+      textString = String(text || '');
+    }
+    
+    if (textString.length <= maxLength) return textString;
+    return textString.substring(0, maxLength).trim() + "...";
   };
 
-  const getTopicEmoji = (topic: string) => {
+  const getTopicEmoji = (topic: string | undefined) => {
     const topicEmojis: { [key: string]: string } = {
       "love": "💕",
       "career": "💼",
@@ -53,7 +69,7 @@ export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
       "education": "📚",
     };
     
-    const lowerTopic = topic.toLowerCase();
+    const lowerTopic = (topic || "general").toLowerCase();
     for (const [key, emoji] of Object.entries(topicEmojis)) {
       if (lowerTopic.includes(key)) return emoji;
     }
@@ -72,7 +88,7 @@ export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
             {reading.question}
           </h3>
           <div className="text-2xl">
-            {getTopicEmoji(reading.analysis.topic)}
+            {getTopicEmoji(reading.analysis?.topic)}
           </div>
         </div>
 
@@ -82,7 +98,7 @@ export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
             {safeFormatDistanceToNow(reading.createdAt, 'ไม่ทราบวันที่')}
           </p>
           <div className="badge badge-outline badge-sm">
-            {reading.analysis.topic}
+            {reading.analysis?.topic || 'general'}
           </div>
         </div>
 
@@ -90,11 +106,11 @@ export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
         <div className="flex items-center space-x-1 mb-3">
           <span className="text-xs text-neutral-content mr-2">Cards:</span>
           <div className="flex -space-x-1">
-            {reading.cards.slice(0, 3).map((card, index) => (
+            {(reading.cards || []).slice(0, 3).map((card, index) => (
               <div 
                 key={card.id}
                 className="w-6 h-9 rounded-sm overflow-hidden border border-base-300 bg-base-200"
-                style={{ zIndex: reading.cards.length - index }}
+                style={{ zIndex: (reading.cards || []).length - index }}
               >
                 <img 
                   src={card.imageUrl} 
@@ -103,9 +119,9 @@ export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
                 />
               </div>
             ))}
-            {reading.cards.length > 3 && (
+            {(reading.cards || []).length > 3 && (
               <div className="w-6 h-9 rounded-sm bg-base-300 border border-base-400 flex items-center justify-center text-xs font-bold">
-                +{reading.cards.length - 3}
+                +{(reading.cards || []).length - 3}
               </div>
             )}
           </div>

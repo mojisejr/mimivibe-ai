@@ -96,17 +96,21 @@ export async function POST(request: NextRequest) {
 
     // If streaming is requested, create SSE stream
     if (useStream) {
+      console.log('🚀 Creating SSE stream for user:', userId)
       const { stream, controller } = createReadingStream()
       streamController = controller
+      console.log('✅ SSE stream created, controller:', !!streamController)
 
       // Start async processing
+      console.log('🔄 Starting async processing...')
       processReadingWithStream(userId, question, streamController)
         .catch(error => {
-          console.error('Stream processing error:', error)
+          console.error('❌ Stream processing error:', error)
           streamController?.sendError('Failed to generate reading')
           streamController?.close()
         })
 
+      console.log('📡 Returning SSE response with headers:', createSSEHeaders())
       return new Response(stream, {
         headers: createSSEHeaders()
       })
@@ -143,26 +147,32 @@ export async function POST(request: NextRequest) {
 }
 
 async function processReadingWithStream(userId: string, question: string, controller: any) {
+  console.log('🔄 processReadingWithStream started for user:', userId)
+  
   try {
     // Send progress updates
+    console.log('📤 Sending VALIDATING progress...')
     controller.sendProgress(
       WORKFLOW_STEPS.VALIDATING.step,
       WORKFLOW_STEPS.VALIDATING.message,
       WORKFLOW_STEPS.VALIDATING.progress
     )
 
+    console.log('📤 Sending SELECTING_CARDS progress...')
     controller.sendProgress(
       WORKFLOW_STEPS.SELECTING_CARDS.step,
       WORKFLOW_STEPS.SELECTING_CARDS.message,
       WORKFLOW_STEPS.SELECTING_CARDS.progress
     )
 
+    console.log('📤 Sending ANALYZING progress...')
     controller.sendProgress(
       WORKFLOW_STEPS.ANALYZING.step,
       WORKFLOW_STEPS.ANALYZING.message,
       WORKFLOW_STEPS.ANALYZING.progress
     )
 
+    console.log('📤 Sending GENERATING progress...')
     controller.sendProgress(
       WORKFLOW_STEPS.GENERATING.step,
       WORKFLOW_STEPS.GENERATING.message,
@@ -170,8 +180,11 @@ async function processReadingWithStream(userId: string, question: string, contro
     )
 
     // Generate reading
+    console.log('🎯 Starting reading generation...')
     const result = await processReading(userId, question)
+    console.log('✅ Reading generation completed:', !!result)
 
+    console.log('📤 Sending FINALIZING progress...')
     controller.sendProgress(
       WORKFLOW_STEPS.FINALIZING.step,
       WORKFLOW_STEPS.FINALIZING.message,
@@ -179,19 +192,25 @@ async function processReadingWithStream(userId: string, question: string, contro
     )
 
     // Send final result
+    console.log('📤 Sending final reading result...')
     controller.sendReading(result)
 
+    console.log('📤 Sending COMPLETED progress...')
     controller.sendProgress(
       WORKFLOW_STEPS.COMPLETED.step,
       WORKFLOW_STEPS.COMPLETED.message,
       WORKFLOW_STEPS.COMPLETED.progress
     )
 
+    console.log('📤 Sending completion signal...')
     controller.sendComplete()
+    console.log('🔒 Closing stream...')
     controller.close()
 
+    console.log('✅ processReadingWithStream completed successfully')
+
   } catch (error) {
-    console.error('Stream processing error:', error)
+    console.error('❌ Stream processing error:', error)
     controller.sendError(error instanceof Error ? error.message : 'Unknown error')
     controller.close()
   }

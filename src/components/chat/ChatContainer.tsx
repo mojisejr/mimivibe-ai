@@ -57,6 +57,8 @@ export function ChatContainer({ className = "" }: ChatContainerProps) {
     setIsTyping(true);
 
     try {
+      console.log('📡 Starting SSE request for question:', content.trim())
+      
       // Call the reading API with streaming
       const response = await fetch("/api/readings/ask", {
         method: "POST",
@@ -69,6 +71,9 @@ export function ChatContainer({ className = "" }: ChatContainerProps) {
         }),
       });
 
+      console.log('📡 SSE Response received:', response.status, response.statusText)
+      console.log('📡 SSE Response headers:', Object.fromEntries(response.headers.entries()))
+
       if (!response.ok) {
         throw new Error("Failed to get reading");
       }
@@ -76,63 +81,120 @@ export function ChatContainer({ className = "" }: ChatContainerProps) {
       // Handle SSE streaming
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
+      
+      console.log('📡 SSE Reader created:', !!reader)
 
       if (reader) {
+        console.log('📡 Starting SSE stream reading...')
+        let chunkCount = 0
+        
         while (true) {
           const { value, done } = await reader.read();
-          if (done) break;
+          chunkCount++
+          
+          console.log(`📡 SSE Chunk ${chunkCount}:`, { hasValue: !!value, done, valueLength: value?.length })
+          
+          if (done) {
+            console.log('📡 SSE Stream finished')
+            break;
+          }
 
           const chunk = decoder.decode(value);
+          console.log('📡 SSE Decoded chunk:', chunk)
+          
           const lines = chunk.split("\n");
+          console.log('📡 SSE Lines:', lines)
 
+          let currentEvent = '';
+          
           for (const line of lines) {
+            console.log('📡 SSE Processing line:', line)
+            
+            if (line.startsWith("event: ")) {
+              currentEvent = line.slice(7).trim();
+              console.log('📡 SSE Event type:', currentEvent)
+            }
+            
             if (line.startsWith("data: ")) {
               try {
-                const data = JSON.parse(line.slice(6));
+                const dataStr = line.slice(6)
+                console.log('📡 SSE Data string:', dataStr)
+                
+                const data = JSON.parse(dataStr);
+                console.log('📡 SSE Parsed data:', data)
 
-                if (data.event === "progress") {
+                if (currentEvent === "progress") {
+                  console.log('📡 SSE Progress event:', data)
                   // Update typing indicator with progress
                   setIsTyping(true);
                 }
 
-                if (data.event === "reading") {
+                if (currentEvent === "reading") {
+                  console.log('📡 SSE Reading event:', data)
                   setIsTyping(false);
 
-                  // Add cards message
-                  const cardsMessage: Message = {
-                    id: `cards-${Date.now()}`,
-                    type: "cards",
-                    content: "ไพ่ที่เลือกสำหรับคุณ",
-                    timestamp: new Date(),
-                    data: data.data.cards,
-                  };
+                  // Check if we have cards to display
+                  if (data.cards && data.cards.length > 0) {
+                    // Add cards message
+                    const cardsMessage: Message = {
+                      id: `cards-${Date.now()}`,
+                      type: "cards",
+                      content: "ไพ่ที่เลือกสำหรับคุณ",
+                      timestamp: new Date(),
+                      data: data.cards,
+                    };
 
-                  // Add reading message
-                  const readingMessage: Message = {
-                    id: `reading-${Date.now()}`,
-                    type: "reading",
-                    content: data.data.reading.reading,
-                    timestamp: new Date(),
-                    data: {
-                      reading: data.data.reading,
-                      questionAnalysis: data.data.questionAnalysis,
-                      rewards: data.data.rewards,
-                    },
-                  };
+                    // Add reading message
+                    const readingMessage: Message = {
+                      id: `reading-${Date.now()}`,
+                      type: "reading",
+                      content: data.reading.reading,
+                      timestamp: new Date(),
+                      data: {
+                        reading: data.reading,
+                        questionAnalysis: data.questionAnalysis,
+                        rewards: data.rewards,
+                      },
+                    };
 
-                  setMessages((prev) => [
-                    ...prev,
-                    cardsMessage,
-                    readingMessage,
-                  ]);
+                    console.log('📡 SSE Adding messages with cards:', { cardsMessage, readingMessage })
+
+                    setMessages((prev) => [
+                      ...prev,
+                      cardsMessage,
+                      readingMessage,
+                    ]);
+                  } else {
+                    // No cards, just add reading message
+                    const readingMessage: Message = {
+                      id: `reading-${Date.now()}`,
+                      type: "reading",
+                      content: data.reading.reading,
+                      timestamp: new Date(),
+                      data: {
+                        reading: data.reading,
+                        questionAnalysis: data.questionAnalysis,
+                        rewards: data.rewards,
+                      },
+                    };
+
+                    console.log('📡 SSE Adding reading message without cards:', { readingMessage })
+
+                    setMessages((prev) => [
+                      ...prev,
+                      readingMessage,
+                    ]);
+                  }
                 }
 
-                if (data.event === "complete") {
+                if (currentEvent === "complete") {
+                  console.log('📡 SSE Complete event')
                   setIsTyping(false);
                   setIsProcessing(false);
                 }
 
-                if (data.event === "error") {
+                if (currentEvent === "error") {
+                  console.log('📡 SSE Error event:', data)
                   setIsTyping(false);
                   setIsProcessing(false);
 
@@ -147,7 +209,7 @@ export function ChatContainer({ className = "" }: ChatContainerProps) {
                   setMessages((prev) => [...prev, errorMessage]);
                 }
               } catch (error) {
-                console.error("Error parsing SSE data:", error);
+                console.error("❌ Error parsing SSE data:", error, "Line:", line);
               }
             }
           }

@@ -22,29 +22,45 @@ export interface CardPickerResult {
  */
 export async function pickRandomCards(): Promise<CardPickerResult> {
   try {
-    // Get total number of cards
-    const totalCards = await prisma.card.count()
+    console.log('🎴 Starting card selection process...')
     
-    if (totalCards < 5) {
+    // Get all available card IDs from database
+    const availableCards = await prisma.card.findMany({
+      select: {
+        id: true
+      },
+      orderBy: {
+        id: 'asc'
+      }
+    })
+    
+    console.log('🎴 Available card IDs:', availableCards.map(c => c.id))
+    console.log('🎴 Total cards in database:', availableCards.length)
+    
+    if (availableCards.length < 5) {
       throw new Error('Insufficient cards in database')
     }
 
     // Randomly decide how many cards to select (3-5)
     const cardCount = Math.floor(Math.random() * 3) + 3 // 3, 4, or 5 cards
+    console.log('🎴 Selected card count:', cardCount)
 
-    // Generate unique random card IDs
-    const selectedIds = new Set<number>()
-    
-    while (selectedIds.size < cardCount) {
-      const randomId = Math.floor(Math.random() * totalCards) + 1
-      selectedIds.add(randomId)
+    // Shuffle available card IDs using Fisher-Yates algorithm (similar to n8n flow)
+    const shuffledCardIds = [...availableCards.map(c => c.id)]
+    for (let i = shuffledCardIds.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffledCardIds[i], shuffledCardIds[j]] = [shuffledCardIds[j], shuffledCardIds[i]]
     }
+    
+    // Select first N cards from shuffled array
+    const selectedIds = shuffledCardIds.slice(0, cardCount)
+    console.log('🎴 Selected card IDs:', selectedIds)
 
     // Fetch the selected cards
     const cards = await prisma.card.findMany({
       where: {
         id: {
-          in: Array.from(selectedIds)
+          in: selectedIds
         }
       },
       select: {
@@ -58,20 +74,28 @@ export async function pickRandomCards(): Promise<CardPickerResult> {
       }
     })
 
-    // Add position numbers and shuffle the results
+    console.log('🎴 Fetched cards from database:', cards.length, 'cards')
+    console.log('🎴 Card details:', cards.map(c => ({ id: c.id, name: c.displayName })))
+
+    // Add position numbers and maintain shuffle order
     const selectedCards: SelectedCard[] = cards
       .map((card, index) => ({
         ...card,
         position: index + 1
       }))
-      .sort(() => Math.random() - 0.5) // Shuffle to randomize positions
 
-    return {
+    console.log('🎴 Final selected cards:', selectedCards.length, 'cards')
+    console.log('🎴 Final card details:', selectedCards.map(c => ({ id: c.id, name: c.displayName, position: c.position })))
+
+    const result = {
       selectedCards,
       cardCount
     }
+    
+    console.log('🎴 Card selection completed successfully')
+    return result
   } catch (error) {
-    console.error('Card picker error:', error)
+    console.error('❌ Card picker error:', error)
     throw new Error('Failed to select cards')
   }
 }
