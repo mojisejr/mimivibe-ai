@@ -4,11 +4,20 @@ import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
+const DEBUG_MODE = process.env.NODE_ENV === 'development'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text()
     const signature = request.headers.get('stripe-signature')!
+    
+    if (DEBUG_MODE) {
+      console.log('🎣 Webhook received:', {
+        hasSignature: !!signature,
+        bodyLength: body.length,
+        timestamp: new Date().toISOString()
+      })
+    }
 
     let event: Stripe.Event
 
@@ -28,6 +37,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle the event
+    if (DEBUG_MODE) {
+      console.log('🎯 Processing event:', {
+        type: event.type,
+        id: event.id,
+        created: new Date(event.created * 1000).toISOString()
+      })
+    }
+    
     switch (event.type) {
       case 'payment_intent.succeeded':
         const paymentIntent = event.data.object as Stripe.PaymentIntent
@@ -40,7 +57,9 @@ export async function POST(request: NextRequest) {
         break
         
       default:
-        console.log(`Unhandled event type ${event.type}`)
+        if (DEBUG_MODE) {
+          console.log(`⚠️ Unhandled event type: ${event.type}`)
+        }
     }
 
     return NextResponse.json({ 
@@ -67,8 +86,19 @@ export async function POST(request: NextRequest) {
 async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
   const { userId, packId, creditAmount } = paymentIntent.metadata
   
+  if (DEBUG_MODE) {
+    console.log('💰 Processing successful payment:', {
+      paymentIntentId: paymentIntent.id,
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      userId,
+      packId,
+      creditAmount
+    })
+  }
+  
   if (!userId || !packId || !creditAmount) {
-    console.error('Missing metadata in payment intent:', paymentIntent.id)
+    console.error('❌ Missing metadata in payment intent:', paymentIntent.id)
     return
   }
 
@@ -114,9 +144,11 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
       })
     })
 
-    console.log(`Payment processed successfully for user ${userId}`)
+    if (DEBUG_MODE) {
+      console.log('✅ Payment transaction completed successfully for user:', userId)
+    }
   } catch (error) {
-    console.error('Error processing successful payment:', error)
+    console.error('💥 Error processing successful payment:', error)
   }
 }
 
