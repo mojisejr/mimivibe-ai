@@ -61,29 +61,59 @@ export const useHistory = (initialLimit = 6) => {
         error: null 
       }));
 
+      console.log('📜 Fetching reading history...', { page, limit, append });
       const response = await fetch(
         `/api/readings/history?page=${page}&limit=${limit}`
       );
 
+      console.log('📊 History API Response:', response.status);
+
       if (!response.ok) {
-        throw new Error("Failed to fetch reading history");
+        console.error('❌ History API Error:', response.status);
+        throw new Error(`Failed to fetch reading history: ${response.status}`);
       }
 
       const result = await response.json();
+
+      console.log('📊 Raw History Data:', result);
 
       // Validate response structure
       if (!result || typeof result !== 'object') {
         throw new Error("Invalid response format");
       }
 
-      // Ensure readings is always an array
+      // Extract data from API response wrapper
+      const apiData = result.success ? result.data : result;
+      const pagination = apiData.pagination || {};
+
+      console.log('📊 Extracted History Data:', { apiData, pagination });
+
+      // Ensure readings is always an array and map to expected structure
       const validatedResult = {
-        ...result,
-        readings: Array.isArray(result.readings) ? result.readings : [],
-        total: typeof result.total === 'number' ? result.total : 0,
-        page: typeof result.page === 'number' ? result.page : 1,
-        limit: typeof result.limit === 'number' ? result.limit : initialLimit,
-        hasMore: typeof result.hasMore === 'boolean' ? result.hasMore : false,
+        readings: Array.isArray(apiData.readings) ? apiData.readings.map((reading: any) => ({
+          id: reading.id,
+          question: reading.question,
+          cards: Array.isArray(reading.cards) ? reading.cards.map((card: any) => ({
+            id: card.id,
+            name: card.name || card.displayName,
+            nameTh: card.displayName || card.name,
+            imageUrl: card.imageUrl || '',
+            keywords: card.keywords || '',
+            keywordsTh: card.keywords || '',
+            meaning: card.shortMeaning || '',
+            meaningTh: card.shortMeaning || '',
+            category: card.arcana || '',
+          })) : [],
+          analysis: reading.questionAnalysis || { mood: '', topic: '', timeframe: '' },
+          reading: reading.reading || '',
+          createdAt: reading.createdAt || new Date().toISOString(),
+          expEarned: 25, // Default reward
+          coinsEarned: 5, // Default reward
+        })) : [],
+        total: typeof pagination.total === 'number' ? pagination.total : 0,
+        page: typeof pagination.page === 'number' ? pagination.page : 1,
+        limit: typeof pagination.limit === 'number' ? pagination.limit : initialLimit,
+        hasMore: typeof pagination.hasMore === 'boolean' ? pagination.hasMore : false,
       };
 
       setState(prev => ({

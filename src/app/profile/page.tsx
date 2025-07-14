@@ -3,11 +3,11 @@
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
-import { useProfile } from '@/hooks/useProfile';
-import { BottomNavigation } from '@/components/navigation/BottomNavigation';
-import { Logo, ProfileLoadingState, ErrorState } from '@/components/ui';
-import { Navbar } from '@/components/layout';
-import { safeFormatDistanceToNow } from '@/lib/utils/dateUtils';
+import { useProfile } from "@/hooks/useProfile";
+import { BottomNavigation } from "@/components/navigation/BottomNavigation";
+import { Logo, ProfileLoadingState, ErrorState } from "@/components/ui";
+import { Navbar } from "@/components/layout";
+import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 
 export default function ProfilePage() {
   const { user } = useUser();
@@ -48,8 +48,8 @@ export default function ProfilePage() {
                 <div className="flex items-center space-x-4">
                   <div className="avatar">
                     <div className="w-16 rounded-full">
-                      <Image 
-                        src={user?.imageUrl || "/api/placeholder/64/64"} 
+                      <Image
+                        src={user?.imageUrl || "/api/placeholder/64/64"}
                         alt="Profile"
                         width={64}
                         height={64}
@@ -65,7 +65,11 @@ export default function ProfilePage() {
                       {user?.emailAddresses?.[0]?.emailAddress}
                     </p>
                     <p className="text-xs text-neutral-content">
-                      สมาชิกเมื่อ {safeFormatDistanceToNow(data.profile?.createdAt, 'ไม่ทราบวันที่')}
+                      สมาชิกเมื่อ{" "}
+                      {safeFormatDistanceToNow(
+                        data.profile?.createdAt,
+                        "ไม่ทราบวันที่"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -83,19 +87,30 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{data.credits.freePoint}</div>
-                    <div className="body-small text-neutral-content">Free Points</div>
+                    <div className="text-2xl font-bold text-primary">
+                      {data.credits.freePoint}
+                    </div>
+                    <div className="body-small text-neutral-content">
+                      Free Points
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-secondary">{data.credits.stars}</div>
+                    <div className="text-2xl font-bold text-secondary">
+                      {data.credits.stars}
+                    </div>
                     <div className="body-small text-neutral-content">Stars</div>
                   </div>
                 </div>
-                
+
                 {/* Usage Info */}
                 <div className="text-xs text-neutral-content mb-4">
-                  <p>Today: {data.credits.dailyUsed}/{data.credits.dailyLimit}</p>
-                  <p>This month: {data.credits.monthlyUsed}/{data.credits.monthlyLimit}</p>
+                  <p>
+                    Today: {data.credits.dailyUsed}/{data.credits.dailyLimit}
+                  </p>
+                  <p>
+                    This month: {data.credits.monthlyUsed}/
+                    {data.credits.monthlyLimit}
+                  </p>
                 </div>
 
                 <div className="card-actions justify-end">
@@ -111,20 +126,25 @@ export default function ProfilePage() {
             <div className="card card-mystical">
               <div className="card-body">
                 <h2 className="heading-3 mb-4">Your Spiritual Journey</h2>
-                
+
                 {/* Level Progress */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">Level {data.stats.level}</span>
+                    <span className="font-semibold">
+                      Level {data.stats.level}
+                    </span>
                     <span className="text-sm text-neutral-content">
                       {data.stats.currentExp}/{data.stats.nextLevelExp} EXP
                     </span>
                   </div>
                   <div className="w-full bg-base-300 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-primary to-secondary h-2 rounded-full transition-all duration-300"
-                      style={{ 
-                        width: `${(data.stats.currentExp / data.stats.nextLevelExp) * 100}%` 
+                      style={{
+                        width: `${
+                          (data.stats.currentExp / data.stats.nextLevelExp) *
+                          100
+                        }%`,
                       }}
                     />
                   </div>
@@ -136,20 +156,36 @@ export default function ProfilePage() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{data.stats.totalReadings}</div>
-                    <div className="body-small text-neutral-content">Total Readings</div>
+                    <div className="text-2xl font-bold text-primary">
+                      {data.stats.totalReadings}
+                    </div>
+                    <div className="body-small text-neutral-content">
+                      Total Readings
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-secondary">{data.stats.totalCoins}</div>
-                    <div className="body-small text-neutral-content">Coins Earned</div>
+                    <div className="text-2xl font-bold text-secondary">
+                      {data.stats.totalCoins}
+                    </div>
+                    <div className="body-small text-neutral-content">
+                      Coins Earned
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{data.stats.currentStreak}</div>
-                    <div className="body-small text-neutral-content">Current Streak</div>
+                    <div className="text-2xl font-bold text-accent">
+                      {data.stats.currentStreak}
+                    </div>
+                    <div className="body-small text-neutral-content">
+                      Current Streak
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-warning">{data.stats.daysActive}</div>
-                    <div className="body-small text-neutral-content">Days Active</div>
+                    <div className="text-2xl font-bold text-warning">
+                      {data.stats.daysActive}
+                    </div>
+                    <div className="body-small text-neutral-content">
+                      Days Active
+                    </div>
                   </div>
                 </div>
               </div>
@@ -166,7 +202,11 @@ export default function ProfilePage() {
                         <span className="mr-2">📧</span>
                         Email notifications
                       </span>
-                      <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        defaultChecked
+                      />
                     </label>
                   </div>
                   <div className="form-control">
@@ -175,7 +215,10 @@ export default function ProfilePage() {
                         <span className="mr-2">🔔</span>
                         Daily reading reminders
                       </span>
-                      <input type="checkbox" className="toggle toggle-primary" />
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                      />
                     </label>
                   </div>
                   <div className="form-control">
@@ -184,7 +227,10 @@ export default function ProfilePage() {
                         <span className="mr-2">🌙</span>
                         Dark mode
                       </span>
-                      <input type="checkbox" className="toggle toggle-primary" />
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                      />
                     </label>
                   </div>
                 </div>

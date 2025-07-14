@@ -60,59 +60,88 @@ export const useProfile = () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
+      console.log('🚀 Fetching profile data...');
       const [profileRes, statsRes, creditsRes] = await Promise.all([
         fetch("/api/user/profile"),
         fetch("/api/user/stats"),
         fetch("/api/user/credits"),
       ]);
 
+      console.log('📊 API Response status:', {
+        profile: profileRes.status,
+        stats: statsRes.status,
+        credits: creditsRes.status
+      });
+
       if (!profileRes.ok || !statsRes.ok || !creditsRes.ok) {
-        throw new Error("Failed to fetch profile data");
+        const errorDetails = {
+          profile: profileRes.status,
+          stats: statsRes.status,
+          credits: creditsRes.status
+        };
+        console.error('❌ API Error:', errorDetails);
+        throw new Error(`Failed to fetch profile data: ${JSON.stringify(errorDetails)}`);
       }
 
-      const [profile, stats, credits] = await Promise.all([
+      const [profileData, statsData, creditsData] = await Promise.all([
         profileRes.json(),
         statsRes.json(),
         creditsRes.json(),
       ]);
 
+      // Extract data from API response wrappers
+      console.log('📊 Raw API Data:', {
+        profile: profileData,
+        stats: statsData,
+        credits: creditsData
+      });
+
+      const profile = profileData.success ? profileData.data : profileData;
+      const stats = statsData.success ? statsData.data : statsData;
+      const credits = creditsData.success ? creditsData.data : creditsData;
+
+      console.log('📊 Extracted Data:', {
+        profile,
+        stats,
+        credits
+      });
+
       // Validate and sanitize profile data
       const validatedProfile = {
-        ...profile,
         id: profile?.id || '',
-        clerkId: profile?.clerkId || '',
+        clerkId: profile?.id || '', // API uses 'id' for clerkId
         email: profile?.email || '',
-        firstName: profile?.firstName || '',
-        lastName: profile?.lastName || '',
+        firstName: profile?.name || '', // API uses 'name' field
+        lastName: '', // Not provided by API
         imageUrl: profile?.imageUrl || '',
         createdAt: profile?.createdAt || new Date().toISOString(),
         updatedAt: profile?.updatedAt || new Date().toISOString(),
       };
 
-      // Validate stats data
+      // Validate stats data with correct API field mapping
       const validatedStats = {
         level: typeof stats?.level === 'number' ? stats.level : 1,
-        currentExp: typeof stats?.currentExp === 'number' ? stats.currentExp : 0,
-        nextLevelExp: typeof stats?.nextLevelExp === 'number' ? stats.nextLevelExp : 100,
-        expToNextLevel: typeof stats?.expToNextLevel === 'number' ? stats.expToNextLevel : 100,
+        currentExp: typeof stats?.exp === 'number' ? stats.exp : 0, // API uses 'exp'
+        nextLevelExp: typeof stats?.expRequired === 'number' ? stats.expRequired : 100, // API uses 'expRequired'
+        expToNextLevel: typeof stats?.expToNext === 'number' ? stats.expToNext : 100, // API uses 'expToNext'
         totalReadings: typeof stats?.totalReadings === 'number' ? stats.totalReadings : 0,
-        totalExp: typeof stats?.totalExp === 'number' ? stats.totalExp : 0,
-        totalCoins: typeof stats?.totalCoins === 'number' ? stats.totalCoins : 0,
-        currentStreak: typeof stats?.currentStreak === 'number' ? stats.currentStreak : 0,
-        longestStreak: typeof stats?.longestStreak === 'number' ? stats.longestStreak : 0,
-        daysActive: typeof stats?.daysActive === 'number' ? stats.daysActive : 0,
+        totalExp: typeof stats?.exp === 'number' ? stats.exp : 0, // Use exp as totalExp
+        totalCoins: typeof stats?.coins === 'number' ? stats.coins : 0, // API uses 'coins'
+        currentStreak: typeof stats?.loginStreak === 'number' ? stats.loginStreak : 0, // API uses 'loginStreak'
+        longestStreak: typeof stats?.loginStreak === 'number' ? stats.loginStreak : 0, // Use same for now
+        daysActive: typeof stats?.totalReadings === 'number' ? stats.totalReadings : 0, // Approximate
       };
 
-      // Validate credits data
+      // Validate credits data (API has different structure)
       const validatedCredits = {
         freePoint: typeof credits?.freePoint === 'number' ? credits.freePoint : 0,
         stars: typeof credits?.stars === 'number' ? credits.stars : 0,
-        totalCredits: typeof credits?.totalCredits === 'number' ? credits.totalCredits : 0,
-        dailyUsed: typeof credits?.dailyUsed === 'number' ? credits.dailyUsed : 0,
-        monthlyUsed: typeof credits?.monthlyUsed === 'number' ? credits.monthlyUsed : 0,
-        dailyLimit: typeof credits?.dailyLimit === 'number' ? credits.dailyLimit : 3,
-        monthlyLimit: typeof credits?.monthlyLimit === 'number' ? credits.monthlyLimit : 50,
-        canRead: typeof credits?.canRead === 'boolean' ? credits.canRead : true,
+        totalCredits: typeof credits?.total === 'number' ? credits.total : (credits?.freePoint || 0) + (credits?.stars || 0),
+        dailyUsed: typeof credits?.limits?.dailyFree?.used === 'number' ? credits.limits.dailyFree.used : 0,
+        monthlyUsed: typeof credits?.limits?.monthlyFree?.used === 'number' ? credits.limits.monthlyFree.used : 0,
+        dailyLimit: typeof credits?.limits?.dailyFree?.max === 'number' ? credits.limits.dailyFree.max : 3,
+        monthlyLimit: typeof credits?.limits?.monthlyFree?.max === 'number' ? credits.limits.monthlyFree.max : 50,
+        canRead: (credits?.total || (credits?.freePoint || 0) + (credits?.stars || 0)) > 0,
       };
 
       setState({
