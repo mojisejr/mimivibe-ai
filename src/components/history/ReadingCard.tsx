@@ -1,7 +1,6 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
-import { th } from "date-fns/locale";
+import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 
 interface Card {
   id: number;
@@ -80,10 +79,7 @@ export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
         {/* Date and Analysis */}
         <div className="flex items-center justify-between mb-3">
           <p className="body-small text-neutral-content">
-            {formatDistanceToNow(new Date(reading.createdAt), { 
-              addSuffix: true, 
-              locale: th 
-            })}
+            {safeFormatDistanceToNow(reading.createdAt, 'ไม่ทราบวันที่')}
           </p>
           <div className="badge badge-outline badge-sm">
             {reading.analysis.topic}

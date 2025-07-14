@@ -6,8 +6,7 @@ import Image from "next/image";
 import { useProfile } from '@/hooks/useProfile';
 import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 import { Logo, ProfileLoadingState, ErrorState } from '@/components/ui';
-import { formatDistanceToNow } from 'date-fns';
-import { th } from 'date-fns/locale';
+import { safeFormatDistanceToNow } from '@/lib/utils/dateUtils';
 
 export default function ProfilePage() {
   const { user } = useUser();
@@ -74,10 +73,7 @@ export default function ProfilePage() {
                       {user?.emailAddresses?.[0]?.emailAddress}
                     </p>
                     <p className="text-xs text-neutral-content">
-                      สมาชิกเมื่อ {formatDistanceToNow(new Date(data.profile.createdAt), { 
-                        addSuffix: true, 
-                        locale: th 
-                      })}
+                      สมาชิกเมื่อ {safeFormatDistanceToNow(data.profile?.createdAt, 'ไม่ทราบวันที่')}
                     </p>
                   </div>
                 </div>

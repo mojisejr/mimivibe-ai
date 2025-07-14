@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { TarotCard } from "@/components/cards/TarotCard";
 import { Logo } from "@/components/ui";
-import { formatDistanceToNow } from "date-fns";
-import { th } from "date-fns/locale";
+import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 
 interface Card {
   id: number;
@@ -82,10 +81,7 @@ export const ReadingDetailModal = ({
               <div className="flex items-start justify-between mb-4">
                 <h2 className="heading-3 flex-1 mr-4">{reading.question}</h2>
                 <div className="text-right text-sm text-neutral-content">
-                  <p>{formatDistanceToNow(new Date(reading.createdAt), { 
-                    addSuffix: true, 
-                    locale: th 
-                  })}</p>
+                  <p>{safeFormatDistanceToNow(reading.createdAt, 'ไม่ทราบวันที่')}</p>
                 </div>
               </div>
               
