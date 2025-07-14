@@ -1,6 +1,7 @@
 import { StateGraph, Annotation, START, END } from '@langchain/langgraph'
 import { geminiAI, SYSTEM_PROMPTS, createGeminiWithPrompt } from '@/lib/ai/gemini'
 import { pickRandomCards, formatCardsForWorkflow, getCardMeaningsContext, SelectedCard } from '@/lib/utils/card-picker'
+import { parseAndValidateAIResponse, logParsingError } from '@/lib/utils/json-parser'
 
 // Define the state interface for the reading workflow
 export const ReadingState = Annotation.Root({
@@ -36,12 +37,26 @@ async function questionFilterNode(state: typeof ReadingState.State) {
       { role: 'user', content: `Question to validate: "${state.question}"` }
     ])
     
-    const result = JSON.parse(response.content as string)
+    const parsed = parseAndValidateAIResponse<{isValid: boolean; reason?: string}>(
+      response.content as string,
+      ['isValid']
+    )
+    
+    if (!parsed.success) {
+      logParsingError('QuestionFilter', response.content as string, parsed.error || 'Unknown error')
+      return {
+        isValid: false,
+        validationReason: 'Failed to parse AI response',
+        error: 'Question validation failed due to parsing error'
+      }
+    }
+    
+    const result = parsed.data!
     
     return {
       isValid: result.isValid,
       validationReason: result.reason || '',
-      error: result.isValid ? '' : result.reason
+      error: result.isValid ? '' : (result.reason || 'Question is invalid')
     }
   } catch (error) {
     console.error('Question filter error:', error)
@@ -91,7 +106,17 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
       { role: 'user', content: `Analyze this question: "${state.question}"` }
     ])
     
-    const analysis = JSON.parse(response.content as string)
+    const parsed = parseAndValidateAIResponse<{mood: string; topic: string; period: string}>(
+      response.content as string,
+      ['mood', 'topic', 'period']
+    )
+    
+    if (!parsed.success) {
+      logParsingError('QuestionAnalyzer', response.content as string, parsed.error || 'Unknown error')
+      return { error: 'Failed to parse question analysis response' }
+    }
+    
+    const analysis = parsed.data!
     
     return {
       questionAnalysis: {
@@ -138,14 +163,31 @@ Create a warm, insightful tarot reading in Thai that addresses the user's questi
       { role: 'user', content: prompt }
     ])
     
-    const reading = JSON.parse(response.content as string)
+    const parsed = parseAndValidateAIResponse<{
+      header: string;
+      reading: string;
+      suggestions: string[];
+      final: string[];
+      end: string;
+      notice: string;
+    }>(
+      response.content as string,
+      ['header', 'reading', 'suggestions', 'final', 'end', 'notice']
+    )
+    
+    if (!parsed.success) {
+      logParsingError('ReadingAgent', response.content as string, parsed.error || 'Unknown error')
+      return { error: 'Failed to parse reading response' }
+    }
+    
+    const reading = parsed.data!
     
     return {
       reading: {
         header: reading.header,
         reading: reading.reading,
-        suggestions: reading.suggestions,
-        final: reading.final,
+        suggestions: Array.isArray(reading.suggestions) ? reading.suggestions : [],
+        final: Array.isArray(reading.final) ? reading.final : [],
         end: reading.end,
         notice: reading.notice
       }

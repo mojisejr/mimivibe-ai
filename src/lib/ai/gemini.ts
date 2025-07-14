@@ -32,7 +32,7 @@ Invalid questions include:
 - Questions about illegal activities
 - Medical or legal advice requests
 
-Respond with JSON only:
+IMPORTANT: Respond with ONLY a JSON object, no markdown formatting, no explanations:
 {
   "isValid": boolean,
   "reason": "explanation if invalid"
@@ -49,7 +49,7 @@ Respond with JSON only:
 3. **Period**: What timeframe is the user asking about?
    - Options: "past", "present", "future", "general" (if no specific time mentioned)
 
-Respond with JSON only:
+IMPORTANT: Respond with ONLY a JSON object, no markdown formatting, no explanations:
 {
   "mood": "detected_mood",
   "topic": "detected_topic", 
@@ -64,6 +64,8 @@ Your personality:
 - Uses gentle, encouraging tone
 - Provides practical guidance
 - Respects Thai cultural values
+
+IMPORTANT: Respond with ONLY a JSON object, no markdown formatting, no explanations.
 
 Create a tarot reading response with this EXACT JSON structure:
 {
