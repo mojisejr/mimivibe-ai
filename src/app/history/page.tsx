@@ -72,7 +72,7 @@ export default function HistoryPage() {
           <p className="body-large text-neutral-content">
             Review your past tarot readings and insights
           </p>
-          {data && (
+          {data && typeof data.total === 'number' && (
             <p className="text-sm text-neutral-content">
               Total readings: {data.total}
             </p>
@@ -88,7 +88,7 @@ export default function HistoryPage() {
             onRetry={refresh}
             retryText="โหลดประวัติใหม่"
           />
-        ) : data && data.readings.length > 0 ? (
+        ) : data && data.readings && Array.isArray(data.readings) && data.readings.length > 0 ? (
           <>
             {/* Reading Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
@@ -122,7 +122,7 @@ export default function HistoryPage() {
             )}
 
             {/* End Message */}
-            {!hasMore && data.readings.length > 6 && (
+            {!hasMore && data.readings && data.readings.length > 6 && (
               <div className="text-center mt-8">
                 <p className="body-normal text-neutral-content mb-4">
                   คุณได้ดูการอ่านทั้งหมดแล้ว

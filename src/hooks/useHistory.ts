@@ -71,11 +71,29 @@ export const useHistory = (initialLimit = 6) => {
 
       const result = await response.json();
 
+      // Validate response structure
+      if (!result || typeof result !== 'object') {
+        throw new Error("Invalid response format");
+      }
+
+      // Ensure readings is always an array
+      const validatedResult = {
+        ...result,
+        readings: Array.isArray(result.readings) ? result.readings : [],
+        total: typeof result.total === 'number' ? result.total : 0,
+        page: typeof result.page === 'number' ? result.page : 1,
+        limit: typeof result.limit === 'number' ? result.limit : initialLimit,
+        hasMore: typeof result.hasMore === 'boolean' ? result.hasMore : false,
+      };
+
       setState(prev => ({
         data: append && prev.data ? {
-          ...result,
-          readings: [...prev.data.readings, ...result.readings],
-        } : result,
+          ...validatedResult,
+          readings: [
+            ...(Array.isArray(prev.data.readings) ? prev.data.readings : []), 
+            ...validatedResult.readings
+          ],
+        } : validatedResult,
         loading: false,
         loadingMore: false,
         error: null,
@@ -91,7 +109,10 @@ export const useHistory = (initialLimit = 6) => {
   }, [initialLimit]);
 
   const loadMore = useCallback(() => {
-    if (state.data && state.data.hasMore && !state.loadingMore) {
+    if (state.data && 
+        state.data.hasMore && 
+        !state.loadingMore && 
+        Array.isArray(state.data.readings)) {
       fetchHistory(state.data.page + 1, initialLimit, true);
     }
   }, [state.data, state.loadingMore, fetchHistory, initialLimit]);
