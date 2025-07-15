@@ -15,6 +15,7 @@ export interface ReadingStructure {
   cards_reading: CardReading[];
   reading: string;
   suggestions: string[];
+  next_questions: string[];
   final: string;
   end: string;
   notice: string;

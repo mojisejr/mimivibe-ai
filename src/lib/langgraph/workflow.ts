@@ -182,6 +182,7 @@ Return JSON with this structure:
   "header": "คำทักทายและทวนคำถามอย่างอบอุ่น",
   "reading": "คำทำนายหลักจากไพ่อย่างละเอียด",
   "suggestions": ["คำแนะนำ 1", "คำแนะนำ 2", "คำแนะนำ 3"],
+  "next_questions": ["คำถามแนะนำ 1", "คำถามแนะนำ 2", "คำถามแนะนำ 3"],
   "final": "คำสรุปและกำลังใจ",
   "end": "คำปิดท้ายอบอุ่น",
   "notice": "ข้อความแจ้งเตือนเกี่ยวกับการดูดวง"
@@ -197,12 +198,13 @@ Return JSON with this structure:
       header: string;
       reading: string;
       suggestions: string[];
+      next_questions: string[];
       final: string;
       end: string;
       notice: string;
     }>(
       response.content as string,
-      ['header', 'reading', 'suggestions', 'final', 'end', 'notice']
+      ['header', 'reading', 'suggestions', 'next_questions', 'final', 'end', 'notice']
     )
     
     if (!parsed.success) {
@@ -218,6 +220,7 @@ Return JSON with this structure:
         cards_reading: cardsReading, // Include full card objects
         reading: reading.reading,
         suggestions: Array.isArray(reading.suggestions) ? reading.suggestions : [],
+        next_questions: Array.isArray(reading.next_questions) ? reading.next_questions : [],
         final: reading.final,
         end: reading.end,
         notice: reading.notice
@@ -275,7 +278,7 @@ export async function generateTarotReading(question: string) {
       selectedCards: [],
       cardCount: 0,
       questionAnalysis: { mood: '', topic: '', period: '' },
-      reading: { header: '', cards_reading: [], reading: '', suggestions: [], final: '', end: '', notice: '' },
+      reading: { header: '', cards_reading: [], reading: '', suggestions: [], next_questions: [], final: '', end: '', notice: '' },
       error: ''
     }
     

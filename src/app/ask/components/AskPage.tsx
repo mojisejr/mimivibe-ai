@@ -106,6 +106,17 @@ export function AskPage() {
     setError(null)
   }
 
+  const handleQuestionClick = (question: string) => {
+    setCurrentQuestion(question)
+    setPageState('initial')
+    setReadingData(null)
+    setError(null)
+    // Auto-submit the question after a short delay to show the question was filled
+    setTimeout(() => {
+      handleQuestionSubmit(question)
+    }, 100)
+  }
+
   const handleRetry = () => {
     if (currentQuestion) {
       handleQuestionSubmit(currentQuestion)
@@ -128,6 +139,7 @@ export function AskPage() {
           <HeroSection 
             onSubmit={handleQuestionSubmit}
             isLoading={false}
+            initialQuestion={currentQuestion}
           />
         )}
 
@@ -141,6 +153,7 @@ export function AskPage() {
             onSave={handleSaveReading}
             onDelete={handleDeleteReading}
             onAskAgain={handleAskAgain}
+            onQuestionClick={handleQuestionClick}
           />
         )}
 

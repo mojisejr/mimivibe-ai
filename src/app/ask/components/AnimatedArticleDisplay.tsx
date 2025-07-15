@@ -100,9 +100,10 @@ interface AnimatedArticleDisplayProps {
   onSave?: () => void
   onDelete?: () => void
   onAskAgain?: () => void
+  onQuestionClick?: (question: string) => void
 }
 
-export function AnimatedArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: AnimatedArticleDisplayProps) {
+export function AnimatedArticleDisplay({ readingData, onSave, onDelete, onAskAgain, onQuestionClick }: AnimatedArticleDisplayProps) {
   const [scope, animate] = useAnimate()
   const [animationPhase, setAnimationPhase] = useState<'question' | 'header' | 'cards' | 'reading' | 'complete'>('question')
   const [cardsRevealed, setCardsRevealed] = useState(false)
@@ -340,6 +341,45 @@ export function AnimatedArticleDisplay({ readingData, onSave, onDelete, onAskAga
               <div className="card card-mystical p-6 sm:p-8 text-center bg-gradient-to-br from-primary/10 to-secondary/10 shadow-lg">
                 <div className="body-normal text-base-content leading-relaxed">
                   {readingData.reading.end}
+                </div>
+              </div>
+            </motion.section>
+          )}
+
+          {/* Next Questions */}
+          {readingData.reading.next_questions && readingData.reading.next_questions.length > 0 && (
+            <motion.section 
+              className="mb-12 reading-section"
+              initial={{ opacity: 0, y: 15 }}
+            >
+              <div className="card card-mystical p-6 sm:p-8 shadow-lg">
+                <div className="w-full">
+                  <h2 className="heading-2 text-base-content mb-6 text-center">
+                    <span className="text-primary">✨</span> คำถามแนะนำ
+                  </h2>
+                  <p className="body-normal text-neutral-content mb-6 text-center">
+                    คลิกเพื่อถามคำถามต่อไปนี้
+                  </p>
+                  <div className="space-y-3">
+                    {readingData.reading.next_questions.map((question, index) => (
+                      <motion.button
+                        key={index}
+                        onClick={() => onQuestionClick?.(question)}
+                        className="w-full text-left p-4 rounded-lg border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-200 group"
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="body-normal text-base-content group-hover:text-primary transition-colors">
+                            {question}
+                          </span>
+                          <span className="text-primary opacity-60 group-hover:opacity-100 transition-opacity">
+                            →
+                          </span>
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.section>

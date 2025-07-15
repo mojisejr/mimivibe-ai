@@ -1,16 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 
 interface HeroSectionProps {
   onSubmit: (question: string) => void;
   isLoading: boolean;
+  initialQuestion?: string;
 }
 
-export function HeroSection({ onSubmit, isLoading }: HeroSectionProps) {
-  const [question, setQuestion] = useState("");
+export function HeroSection({ onSubmit, isLoading, initialQuestion = "" }: HeroSectionProps) {
+  const [question, setQuestion] = useState(initialQuestion);
   const { data: profileData } = useProfile();
+
+  useEffect(() => {
+    setQuestion(initialQuestion);
+  }, [initialQuestion]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
