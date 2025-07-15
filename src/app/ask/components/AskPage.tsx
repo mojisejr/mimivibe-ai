@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ReadingResponse } from '@/types/reading'
 import { HeroSection } from './HeroSection'
 import { LoadingState } from './LoadingState'
-import { ArticleDisplay } from './ArticleDisplay'
+import { AnimatedArticleDisplay } from './AnimatedArticleDisplay'
 import { AutoHideNavbar } from './AutoHideNavbar'
 
 type PageState = 'initial' | 'loading' | 'result' | 'error'
@@ -136,7 +136,7 @@ export function AskPage() {
         )}
 
         {pageState === 'result' && readingData && (
-          <ArticleDisplay
+          <AnimatedArticleDisplay
             readingData={readingData}
             onSave={handleSaveReading}
             onDelete={handleDeleteReading}
