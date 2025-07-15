@@ -17,6 +17,17 @@ interface Card {
   category: string;
 }
 
+interface ReadingStructure {
+  header: string;
+  cards_reading: any[];
+  reading: string;
+  suggestions: string[];
+  next_questions: string[];
+  final: string;
+  end: string;
+  notice: string;
+}
+
 interface Reading {
   id: string;
   question: string;
@@ -26,7 +37,7 @@ interface Reading {
     topic: string;
     timeframe: string;
   };
-  reading: string;
+  answer: ReadingStructure; // Changed from 'reading: string' to full structure
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
@@ -142,12 +153,26 @@ export const ReadingDetailModal = ({
             </div>
           </div>
 
-          {/* Reading */}
+          {/* Reading Header */}
+          {reading.answer.header && (
+            <div className="card card-mystical">
+              <div className="card-body">
+                <h3 className="heading-3 mb-4">Reading Summary</h3>
+                <div className="prose prose-sm max-w-none">
+                  <p className="body-large font-medium text-primary mb-4">
+                    {reading.answer.header}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Main Reading */}
           <div className="card card-mystical">
             <div className="card-body">
               <h3 className="heading-3 mb-4">Your Reading</h3>
               <div className="prose prose-sm max-w-none">
-                {reading.reading.split('\n').map((paragraph, index) => (
+                {reading.answer.reading.split('\n').map((paragraph, index) => (
                   paragraph.trim() && (
                     <p key={index} className="body-normal mb-3 leading-relaxed">
                       {paragraph.trim()}
@@ -157,6 +182,81 @@ export const ReadingDetailModal = ({
               </div>
             </div>
           </div>
+
+          {/* Suggestions */}
+          {reading.answer.suggestions && reading.answer.suggestions.length > 0 && (
+            <div className="card card-mystical">
+              <div className="card-body">
+                <h3 className="heading-3 mb-4">Suggestions</h3>
+                <div className="space-y-2">
+                  {reading.answer.suggestions.map((suggestion, index) => (
+                    <div key={index} className="flex items-start space-x-2">
+                      <span className="text-primary mt-1">•</span>
+                      <p className="body-normal leading-relaxed">{suggestion}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Final Thoughts */}
+          {reading.answer.final && (
+            <div className="card card-mystical">
+              <div className="card-body">
+                <h3 className="heading-3 mb-4">Final Thoughts</h3>
+                <div className="prose prose-sm max-w-none">
+                  <p className="body-normal leading-relaxed">
+                    {reading.answer.final}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* End Message */}
+          {reading.answer.end && (
+            <div className="card card-mystical">
+              <div className="card-body">
+                <h3 className="heading-3 mb-4">Closing</h3>
+                <div className="prose prose-sm max-w-none">
+                  <p className="body-normal leading-relaxed text-neutral-content">
+                    {reading.answer.end}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Notice */}
+          {reading.answer.notice && (
+            <div className="card card-mystical border-warning">
+              <div className="card-body">
+                <h3 className="heading-3 mb-4 text-warning">Important Notice</h3>
+                <div className="prose prose-sm max-w-none">
+                  <p className="body-normal leading-relaxed text-warning">
+                    {reading.answer.notice}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Next Questions */}
+          {reading.answer.next_questions && reading.answer.next_questions.length > 0 && (
+            <div className="card card-mystical">
+              <div className="card-body">
+                <h3 className="heading-3 mb-4">Suggested Next Questions</h3>
+                <div className="space-y-2">
+                  {reading.answer.next_questions.map((question, index) => (
+                    <div key={index} className="p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors cursor-pointer">
+                      <p className="body-normal">{question}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

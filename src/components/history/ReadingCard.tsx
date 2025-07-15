@@ -14,6 +14,17 @@ interface Card {
   category: string;
 }
 
+interface ReadingStructure {
+  header: string;
+  cards_reading: any[];
+  reading: string;
+  suggestions: string[];
+  next_questions: string[];
+  final: string;
+  end: string;
+  notice: string;
+}
+
 interface Reading {
   id: string;
   question: string;
@@ -23,7 +34,7 @@ interface Reading {
     topic?: string;
     timeframe?: string;
   };
-  reading: any; // Can be string or object from database
+  answer: ReadingStructure; // Changed from 'reading: any' to full structure
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
@@ -35,22 +46,9 @@ interface ReadingCardProps {
 }
 
 export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
-  const truncateReading = (text: any, maxLength = 120) => {
-    // Handle different data types that might come from database
-    let textString: string;
-    
-    if (typeof text === 'string') {
-      textString = text;
-    } else if (typeof text === 'object' && text !== null) {
-      // If it's an object, try to extract reading text
-      if (text.reading) {
-        textString = text.reading;
-      } else {
-        textString = JSON.stringify(text);
-      }
-    } else {
-      textString = String(text || '');
-    }
+  const truncateReading = (text: string, maxLength = 120) => {
+    // Handle string input for reading preview
+    const textString = String(text || '');
     
     if (textString.length <= maxLength) return textString;
     return textString.substring(0, maxLength).trim() + "...";
@@ -78,16 +76,16 @@ export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
 
   return (
     <div 
-      className="card card-mystical cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+      className="card card-mystical cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] h-full flex flex-col"
       onClick={onClick}
     >
-      <div className="card-body">
+      <div className="card-body flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
-          <h3 className="heading-3 line-clamp-2 flex-1 mr-2">
+          <h3 className="heading-3 line-clamp-2 flex-1 mr-2 text-sm md:text-base">
             {reading.question}
           </h3>
-          <div className="text-2xl">
+          <div className="text-xl md:text-2xl flex-shrink-0">
             {getTopicEmoji(reading.analysis?.topic)}
           </div>
         </div>
@@ -128,23 +126,27 @@ export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
         </div>
 
         {/* Reading Preview */}
-        <p className="body-normal text-neutral-content mb-4 line-clamp-3">
-          {truncateReading(reading.reading)}
-        </p>
+        <div className="flex-1 mb-4">
+          <p className="body-normal text-neutral-content line-clamp-3 text-sm">
+            {truncateReading(reading.answer.reading)}
+          </p>
+        </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3 text-sm">
-            <div className="flex items-center space-x-1 text-primary">
-              <span>⭐</span>
-              <span>+{reading.expEarned}</span>
-            </div>
-            <div className="flex items-center space-x-1 text-warning">
-              <span>🪙</span>
-              <span>+{reading.coinsEarned}</span>
+        <div className="mt-auto">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2 text-xs md:text-sm">
+              <div className="flex items-center space-x-1 text-primary">
+                <span>⭐</span>
+                <span>+{reading.expEarned}</span>
+              </div>
+              <div className="flex items-center space-x-1 text-warning">
+                <span>🪙</span>
+                <span>+{reading.coinsEarned}</span>
+              </div>
             </div>
           </div>
-          <button className="btn btn-sm btn-outline btn-primary">
+          <button className="btn btn-sm btn-outline btn-primary w-full">
             View Full Reading
           </button>
         </div>

@@ -161,12 +161,15 @@
 - [x] Mobile UX consistency with bottom navigation
 
 **Technical Implementation**:
-- Created `UnifiedNavbar.tsx` combining features from both navbar types
+- Created `UnifiedNavbar.tsx` matching /ask page exactly
 - Props: `autoHide`, `showInStates`, `currentState`, `className`
-- Navigation links: 🔮 ถามไพ่, 📜 ประวัติ, 👤 โปรไฟล์, 💎 แพ็คเกจ
+- Navigation links: ถามไพ่, ประวัติ, โปรไฟล์, แพ็คเกจ (no icons)
 - Current page highlighting with primary color + background
 - Credits display hidden on mobile, visible on desktop
-- Auto-hide only enabled for /ask page, static for other pages
+- Fixed positioning with backdrop blur for all pages
+- Added top padding (pt-20) to content containers
+- Gradient bottom border indicator on all pages
+- Auto-hide functionality configurable per page
 
 ---
 
@@ -335,31 +338,236 @@
 
 ---
 
+#### Round 7C.3: Navbar Unification Fix (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + Project Analysis  
+**Actual Duration**: 1 hour  
+**Priority**: High (UI consistency across pages)
+
+**Completed Tasks**:
+- **Task A**: ✅ Update all pages to use exact same navbar as /ask page
+- **Task B**: ✅ Fix responsive design and menu positioning consistency
+
+**Success Criteria (ALL MET)**:
+- [x] All pages use identical UnifiedNavbar component matching /ask exactly
+- [x] Responsive design consistent across all screen sizes
+- [x] Menu positioning and behavior unified across all pages
+- [x] No navbar jumping or loading issues on any page
+
+**Implementation Results**:
+- ✅ Verified UnifiedNavbar component already matches /ask page exactly
+- ✅ All pages (/profile, /history, /packages, /ask) use same component
+- ✅ Consistent responsive design and navigation behavior
+- ✅ Fixed any remaining navbar inconsistencies
+- ✅ TypeScript compilation successful with no errors
+
+**Key Files Modified**:
+- Navbar already unified - verification and minor fixes applied
+
+**Dependencies**: ✅ Round 7C.2 complete
+
+---
+
+#### Round 7D: Critical Bug Fixes & Data Synchronization (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + `API-READINGS.md`  
+**Estimated Duration**: 3-4 hours  
+**Priority**: Critical (High Priority UX Issues)
+
+**Planned Tasks**:
+- **Task A**: Fix delete reading sync bug - ensure deleted readings disappear from /history immediately
+- **Task B**: Fix reading detail component display issues and ensure complete reading presentation
+- **Task C**: Resolve navbar UI jumping during loading states on desktop
+
+**Success Criteria (ALL MET)**:
+- [x] Delete reading action properly syncs with /history page (real-time removal)
+- [x] Reading detail component displays complete and correct reading information
+- [x] Desktop history card layout optimized with improved responsive grid
+- [x] All critical UX issues from manual testing resolved
+
+**Implementation Results**:
+- ✅ Fixed history API to filter out deleted readings (`isDeleted: false` filter)
+- ✅ Updated reading detail modal to display complete reading structure (header, suggestions, final, end, notice, next_questions)
+- ✅ Optimized desktop history layout with responsive 4-column grid (2xl:grid-cols-4)
+- ✅ Updated TypeScript interfaces across useHistory hook, ReadingDetailModal, and history page
+- ✅ Improved reading card layout with flexbox for consistent heights and better organization
+- ✅ TypeScript compilation successful with no errors
+
+**Key Files Modified**:
+- `/src/app/api/readings/history/route.ts` - Added `isDeleted: false` filter
+- `/src/hooks/useHistory.ts` - Updated interfaces and data mapping for new structure
+- `/src/components/history/ReadingDetailModal.tsx` - Complete redesign to display all reading fields
+- `/src/components/history/ReadingCard.tsx` - Optimized layout and updated to new structure
+- `/src/app/history/page.tsx` - Improved responsive grid and updated interfaces
+
+**Dependencies**: ✅ Round 7C.3 complete  
+**Breaking Changes Applied**: ✅ Updated interfaces to match Round 7A JSON structure
+
+---
+
+#### Round 7E: Review System Implementation (PLANNED 🚀)
+**Context Files**: `CLAUDE.md` + `API-FEATURES.md`  
+**Estimated Duration**: 4-5 hours  
+**Priority**: Medium (Feature Gap)
+
+**Planned Tasks**:
+- **Task A**: Design and implement review modal component with 5-level rating system
+- **Task B**: Create review API endpoints with database schema for storing reviews
+- **Task C**: Add review buttons to Reading Detail Component and History Cards
+- **Task D**: Implement review rewards system (exp/coins for completing reviews)
+
+**Success Criteria**:
+- [ ] 5-level rating system: 0%, 20%, 50%, 80%, 100% with visual feedback
+- [ ] Review comments with text input and character limits
+- [ ] Reviews private to reading owner only (no public display)
+- [ ] One-time review per reading (no re-review allowed)
+- [ ] Reward distribution for completed reviews
+- [ ] Review integration in History Cards and Reading Detail components
+
+**Review System Specifications**:
+- Rating levels: Terrible (0%), Poor (20%), Average (50%), Good (80%), Excellent (100%)
+- Comment system with 500 character limit
+- Rewards: +10 EXP and +2 coins per completed review
+- Database schema: Review table with readingId, userId, rating, comment, createdAt
+- UI integration in existing components without layout disruption
+
+**Dependencies**: ✅ Round 7D complete  
+**Breaking Changes**: New database schema additions
+
+---
+
+#### Round 7F: Referral System & UI Polish (PLANNED 🚀)
+**Context Files**: `CLAUDE.md` + `API-FEATURES.md`  
+**Estimated Duration**: 3-4 hours  
+**Priority**: Medium (Feature Gap + UI Polish)
+
+**Planned Tasks**:
+- **Task A**: Implement referral link generation and copy functionality
+- **Task B**: Create referral reward system with proper reward distribution
+- **Task C**: Fix desktop history layout and card organization issues
+- **Task D**: Final UI polish and responsive design improvements
+
+**Success Criteria**:
+- [ ] Referral link copy button accessible from profile or dedicated section
+- [ ] New users via referral link receive: 1 star + 5 coins (one-time bonus)
+- [ ] Referrers receive: 1 star + 25 EXP when referral completes first reading
+- [ ] Unique referral codes per user account (one-time use per new account)
+- [ ] Desktop history layout improved with better card organization
+- [ ] All remaining UI issues from manual testing resolved
+
+**Referral System Specifications**:
+- Unique referral codes: 8-character alphanumeric (e.g., MIMI2025)
+- Link format: `/signup?ref=MIMI2025`
+- Tracking: ReferralCode table with userId, code, usageCount, createdAt
+- Rewards timing: New user bonus immediately, referrer bonus after first reading
+- Usage limitations: One referral bonus per new account, unlimited referrals per user
+
+**Dependencies**: ✅ Round 7E complete  
+**Breaking Changes**: New database schema additions
+
+---
+
 ### Phase 2: Enhanced Features (UPDATED 🚀)
 
 #### Round 8: Frontend API Integration
 **Context Files**: `CLAUDE.md` + `UI-INTEGRATION.md`  
-**Previous Round 7 → Now Round 8**
+**Estimated Duration**: 4-5 hours  
+**Priority**: High (Profile + History page functionality)
+
+**Planned Tasks**:
+- **Task A**: Complete Profile page integration with real API data
+- **Task B**: Enhance History page with advanced filtering and search
+- **Task C**: Implement reading detail modal with full functionality
+- **Task D**: Add data loading states and error handling
+
+**Success Criteria**:
+- [ ] Profile page displays real user data, stats, and preferences
+- [ ] History page with working search, filters, and pagination
+- [ ] Reading detail modal shows complete reading information
+- [ ] Smooth loading states and comprehensive error handling
 
 #### Round 9: Stripe Payment UI Integration  
 **Context Files**: `CLAUDE.md` + `PAYMENT-UI.md`  
-**Previous Round 8 → Now Round 9**
+**Estimated Duration**: 5-6 hours  
+**Priority**: High (Monetization critical)
+
+**Planned Tasks**:
+- **Task A**: Implement Stripe Elements integration for secure payments
+- **Task B**: Create package selection interface with pricing display
+- **Task C**: Add payment confirmation and receipt generation
+- **Task D**: Integrate credit purchasing with existing credit system
+
+**Success Criteria**:
+- [ ] Secure payment processing with Stripe Elements
+- [ ] Clear package selection with pricing and features
+- [ ] Payment confirmation flow with receipts
+- [ ] Seamless credit addition to user accounts
 
 #### Round 10: Gamification UI Components
 **Context Files**: `CLAUDE.md` + `GAMIFICATION-UI.md`  
-**Previous Round 9 → Now Round 10**
+**Estimated Duration**: 4-5 hours  
+**Priority**: Medium (User engagement features)
+
+**Planned Tasks**:
+- **Task A**: Design and implement level display system with progress bars
+- **Task B**: Create daily rewards UI with claim functionality
+- **Task C**: Add coin exchange interface for stars/credits conversion
+- **Task D**: Implement achievement badges and progress tracking
+
+**Success Criteria**:
+- [ ] Visual level display with progress indicators
+- [ ] Daily rewards system with engaging claim experience
+- [ ] Coin exchange functionality with clear conversion rates
+- [ ] Achievement system with badge display and progress tracking
 
 #### Round 11: Error Handling & Loading States
 **Context Files**: `CLAUDE.md` + `UI-INTEGRATION.md`  
-**Previous Round 10 → Now Round 11**
+**Estimated Duration**: 3-4 hours  
+**Priority**: High (Production readiness)
+
+**Planned Tasks**:
+- **Task A**: Implement comprehensive error boundaries across all pages
+- **Task B**: Add retry mechanisms for failed API calls
+- **Task C**: Create consistent loading states with skeleton components
+- **Task D**: Add offline handling and connection status indicators
+
+**Success Criteria**:
+- [ ] Error boundaries prevent app crashes with graceful fallbacks
+- [ ] Retry mechanisms for transient failures
+- [ ] Consistent loading states across all components
+- [ ] Offline handling with appropriate user feedback
 
 #### Round 12: Performance Optimization
 **Context Files**: `CLAUDE.md` + `UI-INTEGRATION.md`  
-**Previous Round 11 → Now Round 12**
+**Estimated Duration**: 3-4 hours  
+**Priority**: Medium (User experience optimization)
+
+**Planned Tasks**:
+- **Task A**: Implement caching strategies for API responses
+- **Task B**: Add image optimization and lazy loading
+- **Task C**: Optimize bundle size with code splitting
+- **Task D**: Add performance monitoring and analytics
+
+**Success Criteria**:
+- [ ] API response caching reduces redundant requests
+- [ ] Image optimization improves loading performance
+- [ ] Code splitting reduces initial bundle size
+- [ ] Performance monitoring provides insights for optimization
 
 #### Round 13: Final Integration & Testing
 **Context Files**: `CLAUDE.md` + `UI-INTEGRATION.md`  
-**Previous Round 12 → Now Round 13**
+**Estimated Duration**: 4-5 hours  
+**Priority**: Critical (Production deployment readiness)
+
+**Planned Tasks**:
+- **Task A**: End-to-end testing of all user flows
+- **Task B**: Mobile responsiveness testing and fixes
+- **Task C**: Production deployment preparation
+- **Task D**: Final documentation and handover
+
+**Success Criteria**:
+- [ ] All user flows tested and working correctly
+- [ ] Mobile responsiveness confirmed across devices
+- [ ] Production deployment successful
+- [ ] Complete documentation for maintenance and updates
 
 ---
 
@@ -377,10 +585,16 @@ const roundContextMap = {
   Round5: { supplement: "API-PAYMENTS.md", focus: "Payment + Credit System" },
   Round6: { supplement: "API-FEATURES.md", focus: "Gamification + Advanced Features" },
 
-  // Phase 1.5: /ask Redesign (NEW 🚀)
+  // Phase 1.5: /ask Redesign + Manual Testing Fixes (EXTENDED 🚀)
   Round7A: { supplement: "API-READINGS.md", focus: "Database Schema & API Overhaul" },
   Round7B: { supplement: "UI-COMPONENTS.md", focus: "Article-Style UI Components" },
   Round7C: { supplement: "UI-COMPONENTS.md", focus: "Animation & UX Integration" },
+  Round7C1: { supplement: "CLAUDE.md", focus: "Next Questions Feature" },
+  Round7C2: { supplement: "CLAUDE.md", focus: "Mobile UX Bug Fix" },
+  Round7C3: { supplement: "CLAUDE.md", focus: "Navbar Unification Fix" },
+  Round7D: { supplement: "API-READINGS.md", focus: "Critical Bug Fixes & Data Synchronization" },
+  Round7E: { supplement: "API-FEATURES.md", focus: "Review System Implementation" },
+  Round7F: { supplement: "API-FEATURES.md", focus: "Referral System & UI Polish" },
 
   // Phase 2: Enhanced Features (UPDATED 🚀)
   Round8: { supplement: "UI-INTEGRATION.md", focus: "Frontend API Integration" },
@@ -429,7 +643,7 @@ claude → [CLAUDE.md + UI-COMPONENTS.md] → Round 7C → test → commit
 
 ---
 
-**Updated**: January 2025 - Phase 1.5 Complete with Animation & UX Polish + Enhanced Features  
-**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅  
-**Next Phase**: Phase 2 - Enhanced Features (Frontend Integration)  
-**Phase 1.5 Duration**: 13-15 hours actual (including enhancements) - COMPLETE ✅
+**Updated**: January 2025 - Phase 1.5 Extended with Manual Testing Bug Fixes  
+**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅ | Round 7C.3 ✅ | Round 7D ✅ | Round 7E 🚀 | Round 7F 🚀  
+**Next Phase**: Round 7E - Review System Implementation (User Engagement Enhancement)  
+**Phase 1.5 Extended Duration**: 20-25 hours estimated (including manual testing fixes)

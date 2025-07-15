@@ -22,6 +22,17 @@ interface Card {
   category: string;
 }
 
+interface ReadingStructure {
+  header: string;
+  cards_reading: any[];
+  reading: string;
+  suggestions: string[];
+  next_questions: string[];
+  final: string;
+  end: string;
+  notice: string;
+}
+
 interface Reading {
   id: string;
   question: string;
@@ -31,7 +42,7 @@ interface Reading {
     topic: string;
     timeframe: string;
   };
-  reading: string;
+  answer: ReadingStructure; // Changed from 'reading: string' to full structure
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
@@ -113,7 +124,7 @@ export default function HistoryPage() {
         ) : data && data.readings && Array.isArray(data.readings) && data.readings.length > 0 ? (
           <>
             {/* Reading Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6 mb-8">
               {data.readings.map((reading) => (
                 <ReadingCard
                   key={reading.id}

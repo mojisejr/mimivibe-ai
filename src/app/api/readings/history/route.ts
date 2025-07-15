@@ -28,7 +28,10 @@ export async function GET(request: NextRequest) {
     // Get readings with their associated cards
     const [readings, total] = await Promise.all([
       prisma.reading.findMany({
-        where: { userId },
+        where: { 
+          userId,
+          isDeleted: false // Only show non-deleted readings
+        },
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
@@ -58,7 +61,10 @@ export async function GET(request: NextRequest) {
         }
       }),
       prisma.reading.count({
-        where: { userId }
+        where: { 
+          userId,
+          isDeleted: false // Only count non-deleted readings
+        }
       })
     ])
 
@@ -148,7 +154,8 @@ export async function POST(request: NextRequest) {
     const reading = await prisma.reading.findFirst({
       where: { 
         id: readingId,
-        userId // Ensure user can only access their own readings
+        userId, // Ensure user can only access their own readings
+        isDeleted: false // Only allow access to non-deleted readings
       },
       select: {
         id: true,

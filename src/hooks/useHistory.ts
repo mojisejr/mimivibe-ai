@@ -15,6 +15,17 @@ interface Card {
   category: string;
 }
 
+interface ReadingStructure {
+  header: string;
+  cards_reading: any[];
+  reading: string;
+  suggestions: string[];
+  next_questions: string[];
+  final: string;
+  end: string;
+  notice: string;
+}
+
 interface Reading {
   id: string;
   question: string;
@@ -24,7 +35,7 @@ interface Reading {
     topic: string;
     timeframe: string;
   };
-  reading: string;
+  answer: ReadingStructure; // Changed from 'reading: string' to full structure
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
@@ -107,7 +118,16 @@ export const useHistory = (initialLimit = 6) => {
             category: card.arcana || '',
           })) : [],
           analysis: reading.questionAnalysis || { mood: '', topic: '', timeframe: '' },
-          reading: reading.reading || '',
+          answer: reading.answer || { // Preserve full reading structure instead of just 'reading' field
+            header: '',
+            cards_reading: [],
+            reading: '',
+            suggestions: [],
+            next_questions: [],
+            final: '',
+            end: '',
+            notice: ''
+          },
           createdAt: reading.createdAt || new Date().toISOString(),
           expEarned: 25, // Default reward
           coinsEarned: 5, // Default reward
