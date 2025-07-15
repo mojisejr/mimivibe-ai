@@ -118,7 +118,7 @@ export class ReadingStreamController {
  * Create a ReadableStream for SSE responses
  */
 export function createReadingStream() {
-  let streamController: ReadingStreamController
+  let streamController: ReadingStreamController | undefined
 
   const stream = new ReadableStream({
     start(controller) {
@@ -134,10 +134,10 @@ export function createReadingStream() {
     }
   })
 
-  console.log('📡 ReadableStream created, returning controller:', !!streamController)
+  console.log('📡 ReadableStream created, returning controller:', streamController !== undefined)
   return {
     stream,
-    controller: streamController!
+    controller: streamController || null
   }
 }
 

@@ -1,22 +1,25 @@
 # MiMiVibes Development Progress
 
-## Project Status: 🎉 Round 6 Complete - Core Platform Ready
+## Project Status: 🚨 Round 7A Complete - UI Update Required
 
 **Started:** January 2025  
 **Target Completion:** Q1 2025  
-**Current Phase:** Phase 1 Complete - Ready for Enhanced Features  
+**Current Phase:** Phase 1.5 - Round 7A Complete, Round 7B Critical  
 **Developer:** Solo Development  
 **Workflow:** AI-Assisted Development using Enhanced Modular Template
 
 ---
 
-## Overall Progress: 95% Complete (Foundation + Database + AI + UI + Payments + Gamification)
+## Overall Progress: 85% Complete (Foundation + Database + AI + UI + Payments + Gamification + Round 7A)
 
 ```
 Phase 1: Core Features [██████████] 6/6 complete (Context + Foundation + Database + AI + UI + Payments + Gamification)
+Phase 1.5: /ask Redesign [███░░░░░░░] 1/3 complete (Round 7A ✅ | Round 7B 🚨 | Round 7C ⏳)
 Phase 2: Enhanced Features [░░░░░░░░░░] 0/6 complete (Frontend Integration + Payment UI + Gamification UI + Error Handling + Performance + Final Testing)
 Phase 3: Deployment [░░░░░░░░░░] 0/3 complete
 ```
+
+**⚠️ Critical Status**: UI currently incompatible with Round 7A API changes - Round 7B required for functionality
 
 ---
 
@@ -469,6 +472,86 @@ const contextStrategy = {
 
 ---
 
+### 📋 Round 7A: Database Schema & API Overhaul (COMPLETED ✅)
+
+**Status:** ✅ **COMPLETED** - January 2025  
+**Context Strategy:** CLAUDE.md + API-READINGS.md (~9,000 tokens)  
+**Actual Duration:** 3-4 hours (as estimated)  
+**Priority:** Critical (Breaking changes implementation)
+
+**Completed Tasks:**
+
+- [x] **Task A**: Database schema update (JSON reading structure + hard reset)
+- [x] **Task B**: LangGraph output parser + API endpoint modifications
+
+**Success Criteria (ALL MET):**
+
+- [x] Reading.answer เป็น JSON structure แทน String type
+- [x] LangGraph returns structured output with full card objects in cards_reading
+- [x] API `/api/readings/ask` returns new format without SSE streaming
+- [x] Database migration completed (hard reset ยกเว้น Card table)
+- [x] TypeScript types updated for new reading structure
+- [x] Build process successful with no compilation errors
+
+**Implementation Results:**
+
+- ✅ Prisma schema updated: Reading.answer String → Json type
+- ✅ Database hard reset completed with 78 tarot cards backup/restore
+- ✅ LangGraph workflow rewritten to include full card objects
+- ✅ API `/api/readings/ask` completely rewritten without SSE streaming
+- ✅ New TypeScript types created in `/src/types/reading.ts`
+- ✅ Reading history API updated to handle Json answer field
+- ✅ Card backup utility created in `/scripts/backup-cards.ts`
+- ✅ Migration `20250715022611_round7a_hard_reset_json_reading` applied
+- ✅ TypeScript strict compliance and successful build
+
+**Breaking Changes Applied:**
+
+- ⚠️ Database schema: Reading.answer String → Json (breaking)
+- ⚠️ API response format: Complete restructure, no SSE streaming
+- ⚠️ LangGraph output: New structured format with cards_reading
+
+**New API Response Format:**
+```typescript
+{
+  success: true,
+  data: {
+    readingId: string,
+    question: string,
+    questionAnalysis: { mood, topic, period },
+    cards: CardReading[], // Full card objects for display
+    reading: ReadingStructure, // Complete reading with cards_reading
+    rewards: { exp: 25, coins: 5 },
+    createdAt: string
+  }
+}
+```
+
+**Context Files Used:**
+
+- `CLAUDE.md` (Master reference - 6,500 tokens)
+- `API-READINGS.md` (LangGraph workflow patterns - 2,500 tokens)
+
+**Commit Hash:** TBD (Documentation update pending)
+**Commit Message:** "feat(round7a): complete database schema & API overhaul with JSON reading structure"
+
+**Manual Testing Results:**
+✅ Database migration successful (78 cards preserved)  
+✅ LangGraph workflow returns structured JSON  
+✅ API `/api/readings/ask` new format working  
+✅ TypeScript compilation successful  
+❌ **UI Testing**: Cannot test due to chat interface incompatibility  
+🚨 **Critical Issue**: UI expects SSE streaming (removed in Round 7A)
+
+**Current Limitations:**
+- **UI Incompatibility**: Chat interface expects SSE streaming format
+- **Manual Testing**: Cannot test full functionality until Round 7B
+- **User Experience**: Application not usable until UI updated
+
+**Dependencies:** ✅ Round 1, 2, 3, 4, 5, 6 complete
+
+---
+
 ## 🏷️ Logo Integration Strategy
 
 ### Logo Asset Information
@@ -766,8 +849,10 @@ const contextMapping = {
 - **Round 4 (Chat UI)**: 4-5 hours ✅
 - **Round 5 (Payment System)**: 4-5 hours ✅
 - **Round 6 (Gamification)**: 3-4 hours ✅
-- **Phase 1 Completed**: 22-29 hours
-- **Remaining Estimated**: Enhanced Features (Phase 2) + Deployment (Phase 3)
+- **Round 7A (Database Schema)**: 3-4 hours ✅
+- **Phase 1 + 7A Completed**: 25-33 hours
+- **Phase 1.5 Remaining**: Round 7B (4-5h) + Round 7C (3-4h) = 7-9 hours
+- **Phase 2 Estimated**: Enhanced Features (18-24 hours)
 - **Context Preparation Time**: Saved 50% per round
 
 ---
@@ -797,8 +882,9 @@ const contextMapping = {
 
 ---
 
-**Last Updated**: January 2025 (Round 6 Complete)  
-**Next Review**: Phase 2 Planning (Enhanced Features)  
+**Last Updated**: January 2025 (Round 7A Complete)  
+**Current Status**: UI incompatible with API changes - Round 7B urgent  
+**Next Review**: Phase 1.5 completion (Article-Style UI)  
 **Context Strategy**: Modular files with 9,000 token limit per round
 
 ---
@@ -820,9 +906,264 @@ const contextMapping = {
 - ✅ Manual testing confirmed all gamification features operational
 
 **🚀 Phase 1 Complete: Core Platform Ready for Production!**  
-**Next Phase:** Enhanced Features (Frontend Integration, Advanced UI, Performance)
+**🔥 Round 7A Complete: Database Schema & API Overhaul!**  
+**🚨 Next Critical Phase:** Round 7B (Article-Style UI Components) - Required for UI Compatibility
 
 ---
+
+## 🔥 INSERT AFTER "Round 6 Achievement Summary" และ BEFORE "Phase 2: Enhanced Features Planning"
+
+---
+
+## 🚀 Phase 1.5: Major /ask Page Redesign (NEW - January 2025)
+
+### 📋 Phase 1.5 Overview
+
+**Status:** 🚀 **READY FOR DEVELOPMENT** - January 2025  
+**Duration:** Estimated 10-12 hours (3 rounds)  
+**Focus:** Complete /ask page transformation from chat → article-style experience  
+**Dependencies:** ✅ Phase 1 Complete (All 6 rounds)
+
+**Major Changes:**
+
+- Database schema: Reading.answer String → Json (breaking change)
+- UI paradigm: Chat interface → Article-style single-page experience
+- Animation system: Framer Motion cards + timed content reveals
+- API format: Remove SSE streaming → Single response with full data
+- User flow: Hero → Loading → Animation → Reading → Actions
+
+---
+
+### 📋 Round 7A: Database Schema & API Overhaul (READY 🚀)
+
+**Status:** 🚀 **READY FOR DEVELOPMENT** - January 2025  
+**Context Strategy:** CLAUDE.md + API-READINGS.md (~9,000 tokens)  
+**Estimated Duration:** 3-4 hours  
+**Priority:** Critical (Breaking changes)
+
+**Planned Tasks:**
+
+- [ ] **Task A**: Database schema update (JSON reading structure + hard reset)
+- [ ] **Task B**: LangGraph output parser + API endpoint modifications
+
+**Success Criteria:**
+
+- [ ] Reading.answer เป็น JSON structure ใหม่ (header, cards_reading, reading, suggestions, final, end, notice)
+- [ ] LangGraph returns structured output with full card objects
+- [ ] API `/api/readings/ask` returns new format with complete card data
+- [ ] Database migration completed (hard reset all tables ยกเว้น Card table)
+- [ ] TypeScript types updated for new structure
+- [ ] Manual testing confirms API working with new format
+
+**Breaking Changes:**
+
+- ⚠️ Database hard reset required (lose all user data except Card table)
+- ⚠️ LangGraph workflow output format changes
+- ⚠️ API response structure breaking change
+
+**Context Files:**
+
+- `CLAUDE.md` (Master reference - 6,500 tokens)
+- `API-READINGS.md` (LangGraph workflow patterns - 2,500 tokens)
+
+**Dependencies:** ✅ Phase 1 complete (Rounds 1-6)
+
+---
+
+### 📋 Round 7B: Article-Style UI Components (PLANNED 🚀)
+
+**Status:** 🚀 **PLANNED** - Depends on Round 7A  
+**Context Strategy:** CLAUDE.md + UI-COMPONENTS.md (~9,500 tokens)  
+**Estimated Duration:** 4-5 hours  
+**Priority:** Critical (New user experience)
+
+**Planned Tasks:**
+
+- [ ] **Task A**: New /ask page layout (hero + loading + article display)
+- [ ] **Task B**: Auto-hide navbar + state management + component cleanup
+
+**Success Criteria:**
+
+- [ ] หน้า /ask เป็น single-page experience (ไม่ใช่ chat interface)
+- [ ] Hero section: "ไพ่พร้อมแล้ว" + "บอกฉันสิ คุณอยากรู้อะไร?" design สวยงาม
+- [ ] Loading state: "ทำใจให้สบาย... แม่หมอกำลังทำนาย" + real-time timer
+- [ ] Auto-hide navbar on scroll (Framer Motion implementation)
+- [ ] ลบ chat components เก่า (ChatContainer, ChatMessages, ChatInput, TypingIndicator)
+- [ ] State management: initial → loading → result states
+- [ ] Mobile responsive design maintained
+
+**New Components to Create:**
+
+```
+/ask/components/
+├── HeroSection.tsx      # Title + subtitle + input + stars counter
+├── LoadingState.tsx     # Timer + loading message with animation
+├── ArticleDisplay.tsx   # Medium.com style reading presentation
+├── AutoHideNavbar.tsx   # Scroll-based navbar visibility
+└── ActionButtons.tsx    # Save/Delete/Ask Again buttons
+```
+
+**Components to Remove:**
+
+- ChatContainer.tsx (main chat orchestrator)
+- ChatMessages.tsx (message routing system)
+- ChatInput.tsx (chat textarea - extract reusable parts for HeroSection)
+- TypingIndicator.tsx (chat loading state)
+- Chat-related message components (UserMessage, AssistantMessage, etc.)
+
+**Context Files:**
+
+- `CLAUDE.md` (Master reference - 6,500 tokens)
+- `UI-COMPONENTS.md` (UI patterns and component designs - 3,000 tokens)
+
+**Dependencies:** ✅ Round 7A complete
+
+---
+
+### 📋 Round 7C: Animation & UX Integration (PLANNED 🚀)
+
+**Status:** 🚀 **PLANNED** - Depends on Round 7B  
+**Context Strategy:** CLAUDE.md + UI-COMPONENTS.md (~9,500 tokens)  
+**Estimated Duration:** 3-4 hours  
+**Priority:** High (User engagement)
+
+**Planned Tasks:**
+
+- [ ] **Task A**: Framer Motion animation sequence (cards flip + timed reveals)
+- [ ] **Task B**: Error handling + save/delete actions + user flow completion
+
+**Success Criteria:**
+
+- [ ] Cards flip animation (3 second delay + 0.6s stagger between cards)
+- [ ] Article-style reading display (Medium.com style with Thai typography)
+- [ ] Animation sequence: question → header → cards → reading sections
+- [ ] Save/Delete buttons with inline feedback (loading states + success animations)
+- [ ] Error modals with retry/reset functionality (network, API, timeout errors)
+- [ ] Complete user flow: hero → loading → animation → reading → actions → reset
+- [ ] Animation fallbacks (graceful degradation if Framer Motion fails)
+
+**Animation Timeline Implementation:**
+
+```typescript
+1. Question appear: fadeInUp (0.5s)
+2. Header appear: fadeInUp (0.8s delay)
+3. Cards appear: staggerChildren (1.2s delay)
+4. Cards flip: rotateY animation (0.6s interval between cards)
+5. Reading sections: fadeInUp (0.5s stagger)
+6. Action buttons: slideUp (final reveal)
+```
+
+**Error Handling Strategy:**
+
+- **API/Network Errors**: Modal error → "ลองใหม่" or "กลับหน้าหลัก" → Reset to initial state
+- **Animation Failures**: Silent fallback → Skip animation → Continue to reading display
+- **Credit Insufficient**: Specific modal → "ซื้อดาว" or "ดูประวัติ" actions
+- **Input Validation**: Inline feedback (not modal) → Toast warnings
+
+**Context Files:**
+
+- `CLAUDE.md` (Master reference - 6,500 tokens)
+- `UI-COMPONENTS.md` (Animation patterns and UX flows - 3,000 tokens)
+
+**Dependencies:** ✅ Round 7A, 7B complete
+
+---
+
+### 🎯 Phase 1.5 Success Metrics
+
+#### Technical Achievements
+
+- [ ] Complete transition from chat UI to article-style experience
+- [ ] Database schema successfully updated with JSON structure
+- [ ] Framer Motion animations engaging and performant
+- [ ] Error handling comprehensive and user-friendly
+- [ ] User flow smooth from input to reading to actions
+
+#### User Experience Goals
+
+- [ ] Single-page experience feels natural and engaging
+- [ ] Loading states provide appropriate feedback
+- [ ] Animation sequence creates anticipation and delight
+- [ ] Error recovery is intuitive and helpful
+- [ ] Save/delete actions work seamlessly
+
+#### Performance Targets
+
+- [ ] Animation performance good on mobile devices
+- [ ] API response times under 5 seconds
+- [ ] No memory leaks or state management issues
+- [ ] Graceful fallbacks for all failure scenarios
+
+---
+
+### 🔄 Risk Assessment for Phase 1.5
+
+#### High Risk Items
+
+- **Database Hard Reset**: All user data lost (except cards)
+- **Breaking API Changes**: Frontend integration may need updates
+- **Animation Performance**: Mobile device compatibility
+- **User Experience**: Major UX paradigm shift
+
+#### Mitigation Strategies
+
+- **Data Backup**: Export critical data before reset
+- **API Versioning**: Consider gradual migration if needed
+- **Animation Fallbacks**: Graceful degradation for performance
+- **Testing**: Extensive manual testing on multiple devices
+- **User Communication**: Clear communication about changes
+
+---
+
+### 📊 Updated Development Metrics
+
+#### Time Estimation Update
+
+- **Phase 1 Completed**: 22-29 hours ✅
+- **Phase 1.5 Estimated**: 10-12 hours 🚀
+- **Phase 2 Estimated**: 18-24 hours 🚀
+- **Total Project**: 50-65 hours
+
+#### Context Strategy
+
+- **Round 7A**: CLAUDE.md + API-READINGS.md (~9,000 tokens)
+- **Round 7B**: CLAUDE.md + UI-COMPONENTS.md (~9,500 tokens)
+- **Round 7C**: CLAUDE.md + UI-COMPONENTS.md (~9,500 tokens)
+
+---
+
+## 🔄 UPDATE: Phase 2 Renumbered (After Phase 1.5)
+
+### Phase 2: Enhanced Features (UPDATED - Renumbered)
+
+**Duration:** 18-24 hours (Estimated)  
+**Status:** Planned after Phase 1.5
+
+**Round 8**: Frontend API Integration (was Round 7)  
+**Round 9**: Stripe Payment UI Integration (was Round 8)  
+**Round 10**: Gamification UI Components (was Round 9)  
+**Round 11**: Error Handling & Loading States (was Round 10)  
+**Round 12**: Performance Optimization (was Round 11)  
+**Round 13**: Final Integration & Testing (was Round 12)
+
+### Updated Context File Mapping for Phase 2:
+
+```typescript
+const phase2ContextMapping = {
+  Round8: { supplement: "UI-INTEGRATION.md", focus: "API Integration" },
+  Round9: { supplement: "PAYMENT-UI.md", focus: "Payment UI" },
+  Round10: { supplement: "GAMIFICATION-UI.md", focus: "Gamification UI" },
+  Round11: { supplement: "UI-INTEGRATION.md", focus: "Error Handling" },
+  Round12: { supplement: "UI-INTEGRATION.md", focus: "Performance" },
+  Round13: { supplement: "UI-INTEGRATION.md", focus: "Final Integration" },
+};
+```
+
+---
+
+**Last Updated**: January 2025 - Phase 1.5 Planning Complete  
+**Next Action**: Execute Round 7A (Database Schema & API Overhaul)  
+**Ready Status**: 🚀 All prompts and context files prepared
 
 ## 🚀 Phase 2: Enhanced Features Planning
 

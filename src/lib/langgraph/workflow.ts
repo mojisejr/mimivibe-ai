@@ -2,6 +2,8 @@ import { StateGraph, Annotation, START, END } from '@langchain/langgraph'
 import { geminiAI, SYSTEM_PROMPTS, createGeminiWithPrompt } from '@/lib/ai/gemini'
 import { pickRandomCards, formatCardsForWorkflow, getCardMeaningsContext, SelectedCard } from '@/lib/utils/card-picker'
 import { parseAndValidateAIResponse, logParsingError } from '@/lib/utils/json-parser'
+import { prisma } from '@/lib/prisma'
+import type { CardReading, ReadingStructure } from '@/types/reading'
 
 // Define the state interface for the reading workflow
 export const ReadingState = Annotation.Root({
@@ -15,14 +17,7 @@ export const ReadingState = Annotation.Root({
     topic: string
     period: string
   }>,
-  reading: Annotation<{
-    header: string
-    reading: string
-    suggestions: string[]
-    final: string[]
-    end: string
-    notice: string
-  }>,
+  reading: Annotation<ReadingStructure>,
   error: Annotation<string>
 })
 
@@ -142,9 +137,32 @@ async function readingAgentNode(state: typeof ReadingState.State) {
       return { error: 'Cannot generate reading without valid question, cards, and analysis' }
     }
     
-    const cardContext = getCardMeaningsContext(state.selectedCards)
-    const cardList = formatCardsForWorkflow(state.selectedCards)
+    // Fetch full card objects from database
+    const cardIds = state.selectedCards.map(card => card.id)
+    const cards = await prisma.card.findMany({
+      where: { id: { in: cardIds } },
+      select: {
+        id: true,
+        name: true,
+        displayName: true,
+        imageUrl: true,
+        shortMeaning: true,
+        keywords: true
+      }
+    })
     
+    // Create cards_reading with position
+    const cardsReading: CardReading[] = cards.map((card, index) => ({
+      id: card.id,
+      name: card.name,
+      displayName: card.displayName,
+      imageUrl: card.imageUrl,
+      position: index + 1,
+      shortMeaning: card.shortMeaning,
+      keywords: card.keywords
+    }))
+    
+    const cardContext = getCardMeaningsContext(state.selectedCards)
     const readingAI = createGeminiWithPrompt(SYSTEM_PROMPTS.readingAgent)
     
     const prompt = `User Question: "${state.question}"
@@ -157,7 +175,19 @@ Question Analysis:
 Selected Cards:
 ${cardContext}
 
-Create a warm, insightful tarot reading in Thai that addresses the user's question using these specific cards. Follow the exact JSON format specified in your instructions.`
+Create a warm, insightful tarot reading in Thai that addresses the user's question using these specific cards. 
+
+Return JSON with this structure:
+{
+  "header": "คำทักทายและทวนคำถามอย่างอบอุ่น",
+  "reading": "คำทำนายหลักจากไพ่อย่างละเอียด",
+  "suggestions": ["คำแนะนำ 1", "คำแนะนำ 2", "คำแนะนำ 3"],
+  "final": "คำสรุปและกำลังใจ",
+  "end": "คำปิดท้ายอบอุ่น",
+  "notice": "ข้อความแจ้งเตือนเกี่ยวกับการดูดวง"
+}
+
+เขียนด้วยภาษาไทยที่อบอุ่น เป็นกันเอง และให้กำลังใจ`
 
     const response = await readingAI.invoke([
       { role: 'user', content: prompt }
@@ -167,7 +197,7 @@ Create a warm, insightful tarot reading in Thai that addresses the user's questi
       header: string;
       reading: string;
       suggestions: string[];
-      final: string[];
+      final: string;
       end: string;
       notice: string;
     }>(
@@ -185,9 +215,10 @@ Create a warm, insightful tarot reading in Thai that addresses the user's questi
     return {
       reading: {
         header: reading.header,
+        cards_reading: cardsReading, // Include full card objects
         reading: reading.reading,
         suggestions: Array.isArray(reading.suggestions) ? reading.suggestions : [],
-        final: Array.isArray(reading.final) ? reading.final : [],
+        final: reading.final,
         end: reading.end,
         notice: reading.notice
       }
@@ -244,7 +275,7 @@ export async function generateTarotReading(question: string) {
       selectedCards: [],
       cardCount: 0,
       questionAnalysis: { mood: '', topic: '', period: '' },
-      reading: { header: '', reading: '', suggestions: [], final: [], end: '', notice: '' },
+      reading: { header: '', cards_reading: [], reading: '', suggestions: [], final: '', end: '', notice: '' },
       error: ''
     }
     

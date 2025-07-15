@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import type { ReadingStructure } from '@/types/reading'
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
           answer: true,
           type: true,
           createdAt: true,
-          ReadingCard: {
+          cards: {
             select: {
               position: true,
               Card: {
@@ -63,18 +64,22 @@ export async function GET(request: NextRequest) {
 
     // Format readings for response
     const formattedReadings = readings.map(reading => {
-      const parsedAnswer = JSON.parse(reading.answer)
+      // Handle new JSON structure (answer is ReadingStructure)
+      const readingAnswer = reading.answer as unknown as ReadingStructure
       return {
         id: reading.id,
         question: reading.question,
-        questionAnalysis: parsedAnswer.questionAnalysis,
-        reading: parsedAnswer.reading,
+        answer: readingAnswer, // Now JSON object instead of string
         type: reading.type,
-        cards: reading.ReadingCard.map(rc => ({
-          ...rc.Card,
+        cards: reading.cards.map(rc => ({
+          id: rc.Card.id,
+          name: rc.Card.name,
+          displayName: rc.Card.displayName,
+          imageUrl: rc.Card.imageUrl,
           position: rc.position
         })),
-        createdAt: reading.createdAt.toISOString()
+        createdAt: reading.createdAt.toISOString(),
+        isReviewed: false // Add for compatibility
       }
     })
 
@@ -151,7 +156,7 @@ export async function POST(request: NextRequest) {
         answer: true,
         type: true,
         createdAt: true,
-        ReadingCard: {
+        cards: {
           select: {
             position: true,
             Card: {
@@ -185,18 +190,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Format reading for response
-    const parsedAnswer = JSON.parse(reading.answer)
+    const readingAnswer = reading.answer as unknown as ReadingStructure
     const formattedReading = {
       id: reading.id,
       question: reading.question,
-      questionAnalysis: parsedAnswer.questionAnalysis,
-      reading: parsedAnswer.reading,
+      answer: readingAnswer, // Now JSON object instead of string
       type: reading.type,
-      cards: reading.ReadingCard.map(rc => ({
-        ...rc.Card,
+      cards: reading.cards.map(rc => ({
+        id: rc.Card.id,
+        name: rc.Card.name,
+        displayName: rc.Card.displayName,
+        imageUrl: rc.Card.imageUrl,
         position: rc.position
       })),
-      createdAt: reading.createdAt.toISOString()
+      createdAt: reading.createdAt.toISOString(),
+      isReviewed: false // Add for compatibility
     }
 
     return NextResponse.json({

@@ -42,7 +42,7 @@ interface WorkflowNodes {
 
 ### Main Reading Workflow
 
-#### Submit Question for Reading
+#### Submit Question for Reading (Round 7A Updated)
 ```typescript
 POST /api/readings/ask
 Body: {
@@ -50,32 +50,44 @@ Body: {
   language?: 'th' | 'en' | 'auto';
 }
 Response: {
-  readingId: string;
-  questionAnalysis: {
-    mood: string;
-    topic: string;
-    period: string;
+  success: true;
+  data: {
+    readingId: string;
+    question: string;
+    questionAnalysis: {
+      mood: string;
+      topic: string;
+      period: string;
+    };
+    cards: CardReading[]; // Full card objects for display
+    reading: ReadingStructure; // Complete reading structure
+    rewards: {
+      exp: number;
+      coins: number;
+    };
+    createdAt: string;
   };
-  cards: Array<{
-    id: number;
-    name: string;
-    displayName: string;
-    imageUrl: string;
-    position: number;
-  }>;
-  reading: {
-    header: string;
-    reading: string;
-    suggestions: string[];
-    final: string[];
-    end: string;
-    notice: string;
-  };
-  rewards: {
-    exp: number;
-    coins: number;
-  };
-  createdAt: string;
+}
+
+// New TypeScript Types (Round 7A)
+interface CardReading {
+  id: number;
+  name: string;
+  displayName: string;
+  imageUrl: string;
+  position: number;
+  shortMeaning: string;
+  keywords: string;
+}
+
+interface ReadingStructure {
+  header: string;
+  cards_reading: CardReading[]; // Full card objects included
+  reading: string;
+  suggestions: string[];
+  final: string;
+  end: string;
+  notice: string;
 }
 ```
 
@@ -99,25 +111,24 @@ Response: { success: boolean; deleted: boolean; }
 
 ---
 
-## Database Models
+## Database Models (Updated Round 7A)
 
-### Reading Model
+### Reading Model (JSON Structure)
 ```prisma
 model Reading {
   id         String   @id @default(cuid())
   userId     String
   question   String
-  answer     String   @db.Text
-  type       String   @default("tarot") // tarot, oracle, etc.
+  answer     Json     // Changed from String to Json for structured reading data
+  type       String   @default("tarot")
   isDeleted  Boolean  @default(false)
   isReviewed Boolean  @default(false)
-  suggest    String?  @db.Text
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   
-  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cards   ReadingCard[]
-  reviews Review[]
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards       ReadingCard[]
+  reviews     Review[]
   
   @@index([userId, createdAt])
   @@map("readings")
@@ -604,7 +615,26 @@ const readingErrorCodes = {
 
 ---
 
-**File Purpose**: Core Reading System & LangGraph  
-**Round Usage**: Round 3 (LangGraph Integration)  
-**Dependencies**: LangGraph, Gemini AI, Database Models  
+## Round 7A Changes Summary
+
+### Breaking Changes Applied
+- **Database Schema**: Reading.answer String → Json type
+- **API Format**: Complete restructure, no SSE streaming
+- **LangGraph Output**: New structured format with cards_reading
+- **TypeScript Types**: New types in `/src/types/reading.ts`
+
+### Migration Details
+- **Migration**: `20250715022611_round7a_hard_reset_json_reading`
+- **Database Reset**: All tables reset except Card table (78 cards preserved)
+- **Backup**: Card data backed up in `/scripts/backups/`
+
+### New Implementation Files
+- `/src/types/reading.ts` - TypeScript types for new structure
+- `/scripts/backup-cards.ts` - Card backup/restore utility
+- `/src/app/api/readings/ask/route.ts` - Rewritten without SSE
+- `/src/app/api/readings/history/route.ts` - Updated for Json handling
+
+**File Purpose**: Core Reading System & LangGraph (Updated Round 7A)  
+**Round Usage**: Round 3 (LangGraph Integration) + Round 7A (Schema & API Overhaul)  
+**Dependencies**: LangGraph, Gemini AI, Database Models, TypeScript Types  
 **Estimated Tokens**: ~2,500
