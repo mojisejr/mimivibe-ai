@@ -38,16 +38,16 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
           </div>
 
           {/* Reading Meta Info */}
-          <div className="flex flex-wrap justify-center items-center space-x-6 body-small text-neutral-content mb-8">
-            <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap justify-center items-center gap-4 mb-8">
+            <div className="badge badge-primary gap-2">
               <span>🔮</span>
               <span>แม่หมอมีมี่</span>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="badge badge-secondary gap-2">
               <span>📅</span>
               <span>{new Date(readingData.createdAt).toLocaleDateString('th-TH')}</span>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="badge badge-accent gap-2">
               <span>🃏</span>
               <span>{readingData.cards.length} ใบ</span>
             </div>
@@ -146,8 +146,8 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
             <section className="mb-12">
               <div className="alert alert-warning p-6">
                 <div className="w-full">
-                  <h3 className="font-semibold heading-3 mb-2">หมายเหตุ</h3>
-                  <p className="body-small leading-relaxed">{readingData.reading.notice}</p>
+                  <h3 className="heading-3 mb-3 text-warning-content">หมายเหตุ</h3>
+                  <p className="body-normal text-warning-content leading-relaxed">{readingData.reading.notice}</p>
                 </div>
               </div>
             </section>
@@ -156,16 +156,22 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
           {/* Rewards */}
           {readingData.rewards && (
             <section className="mb-12">
-              <div className="card card-mystical p-6 bg-gradient-to-r from-warning/20 to-accent/20">
-                <h3 className="font-semibold heading-3 mb-4 text-center text-base-content">รางวัลที่ได้รับ</h3>
-                <div className="flex justify-center space-x-6">
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">⭐</div>
-                    <div className="body-small text-base-content">+{readingData.rewards.exp} EXP</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">🪙</div>
-                    <div className="body-small text-base-content">+{readingData.rewards.coins} เหรียญ</div>
+              <div className="alert alert-success p-6">
+                <div className="w-full">
+                  <h3 className="heading-3 mb-4 text-center text-success-content">รางวัลที่ได้รับ</h3>
+                  <div className="flex justify-center space-x-8">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-warning rounded-full flex items-center justify-center mb-2 mx-auto">
+                        <span className="text-warning-content text-xl">⭐</span>
+                      </div>
+                      <div className="body-small text-success-content font-medium">+{readingData.rewards.exp} EXP</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center mb-2 mx-auto">
+                        <span className="text-accent-content text-xl">🪙</span>
+                      </div>
+                      <div className="body-small text-success-content font-medium">+{readingData.rewards.coins} เหรียญ</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -175,15 +181,15 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
 
         {/* Action Buttons */}
         <div className="sticky bottom-8 max-w-2xl mx-auto">
-          <div className="card card-mystical p-6 shadow-xl">
+          <div className="card card-mystical p-6 shadow-xl bg-base-100/95 backdrop-blur-sm">
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={handleSave}
                 disabled={isSaved}
                 className={`btn flex-1 ${
                   isSaved
-                    ? 'btn-success btn-disabled'
-                    : 'btn-info'
+                    ? 'btn-success'
+                    : 'btn btn-primary'
                 }`}
               >
                 <span>{isSaved ? '✓' : '💾'}</span>
@@ -192,7 +198,7 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
               
               <button
                 onClick={onDelete}
-                className="btn btn-error btn-outline flex-1"
+                className="btn btn-outline btn-error flex-1"
               >
                 <span>🗑️</span>
                 <span>ลบการทำนาย</span>
@@ -200,7 +206,7 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
               
               <button
                 onClick={onAskAgain}
-                className="btn btn-mystical flex-1"
+                className="btn btn-accent flex-1"
               >
                 <span>🔮</span>
                 <span>ถามใหม่</span>

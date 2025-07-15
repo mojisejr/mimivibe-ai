@@ -1,23 +1,23 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useProfile } from '@/hooks/useProfile'
+import { useState } from "react";
+import { useProfile } from "@/hooks/useProfile";
 
 interface HeroSectionProps {
-  onSubmit: (question: string) => void
-  isLoading: boolean
+  onSubmit: (question: string) => void;
+  isLoading: boolean;
 }
 
 export function HeroSection({ onSubmit, isLoading }: HeroSectionProps) {
-  const [question, setQuestion] = useState('')
-  const { data: profileData } = useProfile()
+  const [question, setQuestion] = useState("");
+  const { data: profileData } = useProfile();
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (question.trim() && !isLoading) {
-      onSubmit(question.trim())
+      onSubmit(question.trim());
     }
-  }
+  };
 
   return (
     <div className="page-container flex flex-col items-center justify-center px-4 py-8 bg-gradient-to-br from-base-100 to-base-200">
@@ -25,12 +25,12 @@ export function HeroSection({ onSubmit, isLoading }: HeroSectionProps) {
         {/* Title Section */}
         <div className="mb-12">
           <h1 className="heading-1 md:text-5xl text-primary mb-4">
-            ไพ่พร้อมแล้ว
+            ไพ่พร้อมแล้ว! 🪄
           </h1>
-          <p className="body-large md:text-2xl text-neutral-content mb-8">
+          <p className="body-large md:text-2xl text-neutral-content mb-8 font-semibold">
             บอกฉันสิ คุณอยากรู้อะไร?
           </p>
-          
+
           {/* Stars Counter */}
           {profileData?.credits && (
             <div className="flex items-center justify-center space-x-4 mb-8">
@@ -59,13 +59,13 @@ export function HeroSection({ onSubmit, isLoading }: HeroSectionProps) {
               placeholder="เช่น: ความรักของฉันจะเป็นอย่างไรในช่วงนี้..."
               className="textarea textarea-bordered w-full h-32 text-lg resize-none shadow-lg"
               disabled={isLoading}
-              maxLength={500}
+              maxLength={180}
             />
             <div className="absolute bottom-3 right-3 text-xs text-neutral-content">
-              {question.length}/500
+              {question.length}/180
             </div>
           </div>
-          
+
           <button
             type="submit"
             disabled={!question.trim() || isLoading}
@@ -77,7 +77,7 @@ export function HeroSection({ onSubmit, isLoading }: HeroSectionProps) {
                 <span>กำลังเตรียมไพ่...</span>
               </div>
             ) : (
-              'เริ่มทำนาย'
+              "เริ่มทำนาย"
             )}
           </button>
         </form>
@@ -94,5 +94,5 @@ export function HeroSection({ onSubmit, isLoading }: HeroSectionProps) {
         )}
       </div>
     </div>
-  )
+  );
 }
