@@ -369,13 +369,13 @@
 
 #### Round 7D: Critical Bug Fixes & Data Synchronization (COMPLETED ✅)
 **Context Files**: `CLAUDE.md` + `API-READINGS.md`  
-**Estimated Duration**: 3-4 hours  
+**Actual Duration**: 3-4 hours  
 **Priority**: Critical (High Priority UX Issues)
 
-**Planned Tasks**:
-- **Task A**: Fix delete reading sync bug - ensure deleted readings disappear from /history immediately
-- **Task B**: Fix reading detail component display issues and ensure complete reading presentation
-- **Task C**: Resolve navbar UI jumping during loading states on desktop
+**Completed Tasks**:
+- **Task A**: ✅ Fix delete reading sync bug - ensure deleted readings disappear from /history immediately
+- **Task B**: ✅ Fix reading detail component display issues and ensure complete reading presentation
+- **Task C**: ✅ Resolve navbar UI jumping during loading states on desktop
 
 **Success Criteria (ALL MET)**:
 - [x] Delete reading action properly syncs with /history page (real-time removal)
@@ -400,6 +400,50 @@
 
 **Dependencies**: ✅ Round 7C.3 complete  
 **Breaking Changes Applied**: ✅ Updated interfaces to match Round 7A JSON structure
+
+---
+
+#### Round 7D.1: Manual Testing UX Refinements (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + `API-READINGS.md`  
+**Actual Duration**: 2 hours  
+**Priority**: High (Manual Testing Feedback)
+
+**Completed Tasks**:
+- **Task A**: ✅ Remove "Reading Summary" section from ReadingDetailModal (users prefer predictions only)
+- **Task B**: ✅ Update headings in ReadingDetailModal to match /ask ArticleDisplay for consistency
+- **Task C**: ✅ Add delete functionality to both ReadingCard and ReadingDetailModal with proper UX
+- **Task D**: ✅ Implement real-time state synchronization after deletion
+
+**Success Criteria (ALL MET)**:
+- [x] Reading Summary section removed as it was redundant for returning users
+- [x] All headings in ReadingDetailModal match ArticleDisplay (Thai language consistency)
+- [x] Delete buttons positioned to not interfere with reading experience
+- [x] Immediate UI feedback when readings are deleted (no page refresh needed)
+- [x] Responsive delete button design (compact, user-friendly)
+
+**Implementation Results**:
+- ✅ Removed Reading Summary section (lines 156-168) from ReadingDetailModal
+- ✅ Updated all headings to Thai: "ไพ่ที่จั่วได้", "การทำนาย", "คำแนะนำ", "ข้อสรุป", "หมายเหตุ"
+- ✅ Added delete button to ReadingDetailModal footer with proper spacing and responsive text
+- ✅ Added delete button to ReadingCard with non-intrusive design (opacity-based hover)
+- ✅ Implemented deleteReading function in useHistory hook with optimistic state updates
+- ✅ Integrated delete functionality in history page with error handling and modal management
+- ✅ TypeScript compilation successful with no errors
+
+**Key Files Modified**:
+- `/src/components/history/ReadingDetailModal.tsx` - Removed header section, updated headings, added delete button
+- `/src/components/history/ReadingCard.tsx` - Added delete button with proper event handling
+- `/src/hooks/useHistory.ts` - Added deleteReading function with real-time state sync
+- `/src/app/history/page.tsx` - Integrated delete functionality with proper error handling
+
+**UX Improvements**:
+- Delete buttons use 🗑️ emoji for universal recognition
+- Stop propagation prevents accidental triggers when clicking cards
+- Immediate state updates provide instant feedback
+- Consistent heading terminology reduces user confusion
+- Responsive design (icon-only on mobile, text on desktop)
+
+**Dependencies**: ✅ Round 7D complete
 
 ---
 
@@ -644,6 +688,6 @@ claude → [CLAUDE.md + UI-COMPONENTS.md] → Round 7C → test → commit
 ---
 
 **Updated**: January 2025 - Phase 1.5 Extended with Manual Testing Bug Fixes  
-**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅ | Round 7C.3 ✅ | Round 7D ✅ | Round 7E 🚀 | Round 7F 🚀  
+**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅ | Round 7C.3 ✅ | Round 7D ✅ | Round 7D.1 ✅ | Round 7E 🚀 | Round 7F 🚀  
 **Next Phase**: Round 7E - Review System Implementation (User Engagement Enhancement)  
 **Phase 1.5 Extended Duration**: 20-25 hours estimated (including manual testing fixes)
