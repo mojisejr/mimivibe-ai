@@ -512,6 +512,7 @@ const contextStrategy = {
 - ⚠️ LangGraph output: New structured format with cards_reading
 
 **New API Response Format:**
+
 ```typescript
 {
   success: true,
@@ -544,6 +545,7 @@ const contextStrategy = {
 🚨 **Critical Issue**: UI expects SSE streaming (removed in Round 7A)
 
 **Current Limitations:**
+
 - **UI Incompatibility**: Chat interface expects SSE streaming format
 - **Manual Testing**: Cannot test full functionality until Round 7B
 - **User Experience**: Application not usable until UI updated

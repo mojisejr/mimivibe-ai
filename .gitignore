@@ -7,3 +7,6 @@
 /generated/prisma
 /manual-testing-guide
 /prompts
+.backup
+/ui-mock
+/scripts
