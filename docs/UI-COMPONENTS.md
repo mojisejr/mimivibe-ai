@@ -2,11 +2,476 @@
 
 ## 🧩 Core UI Components
 
-สำหรับ Round 4: Chat UI & Reading Flow Components
+สำหรับ Round 4: Chat UI & Reading Flow Components (LEGACY)  
+สำหรับ Round 7B: Article-Style UI Components (CURRENT)
 
 ---
 
-## Chat Interface Components
+## 🚀 Article-Style UI Components (Round 7B - CURRENT)
+
+### Overview
+
+Complete transformation from chat interface to article-style reading experience with mobile-first UX optimization.
+
+### Components Architecture
+
+```typescript
+/ask/components/
+├── AskPage.tsx              // Main orchestrator with state management
+├── HeroSection.tsx          // Title + input + stars counter
+├── LoadingState.tsx         // Timer + loading messages + animations
+├── ArticleDisplay.tsx       // Reading presentation + mobile actions
+├── AutoHideNavbar.tsx       // Scroll behavior + logo integration
+└── /cards/CardFallback.tsx  // MiMi logo fallback component
+```
+
+### Core Component Implementations
+
+#### AskPage.tsx - Main Orchestrator
+
+```typescript
+export function AskPage() {
+  const [pageState, setPageState] = useState<'initial' | 'loading' | 'result'>('initial')
+  const [readingData, setReadingData] = useState<ReadingResponse['data'] | null>(null)
+  
+  return (
+    <>
+      <AutoHideNavbar 
+        currentState={pageState}
+        showInStates={['initial', 'loading', 'result']}
+      />
+      
+      <main className="min-h-screen">
+        {pageState === 'initial' && (
+          <HeroSection onSubmit={handleQuestionSubmit} isLoading={false} />
+        )}
+        {pageState === 'loading' && (
+          <LoadingState question={currentQuestion} />
+        )}
+        {pageState === 'result' && readingData && (
+          <ArticleDisplay
+            readingData={readingData}
+            onSave={handleSaveReading}
+            onDelete={handleDeleteReading}
+            onAskAgain={handleAskAgain}
+          />
+        )}
+      </main>
+    </>
+  )
+}
+```
+
+#### HeroSection.tsx - Question Input
+
+```typescript
+export function HeroSection({ onSubmit, isLoading }: HeroSectionProps) {
+  return (
+    <div className="page-container flex flex-col items-center justify-center px-4 py-8 pt-20 lg:pt-24 bg-gradient-to-br from-base-100 to-base-200">
+      <div className="w-full max-w-2xl mx-auto text-center">
+        <h1 className="heading-1 md:text-5xl text-primary mb-4">
+          ไพ่พร้อมแล้ว! 🪄
+        </h1>
+        <p className="body-large md:text-2xl text-neutral-content mb-8 font-semibold">
+          บอกฉันสิ คุณอยากรู้อะไร?
+        </p>
+        
+        {/* Stars Counter */}
+        {profileData?.credits && (
+          <div className="flex items-center justify-center space-x-4 mb-8">
+            <div className="badge badge-warning gap-1">⭐ {profileData.credits.stars}</div>
+            <div className="badge badge-secondary gap-1">🎁 {profileData.credits.freePoint}</div>
+          </div>
+        )}
+        
+        {/* Question Input Form */}
+        <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto">
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="เช่น: ความรักของฉันจะเป็นอย่างไรในช่วงนี้..."
+            className="textarea textarea-bordered w-full h-32 text-lg resize-none shadow-lg"
+            maxLength={180}
+          />
+          <button
+            type="submit"
+            disabled={!question.trim() || isLoading}
+            className="btn btn-mystical w-full mt-6"
+          >
+            เริ่มทำนาย
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+```
+
+#### AutoHideNavbar.tsx - Smart Navigation
+
+```typescript
+export function AutoHideNavbar({ showInStates, currentState }: AutoHideNavbarProps) {
+  const [hidden, setHidden] = useState(false)
+  const { scrollY } = useScroll()
+  
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious()
+    // Only hide on mobile/tablet, always show on desktop (lg screens and up)
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
+    if (!isDesktop && previous !== undefined && latest > previous && latest > 150) {
+      setHidden(true)
+    } else {
+      setHidden(false)
+    }
+  })
+
+  return (
+    <motion.nav
+      variants={{
+        visible: { y: 0 },
+        hidden: { y: "-100%" },
+      }}
+      animate={hidden ? "hidden" : "visible"}
+      className="fixed top-0 left-0 right-0 z-50 bg-base-100/90 backdrop-blur-md"
+    >
+      <div className="max-w-6xl mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Logo Integration */}
+          <div className="flex items-center">
+            <button onClick={() => router.push('/')}>
+              <img
+                src="/images/logo.png"
+                alt="MiMi Vibes - หมอดูไพ่ทาโรต์ AI"
+                className="h-8 w-auto sm:h-10 lg:h-12 object-contain"
+                style={{ 
+                  maxWidth: '120px',
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                }}
+              />
+            </button>
+          </div>
+          
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center space-x-6">
+            <button className="btn btn-ghost btn-sm text-primary">ถามไพ่</button>
+            <button className="btn btn-ghost btn-sm text-base-content">ประวัติ</button>
+            <button className="btn btn-ghost btn-sm text-base-content">โปรไฟล์</button>
+          </div>
+          
+          {/* User Section */}
+          <div className="flex items-center space-x-3">
+            <div className="badge badge-warning gap-1">⭐ {stars}</div>
+            <UserButton />
+          </div>
+        </div>
+      </div>
+    </motion.nav>
+  )
+}
+```
+
+#### ArticleDisplay.tsx - Reading Presentation
+
+```typescript
+export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: ArticleDisplayProps) {
+  return (
+    <div className="page-container bg-base-200 pt-20 lg:pt-24">
+      <div className="content-container">
+        {/* Article Header */}
+        <header className="mb-12 text-center">
+          <h1 className="heading-1 md:text-4xl text-base-content mb-4">
+            {readingData.reading.header}
+          </h1>
+          
+          {/* Reading Meta Info */}
+          <div className="flex flex-wrap justify-center items-center gap-4 mb-8">
+            <div className="badge badge-primary gap-2">🔮 แม่หมอมีมี่</div>
+            <div className="badge badge-secondary gap-2">📅 {date}</div>
+            <div className="badge badge-accent gap-2">🃏 {cardCount} ใบ</div>
+          </div>
+        </header>
+
+        {/* Cards Section */}
+        <section className="mb-12">
+          <h2 className="heading-2 text-base-content mb-8 text-center">ไพ่ที่จั่วได้</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+            {readingData.cards.map((card, index) => (
+              <CardImage 
+                key={card.id}
+                src={card.imageUrl}
+                alt={card.displayName}
+                position={index + 1}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* Reading Content */}
+        <article className="max-w-3xl mx-auto px-4 sm:px-6">
+          <section className="card card-mystical p-6 sm:p-8 shadow-lg mb-12">
+            <h2 className="heading-2 text-base-content mb-6">การทำนาย</h2>
+            <div className="body-normal text-base-content leading-relaxed whitespace-pre-line">
+              {readingData.reading.reading}
+            </div>
+          </section>
+        </article>
+
+        {/* Mobile-Optimized Action Buttons */}
+        <div className="pb-8">
+          {/* Desktop Actions */}
+          <div className="hidden sm:block sticky bottom-8 max-w-2xl mx-auto">
+            <div className="card card-mystical p-6 shadow-xl bg-base-100/95 backdrop-blur-sm">
+              <div className="flex gap-4">
+                <button className="btn btn-primary flex-1">💾 บันทึก</button>
+                <button className="btn btn-outline btn-error flex-1">🗑️ ลบ</button>
+                <button className="btn btn-accent flex-1">🔮 ถามใหม่</button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Actions - Inline Layout */}
+          <div className="sm:hidden max-w-2xl mx-auto px-4">
+            <div className="space-y-4">
+              <button className="btn btn-accent w-full btn-lg">🔮 ถามใหม่</button>
+              <div className="grid grid-cols-2 gap-3">
+                <button className="btn btn-sm btn-primary btn-outline">💾 บันทึก</button>
+                <button className="btn btn-sm btn-outline btn-error">🗑️ ลบ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+#### CardFallback.tsx - Logo Fallback
+
+```typescript
+export function CardFallback({ className = "" }: CardFallbackProps) {
+  return (
+    <div className={`relative bg-gradient-to-br from-primary/20 to-secondary/30 rounded-lg border-2 border-primary/30 aspect-[2/3] flex items-center justify-center ${className}`}>
+      {/* Mystical background pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="w-full h-full bg-gradient-to-br from-primary to-secondary rounded-lg">
+          {/* Decorative stars */}
+          <div className="absolute top-2 left-2 text-warning text-xs">✦</div>
+          <div className="absolute top-4 right-3 text-warning text-xs">✧</div>
+          <div className="absolute bottom-4 left-3 text-warning text-xs">✦</div>
+          <div className="absolute bottom-2 right-2 text-warning text-xs">✧</div>
+        </div>
+      </div>
+      
+      {/* Logo container */}
+      <div className="relative z-10 flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mb-2 relative">
+          <img
+            src="/images/logo.png"
+            alt="MiMi Vibes Logo"
+            className="w-full h-full object-contain drop-shadow-lg"
+          />
+        </div>
+        <div className="text-center">
+          <div className="text-xs sm:text-sm font-semibold text-primary mb-1">MiMi Vibes</div>
+          <div className="text-xs text-secondary/80">ไพ่ทาโรต์</div>
+        </div>
+      </div>
+      
+      {/* Mystical glow effect */}
+      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 animate-pulse"></div>
+    </div>
+  )
+}
+```
+
+### UX Improvements Implementation
+
+#### Mobile-First Responsive Design
+
+```typescript
+// Responsive Card Grid
+const cardGridClasses = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6"
+
+// Mobile Action Buttons (Inline Layout)
+const mobileActions = `
+  <div className="sm:hidden max-w-2xl mx-auto px-4">
+    <div className="space-y-4">
+      {/* Primary Action - Ask Again */}
+      <button className="btn btn-accent w-full btn-lg">🔮 ถามใหม่</button>
+      
+      {/* Secondary Actions - Horizontal */}
+      <div className="grid grid-cols-2 gap-3">
+        <button className="btn btn-sm btn-primary btn-outline">💾 บันทึก</button>
+        <button className="btn btn-sm btn-outline btn-error">🗑️ ลบ</button>
+      </div>
+    </div>
+  </div>
+`
+
+// Desktop Action Buttons (Sticky Floating)
+const desktopActions = `
+  <div className="hidden sm:block sticky bottom-8 max-w-2xl mx-auto">
+    <div className="card card-mystical p-6 shadow-xl bg-base-100/95 backdrop-blur-sm">
+      <div className="flex gap-4">
+        <button className="btn btn-primary flex-1">💾 บันทึกการทำนาย</button>
+        <button className="btn btn-outline btn-error flex-1">🗑️ ลบการทำนาย</button>
+        <button className="btn btn-accent flex-1">🔮 ถามใหม่</button>
+      </div>
+    </div>
+  </div>
+`
+```
+
+#### Auto-Hide Navbar Behavior
+
+```typescript
+// Desktop vs Mobile Behavior
+const navbarBehavior = {
+  desktop: {
+    condition: "window.innerWidth >= 1024",
+    behavior: "Always visible for better navigation access",
+    implementation: "setHidden(false) always on desktop"
+  },
+  mobile: {
+    condition: "window.innerWidth < 1024", 
+    behavior: "Auto-hide on scroll down, show on scroll up",
+    implementation: "Standard auto-hide logic with scroll detection"
+  }
+}
+
+// Implementation
+useMotionValueEvent(scrollY, "change", (latest) => {
+  const previous = scrollY.getPrevious()
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
+  
+  if (!isDesktop && previous !== undefined && latest > previous && latest > 150) {
+    setHidden(true)  // Hide on mobile scroll down
+  } else {
+    setHidden(false) // Always show on desktop, show on mobile scroll up
+  }
+})
+```
+
+#### Logo Integration Strategy
+
+```typescript
+// Navbar Logo Implementation
+const logoImplementation = {
+  format: "Landscape MiMi Vibes brand image",
+  sizes: {
+    mobile: "h-8 (32px)",
+    tablet: "h-10 (40px)", 
+    desktop: "h-12 (48px)"
+  },
+  styling: {
+    maxWidth: "120px",
+    filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
+    objectFit: "contain"
+  },
+  fallback: "Graceful error handling",
+  accessibility: "Proper alt text for screen readers"
+}
+
+// CardFallback Logo
+const cardFallbackLogo = {
+  purpose: "Replace missing card-back.jpg with branded fallback",
+  design: "Mystical background with MiMi logo centerpiece",
+  responsive: "w-12→w-16→w-20 based on screen size",
+  branding: "Consistent MiMi Vibes visual identity"
+}
+```
+
+---
+
+## 📱 Mobile UX Optimization Patterns
+
+### Action Button Layouts
+
+```typescript
+// Problem: Sticky floating buttons obstruct reading on mobile
+// Solution: Inline layout that doesn't interfere with content
+
+const mobileUXPattern = {
+  primary: {
+    action: "ถามใหม่",
+    style: "btn btn-accent w-full btn-lg",
+    prominence: "Most prominent, full width",
+    purpose: "Encourage continued engagement"
+  },
+  secondary: {
+    actions: ["บันทึก", "ลบ"],
+    style: "btn btn-sm btn-outline",
+    layout: "grid grid-cols-2 gap-3",
+    prominence: "Smaller, less intrusive"
+  }
+}
+```
+
+### Responsive Card Grid
+
+```typescript
+// Progressive Enhancement Grid
+const responsiveGrid = {
+  mobile: "grid-cols-2",      // 2 cards per row (easier touch targets)
+  tablet: "grid-cols-3",      // 3 cards per row (balanced layout)
+  desktop: "grid-cols-5",     // 5 cards per row (full tarot spread)
+  gaps: "gap-4 sm:gap-6",     // Responsive spacing
+  maxWidth: "max-w-4xl",      // Prevent over-stretching on large screens
+}
+```
+
+### Theme Consistency
+
+```typescript
+// DaisyUI Component Usage
+const themeComponents = {
+  cards: "card card-mystical",
+  buttons: "btn btn-primary | btn btn-accent | btn btn-outline btn-error",
+  alerts: "alert alert-info | alert alert-success | alert alert-warning",
+  badges: "badge badge-primary | badge badge-secondary | badge badge-accent",
+  shadows: "shadow-lg",
+  backgrounds: "bg-gradient-to-br from-base-100 to-base-200"
+}
+
+// MiMiVibes Color Palette
+const colors = {
+  primary: "#629c6b",    // Green
+  secondary: "#66836a",  // Sage green  
+  accent: "#de5b25",     // Orange
+  warning: "#ffcc00",    // Yellow
+  success: "#629c6b",    // Same as primary
+  error: "#de5b25"       // Same as accent
+}
+```
+
+---
+
+## 🎯 Key Implementation Results
+
+### Performance Metrics
+- ✅ **Build Success**: TypeScript strict compliance
+- ✅ **Mobile Performance**: Optimized touch interactions
+- ✅ **Theme Consistency**: MiMiVibes colors throughout
+- ✅ **Responsive Design**: Mobile-first approach
+
+### User Experience Improvements
+- ✅ **Navigation**: Desktop always visible, mobile auto-hide
+- ✅ **Reading Experience**: Inline actions don't obstruct content
+- ✅ **Brand Integration**: Professional logo implementation  
+- ✅ **Error Handling**: Graceful fallbacks for missing images
+
+### Technical Achievements
+- ✅ **State Management**: Clean initial/loading/result flow
+- ✅ **Component Architecture**: Reusable, maintainable components
+- ✅ **API Integration**: Complete save/delete functionality
+- ✅ **Mobile Optimization**: Touch-friendly responsive design
+
+---
+
+## 📚 Legacy Chat Interface Components (DEPRECATED)
+
+### ⚠️ DEPRECATED: Chat Interface Components
 
 ### Chat Container Layout
 
