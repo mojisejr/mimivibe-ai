@@ -50,19 +50,21 @@ export function AutoHideNavbar({
     >
       <div className="max-w-6xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          {/* Left: Logo and Title */}
-          <div className="flex items-center space-x-3">
+          {/* Left: Logo */}
+          <div className="flex items-center">
             <button
               onClick={() => router.push('/')}
-              className="flex items-center space-x-2 hover:opacity-70 transition-opacity"
+              className="block hover:opacity-80 transition-opacity duration-200"
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-                <span className="text-primary-content text-sm font-bold">M</span>
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="font-semibold text-base-content">แม่หมอมีมี่</h1>
-                <p className="text-xs text-neutral-content">หมอดูไพ่ทาโรต์ AI</p>
-              </div>
+              <img
+                src="/images/logo.png"
+                alt="MiMi Vibes - หมอดูไพ่ทาโรต์ AI"
+                className="h-8 w-auto sm:h-10 lg:h-12 object-contain"
+                style={{ 
+                  maxWidth: '120px',
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                }}
+              />
             </button>
           </div>
 
