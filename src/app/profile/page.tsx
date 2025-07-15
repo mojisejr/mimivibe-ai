@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useProfile } from "@/hooks/useProfile";
 import { BottomNavigation } from "@/components/navigation/BottomNavigation";
 import { Logo, ProfileLoadingState, ErrorState } from "@/components/ui";
-import { Navbar } from "@/components/layout";
+import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 
 export default function ProfilePage() {
@@ -45,10 +45,10 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
       {/* Header */}
-      <Navbar logoSize="xl" showText={false} />
+      <UnifiedNavbar />
 
       {/* Main Content */}
-      <main className="content-container flex-1 pb-20 md:pb-6">
+      <main className="content-container flex-1 pb-20 md:pb-6 pt-20">
         <div className="text-center mb-8">
           <h1 className="heading-1 mb-4">Your Profile</h1>
           <p className="body-large text-neutral-content">

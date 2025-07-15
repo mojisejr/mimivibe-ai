@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BottomNavigation } from '@/components/navigation/BottomNavigation';
-import { Navbar } from '@/components/layout';
+import { UnifiedNavbar } from '@/components/layout/UnifiedNavbar';
 
 export default function PackagesPage() {
   const packages = [
@@ -31,10 +31,10 @@ export default function PackagesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
       {/* Header */}
-      <Navbar logoSize="xl" showText={false} />
+      <UnifiedNavbar />
 
       {/* Main Content */}
-      <main className="content-container flex-1 pb-20 md:pb-6">
+      <main className="content-container flex-1 pb-20 md:pb-6 pt-20">
         <div className="text-center mb-8">
           <h1 className="heading-1 mb-4">Credit Packages</h1>
           <p className="body-large text-neutral-content">

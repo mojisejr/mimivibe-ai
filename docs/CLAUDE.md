@@ -140,6 +140,36 @@
 
 ---
 
+#### Round 7C: Navbar Unification (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + `PROGRESS.md`  
+**Actual Duration**: 2 hours  
+**Priority**: Medium (UX consistency across pages)
+
+**Completed Tasks**:
+- **Task A**: ✅ Create UnifiedNavbar component combining AutoHideNavbar + simple Navbar
+- **Task B**: ✅ Implement navbar across all pages (/profile, /history, /packages, /ask)
+- **Task C**: ✅ Add navigation links with current page highlighting
+- **Task D**: ✅ Include credits display on all pages when authenticated
+
+**Success Criteria (ALL MET)**:
+- [x] ทุกหน้าใช้ navbar component เดียวกัน with consistent design
+- [x] /ask page: auto-hide functionality preserved + state management
+- [x] Other pages: static navbar with navigation links + credits display
+- [x] Navigation links highlight current page appropriately
+- [x] Credits badges (⭐ stars, 🎁 free points) shown on all pages
+- [x] Responsive design maintained across all screen sizes
+- [x] Mobile UX consistency with bottom navigation
+
+**Technical Implementation**:
+- Created `UnifiedNavbar.tsx` combining features from both navbar types
+- Props: `autoHide`, `showInStates`, `currentState`, `className`
+- Navigation links: 🔮 ถามไพ่, 📜 ประวัติ, 👤 โปรไฟล์, 💎 แพ็คเกจ
+- Current page highlighting with primary color + background
+- Credits display hidden on mobile, visible on desktop
+- Auto-hide only enabled for /ask page, static for other pages
+
+---
+
 #### Round 7B: Article-Style UI Components (COMPLETED ✅)
 **Context Files**: `CLAUDE.md` + `UI-COMPONENTS.md`  
 **Actual Duration**: 4-5 hours + comprehensive UX improvements  

@@ -8,7 +8,7 @@ import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 import { ReadingCard } from '@/components/history/ReadingCard';
 import { ReadingDetailModal } from '@/components/history/ReadingDetailModal';
 import { HistoryLoadingState, ErrorState, EmptyState } from '@/components/ui';
-import { Navbar } from '@/components/layout';
+import { UnifiedNavbar } from '@/components/layout/UnifiedNavbar';
 
 interface Card {
   id: number;
@@ -85,10 +85,10 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
       {/* Header */}
-      <Navbar logoSize="xl" showText={false} />
+      <UnifiedNavbar />
 
       {/* Main Content */}
-      <main className="content-container flex-1 pb-20 md:pb-6">
+      <main className="content-container flex-1 pb-20 md:pb-6 pt-20">
         <div className="text-center mb-8">
           <h1 className="heading-1 mb-4">Reading History</h1>
           <p className="body-large text-neutral-content">

@@ -5,7 +5,7 @@ import { ReadingResponse } from '@/types/reading'
 import { HeroSection } from './HeroSection'
 import { LoadingState } from './LoadingState'
 import { AnimatedArticleDisplay } from './AnimatedArticleDisplay'
-import { AutoHideNavbar } from './AutoHideNavbar'
+import { UnifiedNavbar } from '@/components/layout/UnifiedNavbar'
 
 type PageState = 'initial' | 'loading' | 'result' | 'error'
 
@@ -128,7 +128,8 @@ export function AskPage() {
   return (
     <>
       {/* Auto-Hide Navbar */}
-      <AutoHideNavbar 
+      <UnifiedNavbar 
+        autoHide={true}
         currentState={pageState === 'error' ? 'initial' : pageState}
         showInStates={['initial', 'loading', 'result']}
       />
