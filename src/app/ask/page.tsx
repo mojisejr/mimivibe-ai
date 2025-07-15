@@ -1,20 +1,18 @@
 'use client'
 
-import { ChatContainer } from '@/components/chat/ChatContainer'
+import { AskPage } from './components/AskPage'
 import { BottomNavigation } from '@/components/navigation/BottomNavigation'
 
-export default function AskPage() {
+export default function AskPageRoute() {
   return (
-    <div className="min-h-screen bg-base-100 flex flex-col">
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col pb-20 md:pb-0">
-        <ChatContainer className="flex-1" />
-      </div>
+    <>
+      {/* New Article-Style Ask Page */}
+      <AskPage />
       
-      {/* Bottom Navigation (Mobile Only) */}
-      <div className="md:hidden">
+      {/* Bottom Navigation (Mobile Only) - Only show on initial state */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40">
         <BottomNavigation />
       </div>
-    </div>
+    </>
   )
 }
