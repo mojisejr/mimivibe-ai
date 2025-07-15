@@ -477,7 +477,7 @@ export function AnimatedArticleDisplay({ readingData, onSave, onDelete, onAskAga
           </div>
 
           {/* Mobile Action Buttons - Inline Layout */}
-          <div className="sm:hidden max-w-2xl mx-auto px-4">
+          <div className="sm:hidden max-w-2xl mx-auto px-4 pb-24 safe-area-bottom">
             <div className="space-y-4">
               {/* Primary Action - Ask Again */}
               <motion.button
