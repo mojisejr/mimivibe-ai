@@ -85,6 +85,7 @@ interface ReadingStructure {
   cards_reading: CardReading[]; // Full card objects included
   reading: string;
   suggestions: string[];
+  next_questions: string[]; // Suggested follow-up questions (Round 7C.1)
   final: string;
   end: string;
   notice: string;
@@ -292,6 +293,7 @@ async function readingAgent(state: ReadingState): Promise<ReadingState> {
     "header": "คำทักทายและทวนคำถาม",
     "reading": "คำทำนายหลักจากไพ่",
     "suggestions": ["คำแนะนำ 1", "คำแนะนำ 2", "คำแนะนำ 3"],
+    "next_questions": ["คำถามแนะนำ 1", "คำถามแนะนำ 2", "คำถามแนะนำ 3"],
     "final": ["คำสรุป", "กำลังใจ"],
     "end": "คำปิดท้ายอบอุ่น",
     "notice": "ข้อความแจ้งเตือนเกี่ยวกับการดูดวง"

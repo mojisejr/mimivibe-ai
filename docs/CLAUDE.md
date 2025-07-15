@@ -241,6 +241,70 @@
 
 ---
 
+#### Round 7C.1: Next Questions Feature (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + Project Analysis  
+**Actual Duration**: 2-3 hours  
+**Priority**: Medium (User engagement enhancement)
+
+**Completed Tasks**:
+- **Task A**: ✅ Implement next_questions feature for suggested follow-up questions
+- **Task B**: ✅ Update TypeScript types and LangGraph workflow integration
+
+**Success Criteria (ALL MET)**:
+- [x] AI generates 3 suggested follow-up questions after each reading
+- [x] Questions display in NextQuestions section after [end] section
+- [x] Click-to-fill functionality auto-populates input field
+- [x] Auto-submit with 100ms delay for smooth user experience
+- [x] State management properly handles question transitions
+
+**Implementation Results**:
+- ✅ Updated ReadingStructure interface to include `next_questions: string[]`
+- ✅ Modified LangGraph workflow to parse and validate next_questions field
+- ✅ Added NextQuestions component to AnimatedArticleDisplay
+- ✅ Implemented click-to-fill functionality with auto-submit delay
+- ✅ Updated AskPage and HeroSection state management for question flow
+- ✅ TypeScript strict compliance and successful build
+- ✅ Manual testing confirmed smooth question transition experience
+
+**Key Files Modified**:
+- `/src/types/reading.ts` - Added next_questions to ReadingStructure
+- `/src/lib/langgraph/workflow.ts` - Updated prompt and parsing logic
+- `/src/app/ask/components/AnimatedArticleDisplay.tsx` - Added NextQuestions section
+- `/src/app/ask/components/AskPage.tsx` - Added handleQuestionClick function
+- `/src/app/ask/components/HeroSection.tsx` - Added initialQuestion support
+
+**Dependencies**: ✅ Round 7C complete
+
+---
+
+#### Round 7C.2: Mobile UX Bug Fix (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + Project Analysis  
+**Actual Duration**: 1 hour  
+**Priority**: High (Critical mobile UX issue)
+
+**Completed Tasks**:
+- **Task A**: ✅ Fix bottom navigation overlap with action buttons
+- **Task B**: ✅ Ensure consistent spacing across mobile layouts
+
+**Success Criteria (ALL MET)**:
+- [x] Action buttons no longer hidden behind bottom navigation
+- [x] Proper spacing follows project convention (pb-24 safe-area-bottom)
+- [x] Consistent mobile UX across all pages
+
+**Implementation Results**:
+- ✅ Added `pb-24 safe-area-bottom` to mobile action buttons container
+- ✅ Fixed bottom navigation overlap preventing access to save/delete buttons
+- ✅ Maintained consistency with other pages using similar spacing pattern
+- ✅ TypeScript compilation successful with no errors
+- ✅ Manual testing confirmed proper button accessibility on mobile
+
+**Key Files Modified**:
+- `/src/app/ask/components/AnimatedArticleDisplay.tsx` - Fixed mobile button spacing
+
+**Dependencies**: ✅ Round 7C.1 complete
+
+---
+
 ### Phase 2: Enhanced Features (UPDATED 🚀)
 
 #### Round 8: Frontend API Integration
@@ -335,7 +399,7 @@ claude → [CLAUDE.md + UI-COMPONENTS.md] → Round 7C → test → commit
 
 ---
 
-**Updated**: January 2025 - Phase 1.5 Complete with Animation & UX Polish  
-**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅  
+**Updated**: January 2025 - Phase 1.5 Complete with Animation & UX Polish + Enhanced Features  
+**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅  
 **Next Phase**: Phase 2 - Enhanced Features (Frontend Integration)  
-**Phase 1.5 Duration**: 10-12 hours actual (as estimated) - COMPLETE ✅
+**Phase 1.5 Duration**: 13-15 hours actual (including enhancements) - COMPLETE ✅
