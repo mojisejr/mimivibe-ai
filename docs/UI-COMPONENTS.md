@@ -3,11 +3,231 @@
 ## 🧩 Core UI Components
 
 สำหรับ Round 4: Chat UI & Reading Flow Components (LEGACY)  
-สำหรับ Round 7B: Article-Style UI Components (CURRENT)
+สำหรับ Round 7B: Article-Style UI Components (LEGACY)  
+สำหรับ Round 7C: Animated Article-Style UI Components (CURRENT)
 
 ---
 
-## 🚀 Article-Style UI Components (Round 7B - CURRENT)
+## 🎬 Animated Article-Style UI Components (Round 7C - CURRENT)
+
+### Overview
+
+Complete Framer Motion animation system with 3D card flips, sequential content reveals, and comprehensive UX polish for the article-style reading experience.
+
+### Components Architecture
+
+```typescript
+/ask/components/
+├── AskPage.tsx                    // Main orchestrator with AnimatedArticleDisplay
+├── HeroSection.tsx                // Title + input + stars counter
+├── LoadingState.tsx               // Enhanced with Framer Motion animations
+├── AnimatedArticleDisplay.tsx     // Complete animation timeline orchestrator
+├── AutoHideNavbar.tsx             // Scroll behavior + logo integration
+└── /cards/CardFallback.tsx        // MiMi logo fallback component
+```
+
+### Animation Features
+
+#### 🎯 Animation Timeline
+```typescript
+1. Question appear (fadeInUp, 0.5s)
+2. Header appear (fadeInUp, 0.8s)  
+3. Cards appear + flip (1.2s delay, 0.6s stagger)
+4. Reading sections (fadeInUp, 0.5s stagger)
+5. Action buttons (slideUp, final)
+```
+
+#### 🎪 3D Card Flip Animation
+- **Perspective**: 3D transforms with backface visibility
+- **Stagger**: 600ms intervals between card reveals
+- **Fallback**: Graceful degradation for performance issues
+- **Mobile**: Optimized for touch devices
+
+#### 🔄 Loading State Enhancements
+- **Mystical Cards**: Rotating card animations around crystal ball
+- **Progress Dots**: Animated sequence indicators
+- **Text Transitions**: Smooth cycling of loading messages
+- **Timer Animation**: Pulsing time counter
+
+### Core Component Implementations
+
+#### AnimatedArticleDisplay.tsx - Animation Orchestrator
+
+```typescript
+export function AnimatedArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: AnimatedArticleDisplayProps) {
+  const [scope, animate] = useAnimate()
+  const [animationPhase, setAnimationPhase] = useState<'question' | 'header' | 'cards' | 'reading' | 'complete'>('question')
+  const [cardsRevealed, setCardsRevealed] = useState(false)
+
+  useEffect(() => {
+    const runAnimationSequence = async () => {
+      // 1. Question appear (0.5s)
+      await animate('.question-header', 
+        { opacity: [0, 1], y: [20, 0] }, 
+        { duration: 0.5, ease: "easeOut" }
+      )
+      
+      // 2. Header appear (0.8s delay)
+      await animate('.reading-header', 
+        { opacity: [0, 1], y: [20, 0] }, 
+        { duration: 0.5, ease: "easeOut" }
+      )
+      
+      // 3. Cards appear + flip (1.2s delay)
+      setCardsRevealed(true)
+      
+      // 4. Reading sections appear (staggered)
+      await animate('.reading-section',
+        { opacity: [0, 1], y: [15, 0] },
+        { duration: 0.4, delay: stagger(0.2) }
+      )
+      
+      // 5. Action buttons appear
+      await animate('.action-buttons',
+        { opacity: [0, 1], y: [20, 0] },
+        { duration: 0.4 }
+      )
+    }
+
+    runAnimationSequence()
+  }, [animate])
+
+  return (
+    <div ref={scope}>
+      {/* Animated content with timeline */}
+    </div>
+  )
+}
+```
+
+#### AnimatedCardImage.tsx - 3D Card Flip
+
+```typescript
+function AnimatedCardImage({ src, alt, position, index, shouldAnimate }: AnimatedCardImageProps) {
+  const [isFlipped, setIsFlipped] = useState(false)
+
+  useEffect(() => {
+    if (shouldAnimate) {
+      const delay = 1200 + (index * 600) // Staggered timing
+      const timer = setTimeout(() => {
+        setIsFlipped(true)
+      }, delay)
+      return () => clearTimeout(timer)
+    }
+  }, [shouldAnimate, index])
+
+  return (
+    <motion.div 
+      className="relative perspective-1000"
+      initial={shouldAnimate ? { scale: 0, rotateY: 180 } : {}}
+      animate={shouldAnimate ? { scale: 1, rotateY: isFlipped ? 0 : 180 } : {}}
+      transition={{ 
+        duration: 0.8, 
+        ease: "easeInOut",
+        delay: shouldAnimate ? 1.2 + (index * 0.6) : 0
+      }}
+    >
+      <div className="card card-mystical w-full aspect-[2/3] shadow-lg">
+        <img src={src} alt={alt} className="w-full h-full object-cover" />
+      </div>
+    </motion.div>
+  )
+}
+```
+
+### Enhanced Features
+
+#### 🔧 Error Handling System
+```typescript
+// Error Modal with Animation
+<AnimatePresence>
+  {showError && (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="card card-mystical p-6 max-w-md bg-base-100 shadow-xl"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+      >
+        <div className="text-center">
+          <div className="text-4xl mb-4">⚠️</div>
+          <h3 className="heading-3 text-error mb-4">เกิดข้อผิดพลาด</h3>
+          <p className="body-normal text-base-content mb-6">{errorMessage}</p>
+          <button onClick={() => setShowError(false)} className="btn btn-primary">
+            ตกลง
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
+```
+
+#### 🎨 Action Button Animations
+```typescript
+// Hover/Tap Animations
+<motion.button
+  onClick={handleSave}
+  className="btn btn-primary"
+  whileHover={{ scale: 1.02 }}
+  whileTap={{ scale: 0.98 }}
+  aria-label="บันทึกการทำนาย"
+>
+  <span>💾</span>
+  <span>บันทึกการทำนาย</span>
+</motion.button>
+```
+
+### Performance Optimizations
+
+#### 🚀 Animation Fallbacks
+```typescript
+const runAnimationSequence = async () => {
+  try {
+    // Animation sequence
+  } catch (error) {
+    console.error('Animation sequence error:', error)
+    // Fallback: show all content immediately
+    setAnimationPhase('complete')
+    setCardsRevealed(true)
+  }
+}
+```
+
+#### 📱 Mobile Optimization
+- **Reduced Motion**: Respects user preferences
+- **Performance**: Fallback strategies for slower devices
+- **Touch**: Optimized for touch interactions
+- **Viewport**: Responsive animations across screen sizes
+
+### Accessibility Features
+
+#### ♿ ARIA Support
+```typescript
+<img
+  src={src}
+  alt={alt}
+  aria-describedby={`card-${position}-description`}
+  role="img"
+/>
+<p id={`card-${position}-description`}>
+  {card.shortMeaning}
+</p>
+```
+
+#### ⌨️ Keyboard Navigation
+- **Focus Management**: Proper focus order during animations
+- **Skip Links**: Animation skip options
+- **Screen Reader**: Compatible with assistive technologies
+
+---
+
+## 🚀 Article-Style UI Components (Round 7B - LEGACY)
 
 ### Overview
 
