@@ -119,7 +119,7 @@ export function AskPage() {
       {/* Auto-Hide Navbar */}
       <AutoHideNavbar 
         currentState={pageState === 'error' ? 'initial' : pageState}
-        showInStates={['result']}
+        showInStates={['initial', 'loading', 'result']}
       />
 
       {/* Main Content */}

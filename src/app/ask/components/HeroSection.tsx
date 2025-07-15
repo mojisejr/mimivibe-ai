@@ -20,7 +20,7 @@ export function HeroSection({ onSubmit, isLoading }: HeroSectionProps) {
   };
 
   return (
-    <div className="page-container flex flex-col items-center justify-center px-4 py-8 bg-gradient-to-br from-base-100 to-base-200">
+    <div className="page-container flex flex-col items-center justify-center px-4 py-8 pt-20 lg:pt-24 bg-gradient-to-br from-base-100 to-base-200">
       <div className="w-full max-w-2xl mx-auto text-center">
         {/* Title Section */}
         <div className="mb-12">

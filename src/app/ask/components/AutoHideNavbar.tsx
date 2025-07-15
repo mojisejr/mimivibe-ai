@@ -25,7 +25,9 @@ export function AutoHideNavbar({
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious()
-    if (previous !== undefined && latest > previous && latest > 150) {
+    // Only hide on mobile/tablet, always show on desktop (lg screens and up)
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
+    if (!isDesktop && previous !== undefined && latest > previous && latest > 150) {
       setHidden(true)
     } else {
       setHidden(false)
