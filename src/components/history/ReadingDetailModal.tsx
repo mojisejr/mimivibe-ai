@@ -47,12 +47,14 @@ interface ReadingDetailModalProps {
   reading: Reading | null;
   isOpen: boolean;
   onClose: () => void;
+  onDelete?: (readingId: string) => void;
 }
 
 export const ReadingDetailModal = ({
   reading,
   isOpen,
   onClose,
+  onDelete,
 }: ReadingDetailModalProps) => {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
@@ -129,7 +131,7 @@ export const ReadingDetailModal = ({
           {/* Cards */}
           <div className="card card-mystical">
             <div className="card-body">
-              <h3 className="heading-3 mb-4">Cards Drawn</h3>
+              <h3 className="heading-3 mb-4">ไพ่ที่จั่วได้</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {reading.cards.map((card) => (
                   <TarotCard
@@ -153,24 +155,11 @@ export const ReadingDetailModal = ({
             </div>
           </div>
 
-          {/* Reading Header */}
-          {reading.answer.header && (
-            <div className="card card-mystical">
-              <div className="card-body">
-                <h3 className="heading-3 mb-4">Reading Summary</h3>
-                <div className="prose prose-sm max-w-none">
-                  <p className="body-large font-medium text-primary mb-4">
-                    {reading.answer.header}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Main Reading */}
           <div className="card card-mystical">
             <div className="card-body">
-              <h3 className="heading-3 mb-4">Your Reading</h3>
+              <h3 className="heading-3 mb-4">การทำนาย</h3>
               <div className="prose prose-sm max-w-none">
                 {reading.answer.reading.split('\n').map((paragraph, index) => (
                   paragraph.trim() && (
@@ -187,7 +176,7 @@ export const ReadingDetailModal = ({
           {reading.answer.suggestions && reading.answer.suggestions.length > 0 && (
             <div className="card card-mystical">
               <div className="card-body">
-                <h3 className="heading-3 mb-4">Suggestions</h3>
+                <h3 className="heading-3 mb-4">คำแนะนำ</h3>
                 <div className="space-y-2">
                   {reading.answer.suggestions.map((suggestion, index) => (
                     <div key={index} className="flex items-start space-x-2">
@@ -204,7 +193,7 @@ export const ReadingDetailModal = ({
           {reading.answer.final && (
             <div className="card card-mystical">
               <div className="card-body">
-                <h3 className="heading-3 mb-4">Final Thoughts</h3>
+                <h3 className="heading-3 mb-4">ข้อสรุป</h3>
                 <div className="prose prose-sm max-w-none">
                   <p className="body-normal leading-relaxed">
                     {reading.answer.final}
@@ -232,7 +221,7 @@ export const ReadingDetailModal = ({
           {reading.answer.notice && (
             <div className="card card-mystical border-warning">
               <div className="card-body">
-                <h3 className="heading-3 mb-4 text-warning">Important Notice</h3>
+                <h3 className="heading-3 mb-4 text-warning">หมายเหตุ</h3>
                 <div className="prose prose-sm max-w-none">
                   <p className="body-normal leading-relaxed text-warning">
                     {reading.answer.notice}
@@ -261,10 +250,24 @@ export const ReadingDetailModal = ({
 
         {/* Footer */}
         <div className="border-t border-base-300 p-4">
-          <div className="flex justify-end space-x-2">
-            <button onClick={onClose} className="btn btn-primary">
-              Close
-            </button>
+          <div className="flex justify-between items-center">
+            {/* Delete Button */}
+            {onDelete && (
+              <button 
+                onClick={() => onDelete(reading.id)}
+                className="btn btn-sm btn-outline btn-error"
+              >
+                <span>🗑️</span>
+                <span className="hidden sm:inline">ลบการทำนาย</span>
+              </button>
+            )}
+            
+            {/* Close Button */}
+            <div className="flex space-x-2 ml-auto">
+              <button onClick={onClose} className="btn btn-primary">
+                Close
+              </button>
+            </div>
           </div>
         </div>
       </div>

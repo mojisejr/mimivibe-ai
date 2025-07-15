@@ -193,6 +193,40 @@ export const useHistory = (initialLimit = 6) => {
     }
   }, []);
 
+  const deleteReading = useCallback(async (readingId: string) => {
+    try {
+      const response = await fetch(`/api/readings/${readingId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete reading");
+      }
+
+      // Remove reading from current data
+      setState(prev => {
+        if (!prev.data || !Array.isArray(prev.data.readings)) {
+          return prev;
+        }
+
+        const filteredReadings = prev.data.readings.filter(reading => reading.id !== readingId);
+        
+        return {
+          ...prev,
+          data: {
+            ...prev.data,
+            readings: filteredReadings,
+            total: Math.max(0, prev.data.total - 1),
+          }
+        };
+      });
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  }, []);
+
   useEffect(() => {
     // Only fetch if user is loaded and authenticated
     if (isLoaded && user) {
@@ -213,6 +247,7 @@ export const useHistory = (initialLimit = 6) => {
     loadMore,
     refresh,
     getReadingDetails,
+    deleteReading,
     hasMore: state.data?.hasMore || false,
   };
 };

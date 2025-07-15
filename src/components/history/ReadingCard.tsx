@@ -43,9 +43,10 @@ interface Reading {
 interface ReadingCardProps {
   reading: Reading;
   onClick: () => void;
+  onDelete?: (readingId: string) => void;
 }
 
-export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
+export const ReadingCard = ({ reading, onClick, onDelete }: ReadingCardProps) => {
   const truncateReading = (text: string, maxLength = 120) => {
     // Handle string input for reading preview
     const textString = String(text || '');
@@ -145,6 +146,19 @@ export const ReadingCard = ({ reading, onClick }: ReadingCardProps) => {
                 <span>+{reading.coinsEarned}</span>
               </div>
             </div>
+            {/* Delete Button */}
+            {onDelete && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(reading.id);
+                }}
+                className="btn btn-xs btn-outline btn-error opacity-60 hover:opacity-100"
+                title="ลบการทำนาย"
+              >
+                🗑️
+              </button>
+            )}
           </div>
           <button className="btn btn-sm btn-outline btn-primary w-full">
             View Full Reading

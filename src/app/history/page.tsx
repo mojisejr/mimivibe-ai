@@ -50,7 +50,7 @@ interface Reading {
 
 export default function HistoryPage() {
   const { user, isLoaded } = useUser();
-  const { data, loading, error, loadMore, refresh, hasMore, loadingMore } = useHistory();
+  const { data, loading, error, loadMore, refresh, hasMore, loadingMore, deleteReading } = useHistory();
   const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -93,6 +93,19 @@ export default function HistoryPage() {
     setSelectedReading(null);
   };
 
+  const handleDeleteReading = async (readingId: string) => {
+    try {
+      await deleteReading(readingId);
+      // Close modal if currently viewing the deleted reading
+      if (selectedReading?.id === readingId) {
+        handleCloseModal();
+      }
+    } catch (error) {
+      console.error('Failed to delete reading:', error);
+      // TODO: Show error toast/notification
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
       {/* Header */}
@@ -130,6 +143,7 @@ export default function HistoryPage() {
                   key={reading.id}
                   reading={reading}
                   onClick={() => handleReadingClick(reading)}
+                  onDelete={handleDeleteReading}
                 />
               ))}
             </div>
@@ -182,6 +196,7 @@ export default function HistoryPage() {
         reading={selectedReading}
         isOpen={showDetailModal}
         onClose={handleCloseModal}
+        onDelete={handleDeleteReading}
       />
 
       {/* Mobile Navigation */}
