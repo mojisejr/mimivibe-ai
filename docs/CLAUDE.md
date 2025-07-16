@@ -1,5 +1,9 @@
 # MiMiVibes - AI Development Context
 
+> **📋 Documentation Structure**: Detailed progress records are now split into:
+> - [PROGRESS.md](./PROGRESS.md) - Current status and future planning (optimized for context)
+> - [COMPLETED-PROGRESS.md](./COMPLETED-PROGRESS.md) - Archived implementation details for historical reference
+
 ## 🎯 Project Overview
 
 **MiMiVibes** เป็น AI-powered tarot reading application ที่ใช้ LangGraph + Gemini AI สำหรับการทำนายไพ่ทาโรต์ในภาษาไทย พัฒนาด้วย Next.js 14, TypeScript, และ modern web technologies
