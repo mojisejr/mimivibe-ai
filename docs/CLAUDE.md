@@ -740,23 +740,35 @@
 - **Task C**: ✅ Improved desktop history layout and card organization
 - **Task D**: ✅ Final UI polish and responsive design improvements
 
+#### Round 7G: Referral System URL Parameter Processing Fix (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + Manual Testing Feedback  
+**Actual Duration**: 2 hours  
+**Priority**: Critical (Referral system not working)
+
+**Completed Tasks**:
+- **Task A**: ✅ Added URL parameter processing in landing page (/) to detect ?ref= codes
+- **Task B**: ✅ Implemented localStorage storage for referral codes before Clerk redirect
+- **Task C**: ✅ Added post-login referral processing with automatic reward distribution
+- **Task D**: ✅ Created /api/referrals/validate endpoint for referral code validation
+- **Task E**: ✅ Added toast notifications for referral feedback (success/error messages)
+
 **Success Criteria (ALL MET)**:
-- [x] Referral link copy button accessible from profile page
-- [x] New users via referral receive: 1 star + 5 coins (immediate on signup)
-- [x] Referrers receive: 1 star + 25 EXP when referral completes first reading
-- [x] Unique referral codes per user account (8-character alphanumeric)
-- [x] Desktop history layout improved with 2xl:grid-cols-4 for better organization
-- [x] All remaining UI issues from manual testing resolved
+- [x] URL parameter ?ref= processing works correctly on landing page
+- [x] Referral codes stored in localStorage before Clerk redirect
+- [x] Post-login referral processing with automatic reward distribution
+- [x] Toast notifications for referral validation feedback
+- [x] Error handling for invalid referral codes
+- [x] Smooth user experience with proper state management
 
 **Implementation Results**:
-- ✅ Created ReferralSection component integrated into profile page
-- ✅ Implemented ReferralCopyButton with fallback copy functionality
-- ✅ Updated GAMIFICATION_CONFIG with new reward structure matching requirements
-- ✅ Modified referral process to delay referrer rewards until first reading completion
-- ✅ Added automatic referral reward claim logic in reading creation API
-- ✅ Enhanced desktop history layout with responsive 4-column grid
-- ✅ Improved referral display with color-coded reward explanations
-- ✅ Fixed TypeScript errors and ensured build success
+- ✅ Added URL parameter processing in `/src/app/page.tsx` with useEffect hooks
+- ✅ Implemented localStorage storage system for referral codes
+- ✅ Created `/api/referrals/validate` endpoint for referral code validation
+- ✅ Added post-login referral processing with automatic API calls
+- ✅ Enhanced toast notification system with success/error feedback
+- ✅ Fixed useEffect dependencies and added useCallback for performance
+- ✅ Updated toast system to use custom ToastContainer
+- ✅ Comprehensive error handling for invalid referral codes
 
 **Referral System Specifications**:
 - **New User Reward**: +1 star + 5 coins (immediate on signup)
@@ -767,17 +779,13 @@
 - **One-time Use**: Each referral code can only be used once per new account
 
 **Key Files Created/Modified**:
-- `/src/components/referral/ReferralSection.tsx` - Main referral component
-- `/src/components/referral/ReferralCopyButton.tsx` - Copy functionality
-- `/src/app/api/referrals/claim-first-reading/route.ts` - First reading reward claim
-- `/src/lib/gamification/levels.ts` - Updated reward configuration
-- `/src/app/api/referrals/process/route.ts` - Modified reward timing
-- `/src/app/api/readings/ask/route.ts` - Added referral reward claim logic
-- `/src/app/profile/page.tsx` - Integrated ReferralSection
-- `/src/app/history/page.tsx` - Improved desktop grid layout
+- `/src/app/page.tsx` - Added URL parameter processing and post-login referral logic
+- `/src/app/api/referrals/validate/route.ts` - Created referral validation endpoint
+- `/src/components/ui/ToastContainer.tsx` - Enhanced toast notification system
+- Updated useEffect dependencies and callback optimization
 
-**Dependencies**: ✅ Review Logic Fix complete  
-**Breaking Changes**: None - additive feature implementation
+**Dependencies**: ✅ Round 7F complete  
+**Breaking Changes**: None - enhanced existing referral system functionality
 
 ---
 
@@ -959,7 +967,7 @@ claude → [CLAUDE.md + UI-COMPONENTS.md] → Round 7C → test → commit
 
 ---
 
-**Updated**: January 2025 - Phase 1.5 Extended with Manual Testing Bug Fixes + UI Enhancement + Review Display + Position Refinement + Review Logic Fix + Referral System & UI Polish  
-**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅ | Round 7C.3 ✅ | Round 7D ✅ | Round 7D.1 ✅ | Round 7D.2 ✅ | Round 7D.3 ✅ | Round 7E ✅ | Review Display ✅ | Position Refinement ✅ | Review Logic Fix ✅ | Round 7F ✅  
+**Updated**: January 2025 - Phase 1.5 Extended with Manual Testing Bug Fixes + UI Enhancement + Review Display + Position Refinement + Review Logic Fix + Referral System & UI Polish + Referral URL Parameter Processing Fix  
+**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅ | Round 7C.3 ✅ | Round 7D ✅ | Round 7D.1 ✅ | Round 7D.2 ✅ | Round 7D.3 ✅ | Round 7E ✅ | Review Display ✅ | Position Refinement ✅ | Review Logic Fix ✅ | Round 7F ✅ | Round 7G ✅  
 **Next Phase**: Round 8 - Frontend API Integration (Phase 2 Enhanced Features)  
-**Phase 1.5 Extended Duration**: 26-31 hours actual (including manual testing fixes, UI enhancements, review display, position refinement, review logic fix, and complete referral system implementation)
+**Phase 1.5 Extended Duration**: 28-33 hours actual (including manual testing fixes, UI enhancements, review display, position refinement, review logic fix, complete referral system implementation, and URL parameter processing fix)
