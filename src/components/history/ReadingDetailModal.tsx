@@ -55,9 +55,15 @@ interface ReadingDetailModalProps {
 }
 
 // Enhanced Card Display Component with error handling
-const EnhancedCardDisplay = ({ card, onClick }: { card: Card; onClick: () => void }) => {
+const EnhancedCardDisplay = ({
+  card,
+  onClick,
+}: {
+  card: Card;
+  onClick: () => void;
+}) => {
   const [imageError, setImageError] = useState(false);
-  
+
   return (
     <div
       className="relative cursor-pointer hover:scale-105 transition-transform duration-200"
@@ -88,12 +94,12 @@ const EnhancedCardDisplay = ({ card, onClick }: { card: Card; onClick: () => voi
 // Card Detail Image Component with error handling
 const CardDetailImage = ({ card }: { card: Card }) => {
   const [imageError, setImageError] = useState(false);
-  
+
   return (
     <div className="w-48 h-auto mx-auto">
       {card.imageUrl && !imageError ? (
-        <img 
-          src={card.imageUrl} 
+        <img
+          src={card.imageUrl}
           alt={card.nameTh || card.name}
           className="w-full h-auto rounded-lg shadow-lg"
           onError={() => setImageError(true)}
@@ -103,7 +109,9 @@ const CardDetailImage = ({ card }: { card: Card }) => {
         <div className="aspect-[2/3] bg-gradient-to-br from-primary/20 to-secondary/30 rounded-lg border border-primary/30 flex items-center justify-center shadow-lg">
           <div className="text-center">
             <div className="text-primary text-4xl mb-2">🔮</div>
-            <p className="text-sm text-neutral-content">{card.nameTh || card.name}</p>
+            <p className="text-sm text-neutral-content">
+              {card.nameTh || card.name}
+            </p>
           </div>
         </div>
       )}
@@ -126,52 +134,64 @@ export const ReadingDetailModal = ({
   // Update review status when reading changes
   useEffect(() => {
     if (reading) {
-      setHasReviewed(reading.isReviewed || false);
+      // Check if reading actually has review data, not just isReviewed flag
+      const actuallyReviewed = reading.isReviewed === true && reading.reviewAccuracy !== undefined;
+      setHasReviewed(actuallyReviewed);
     }
   }, [reading]);
 
   const handleReviewSubmit = async (reviewData: ReviewData) => {
     if (!reading) return;
-    
+
     setIsSubmittingReview(true);
-    
+
     try {
       const response = await fetch(`/api/reviews/${reading.id}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(reviewData)
+        body: JSON.stringify(reviewData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit review');
+        throw new Error(errorData.error || "Failed to submit review");
       }
 
-      // Update local state
+      // Update local state with proper review data
       setHasReviewed(true);
       setIsReviewModalOpen(false);
       
+      // Update reading object with review data for immediate display
+      if (reading) {
+        reading.isReviewed = true;
+        reading.reviewAccuracy = reviewData.accurateLevel;
+        reading.reviewComment = reviewData.comment;
+      }
+
       // Show success toast
       addToast({
-        type: 'success',
-        title: 'รีวิวสำเร็จ!',
-        message: 'ขอบคุณสำหรับรีวิวของคุณ คุณได้รับรางวัล +10 EXP และ +2 เหรียญแล้ว',
-        duration: 4000
+        type: "success",
+        title: "รีวิวสำเร็จ!",
+        message:
+          "ขอบคุณสำหรับรีวิวของคุณ คุณได้รับรางวัล +10 EXP และ +2 เหรียญแล้ว",
+        duration: 4000,
       });
-      
     } catch (error) {
-      console.error('Review submission error:', error);
-      
+      console.error("Review submission error:", error);
+
       // Show error toast
       addToast({
-        type: 'error',
-        title: 'เกิดข้อผิดพลาด',
-        message: error instanceof Error ? error.message : 'ไม่สามารถส่งรีวิวได้ กรุณาลองใหม่อีกครั้ง',
-        duration: 5000
+        type: "error",
+        title: "เกิดข้อผิดพลาด",
+        message:
+          error instanceof Error
+            ? error.message
+            : "ไม่สามารถส่งรีวิวได้ กรุณาลองใหม่อีกครั้ง",
+        duration: 5000,
       });
-      
+
       throw error; // Re-throw to let ReviewModal handle the error
     } finally {
       setIsSubmittingReview(false);
@@ -183,25 +203,34 @@ export const ReadingDetailModal = ({
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div className="fixed inset-4 md:inset-8 bg-base-100 rounded-lg shadow-2xl z-50 overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-base-300">
           <div className="flex items-center space-x-2">
             <Logo size="sm" showText />
-            <span className="text-sm text-neutral-content">Reading Details</span>
+            <span className="text-sm text-neutral-content">
+              Reading Details
+            </span>
           </div>
-          <button 
-            onClick={onClose}
-            className="btn btn-sm btn-ghost btn-circle"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <button onClick={onClose} className="btn btn-sm btn-ghost btn-circle">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -214,10 +243,15 @@ export const ReadingDetailModal = ({
               <div className="flex items-start justify-between mb-4">
                 <h2 className="heading-3 flex-1 mr-4">{reading.question}</h2>
                 <div className="text-right text-sm text-neutral-content">
-                  <p>{safeFormatDistanceToNow(reading.createdAt, 'ไม่ทราบวันที่')}</p>
+                  <p>
+                    {safeFormatDistanceToNow(
+                      reading.createdAt,
+                      "ไม่ทราบวันที่"
+                    )}
+                  </p>
                 </div>
               </div>
-              
+
               {/* Analysis Badges */}
               <div className="flex flex-wrap gap-2 mb-4">
                 <div className="badge badge-primary">
@@ -264,39 +298,45 @@ export const ReadingDetailModal = ({
             </div>
           </div>
 
-
           {/* Main Reading */}
           <div className="card card-mystical">
             <div className="card-body">
               <h3 className="heading-3 mb-4">การทำนาย</h3>
               <div className="prose prose-sm max-w-none">
-                {reading.answer.reading.split('\n').map((paragraph, index) => (
-                  paragraph.trim() && (
-                    <p key={index} className="body-normal mb-3 leading-relaxed">
-                      {paragraph.trim()}
-                    </p>
-                  )
-                ))}
+                {reading.answer.reading.split("\n").map(
+                  (paragraph, index) =>
+                    paragraph.trim() && (
+                      <p
+                        key={index}
+                        className="body-normal mb-3 leading-relaxed"
+                      >
+                        {paragraph.trim()}
+                      </p>
+                    )
+                )}
               </div>
             </div>
           </div>
 
           {/* Suggestions */}
-          {reading.answer.suggestions && reading.answer.suggestions.length > 0 && (
-            <div className="card card-mystical">
-              <div className="card-body">
-                <h3 className="heading-3 mb-4">คำแนะนำ</h3>
-                <div className="space-y-2">
-                  {reading.answer.suggestions.map((suggestion, index) => (
-                    <div key={index} className="flex items-start space-x-2">
-                      <span className="text-primary mt-1">•</span>
-                      <p className="body-normal leading-relaxed">{suggestion}</p>
-                    </div>
-                  ))}
+          {reading.answer.suggestions &&
+            reading.answer.suggestions.length > 0 && (
+              <div className="card card-mystical">
+                <div className="card-body">
+                  <h3 className="heading-3 mb-4">คำแนะนำ</h3>
+                  <div className="space-y-2">
+                    {reading.answer.suggestions.map((suggestion, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <span className="text-primary mt-1">•</span>
+                        <p className="body-normal leading-relaxed">
+                          {suggestion}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Final Thoughts */}
           {reading.answer.final && (
@@ -341,23 +381,27 @@ export const ReadingDetailModal = ({
           )}
 
           {/* Next Questions */}
-          {reading.answer.next_questions && reading.answer.next_questions.length > 0 && (
-            <div className="card card-mystical">
-              <div className="card-body">
-                <h3 className="heading-3 mb-4">Suggested Next Questions</h3>
-                <div className="space-y-2">
-                  {reading.answer.next_questions.map((question, index) => (
-                    <div key={index} className="p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors cursor-pointer">
-                      <p className="body-normal">{question}</p>
-                    </div>
-                  ))}
+          {reading.answer.next_questions &&
+            reading.answer.next_questions.length > 0 && (
+              <div className="card card-mystical">
+                <div className="card-body">
+                  <h3 className="heading-3 mb-4">Suggested Next Questions</h3>
+                  <div className="space-y-2">
+                    {reading.answer.next_questions.map((question, index) => (
+                      <div
+                        key={index}
+                        className="p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors cursor-pointer"
+                      >
+                        <p className="body-normal">{question}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Review Status Display */}
-          {hasReviewed && reading.reviewAccuracy !== undefined && (
+          {hasReviewed && (
             <div className="card card-mystical border-success">
               <div className="card-body">
                 <h3 className="heading-3 mb-4 text-success">รีวิวของคุณ</h3>
@@ -366,12 +410,19 @@ export const ReadingDetailModal = ({
                     <span className="body-normal">ระดับความแม่นยำ:</span>
                     <div className="flex items-center space-x-2">
                       <div className="text-2xl">
-                        {reading.reviewAccuracy === 0 ? '😞' : 
-                         reading.reviewAccuracy === 20 ? '🙁' : 
-                         reading.reviewAccuracy === 50 ? '😐' : 
-                         reading.reviewAccuracy === 80 ? '😊' : '🤩'}
+                        {reading.reviewAccuracy === 0
+                          ? "😞"
+                          : reading.reviewAccuracy === 20
+                          ? "🙁"
+                          : reading.reviewAccuracy === 50
+                          ? "😐"
+                          : reading.reviewAccuracy === 80
+                          ? "😊"
+                          : "🤩"}
                       </div>
-                      <span className="font-semibold text-success">{reading.reviewAccuracy}%</span>
+                      <span className="font-semibold text-success">
+                        {reading.reviewAccuracy}%
+                      </span>
                     </div>
                   </div>
                   {reading.reviewComment && (
@@ -390,10 +441,10 @@ export const ReadingDetailModal = ({
 
         {/* Footer */}
         <div className="border-t border-base-300 p-4">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center gap-2">
             {/* Delete Button */}
             {onDelete && (
-              <button 
+              <button
                 onClick={() => onDelete(reading.id)}
                 className="btn btn-sm btn-outline btn-error"
               >
@@ -401,10 +452,10 @@ export const ReadingDetailModal = ({
                 <span className="hidden sm:inline">ลบการทำนาย</span>
               </button>
             )}
-            
+
             {/* Review Button */}
             {!hasReviewed && (
-              <button 
+              <button
                 onClick={() => setIsReviewModalOpen(true)}
                 className="btn btn-sm btn-primary"
                 disabled={isSubmittingReview}
@@ -413,14 +464,14 @@ export const ReadingDetailModal = ({
                 <span className="hidden sm:inline">รีวิวการทำนาย</span>
               </button>
             )}
-            
+
             {hasReviewed && (
               <div className="flex items-center text-sm text-success">
                 <span className="mr-1">✅</span>
                 <span className="hidden sm:inline">รีวิวแล้ว</span>
               </div>
             )}
-            
+
             {/* Close Button */}
             <div className="flex space-x-2 ml-auto">
               <button onClick={onClose} className="btn btn-primary">
@@ -434,7 +485,7 @@ export const ReadingDetailModal = ({
       {/* Card Detail Modal */}
       {selectedCard && (
         <>
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60"
             onClick={() => setSelectedCard(null)}
           />
@@ -442,16 +493,26 @@ export const ReadingDetailModal = ({
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="heading-2">{selectedCard.nameTh}</h3>
-                <button 
+                <button
                   onClick={() => setSelectedCard(null)}
                   className="btn btn-sm btn-ghost btn-circle"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="text-center">
                   <CardDetailImage card={selectedCard} />
@@ -459,15 +520,21 @@ export const ReadingDetailModal = ({
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-semibold mb-2">Keywords</h4>
-                    <p className="text-neutral-content">{selectedCard.keywordsTh}</p>
+                    <p className="text-neutral-content">
+                      {selectedCard.keywordsTh}
+                    </p>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">Meaning</h4>
-                    <p className="text-neutral-content leading-relaxed">{selectedCard.meaningTh}</p>
+                    <p className="text-neutral-content leading-relaxed">
+                      {selectedCard.meaningTh}
+                    </p>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">Category</h4>
-                    <div className="badge badge-outline">{selectedCard.category}</div>
+                    <div className="badge badge-outline">
+                      {selectedCard.category}
+                    </div>
                   </div>
                 </div>
               </div>
