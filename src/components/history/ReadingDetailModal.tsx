@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { TarotCard } from "@/components/cards/TarotCard";
 import { Logo } from "@/components/ui";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 
@@ -49,6 +48,63 @@ interface ReadingDetailModalProps {
   onClose: () => void;
   onDelete?: (readingId: string) => void;
 }
+
+// Enhanced Card Display Component with error handling
+const EnhancedCardDisplay = ({ card, onClick }: { card: Card; onClick: () => void }) => {
+  const [imageError, setImageError] = useState(false);
+  
+  return (
+    <div
+      className="relative cursor-pointer hover:scale-105 transition-transform duration-200"
+      onClick={onClick}
+      title={card.nameTh || card.name}
+    >
+      {card.imageUrl && !imageError ? (
+        <div className="relative aspect-[2/3] rounded-lg overflow-hidden border border-base-300 bg-base-200 shadow-md hover:shadow-lg transition-shadow duration-200">
+          <img
+            src={card.imageUrl}
+            alt={card.nameTh || card.name}
+            className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
+            loading="lazy"
+          />
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-primary/10 opacity-0 hover:opacity-100 transition-opacity duration-200" />
+        </div>
+      ) : (
+        <div className="aspect-[2/3] bg-gradient-to-br from-primary/20 to-secondary/30 rounded-lg border border-primary/30 flex items-center justify-center transition-colors duration-200 hover:from-primary/30 hover:to-secondary/40 shadow-md hover:shadow-lg">
+          <div className="text-primary text-2xl">🔮</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Card Detail Image Component with error handling
+const CardDetailImage = ({ card }: { card: Card }) => {
+  const [imageError, setImageError] = useState(false);
+  
+  return (
+    <div className="w-48 h-auto mx-auto">
+      {card.imageUrl && !imageError ? (
+        <img 
+          src={card.imageUrl} 
+          alt={card.nameTh || card.name}
+          className="w-full h-auto rounded-lg shadow-lg"
+          onError={() => setImageError(true)}
+          loading="lazy"
+        />
+      ) : (
+        <div className="aspect-[2/3] bg-gradient-to-br from-primary/20 to-secondary/30 rounded-lg border border-primary/30 flex items-center justify-center shadow-lg">
+          <div className="text-center">
+            <div className="text-primary text-4xl mb-2">🔮</div>
+            <p className="text-sm text-neutral-content">{card.nameTh || card.name}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const ReadingDetailModal = ({
   reading,
@@ -134,21 +190,10 @@ export const ReadingDetailModal = ({
               <h3 className="heading-3 mb-4">ไพ่ที่จั่วได้</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {reading.cards.map((card) => (
-                  <TarotCard
+                  <EnhancedCardDisplay
                     key={card.id}
-                    card={{
-                      id: card.id,
-                      name: card.name,
-                      displayName: card.nameTh,
-                      arcana: card.category,
-                      shortMeaning: card.keywordsTh,
-                      keywords: card.keywordsTh,
-                      imageUrl: card.imageUrl,
-                      position: 0,
-                    }}
-                    isRevealed={true}
+                    card={card}
                     onClick={() => setSelectedCard(card)}
-                    className="cursor-pointer hover:scale-105 transition-transform"
                   />
                 ))}
               </div>
@@ -295,11 +340,7 @@ export const ReadingDetailModal = ({
               
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="text-center">
-                  <img 
-                    src={selectedCard.imageUrl} 
-                    alt={selectedCard.nameTh}
-                    className="w-48 h-auto mx-auto rounded-lg shadow-lg"
-                  />
+                  <CardDetailImage card={selectedCard} />
                 </div>
                 <div className="space-y-4">
                   <div>
