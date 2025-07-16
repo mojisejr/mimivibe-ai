@@ -153,7 +153,7 @@ export default function HistoryPage() {
           data.readings.length > 0 ? (
           <>
             {/* Reading Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6 mb-8">
               {data.readings.map((reading) => (
                 <ReadingCard
                   key={reading.id}

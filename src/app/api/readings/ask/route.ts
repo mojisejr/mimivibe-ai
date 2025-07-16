@@ -181,6 +181,60 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Try to claim referral reward for first reading (async, don't wait for result)
+    try {
+      // Check if this is the user's first reading and claim referral reward
+      const userReadingCount = await prisma.reading.count({
+        where: { userId, isDeleted: false }
+      })
+      
+      if (userReadingCount === 1) {
+        // This is first reading, try to claim referral reward
+        const referralCode = await prisma.referralCode.findFirst({
+          where: { 
+            userId, 
+            referredBy: { not: null },
+            isUsed: true 
+          }
+        })
+        
+        if (referralCode?.referredBy) {
+          // Give referrer reward
+          const { referrerReward } = await import('@/lib/gamification/levels').then(m => m.GAMIFICATION_CONFIG.referral)
+          
+          await prisma.$transaction(async (tx) => {
+            await tx.user.update({
+              where: { id: referralCode.referredBy! },
+              data: {
+                exp: { increment: referrerReward.exp },
+                coins: { increment: referrerReward.coins },
+                stars: { increment: referrerReward.stars }
+              }
+            })
+            
+            await tx.pointTransaction.create({
+              data: {
+                id: `referral_first_reading_${referralCode.referredBy!}_${Date.now()}`,
+                userId: referralCode.referredBy!,
+                eventType: 'REFERRAL_FIRST_READING',
+                deltaPoint: referrerReward.stars,
+                deltaCoins: referrerReward.coins,
+                deltaExp: referrerReward.exp,
+                metadata: { 
+                  referredUserId: userId,
+                  readingId: result.readingId,
+                  rewardType: 'first_reading_completion'
+                }
+              }
+            })
+          })
+        }
+      }
+    } catch (referralError) {
+      // Log but don't fail the reading request
+      console.log('Referral reward claim failed (optional):', referralError)
+    }
+
     return NextResponse.json({
       success: true,
       data: result

@@ -77,7 +77,7 @@ export const GAMIFICATION_CONFIG = {
   },
   
   referral: {
-    referrerReward: { exp: 50, coins: 20 },
-    referredReward: { exp: 25, coins: 10, freeCredits: 5 }
+    referrerReward: { exp: 25, coins: 0, stars: 1 }, // 1 star + 25 EXP when referral completes first reading
+    referredReward: { exp: 0, coins: 5, stars: 1 } // 1 star + 5 coins (one-time bonus on signup)
   }
 };

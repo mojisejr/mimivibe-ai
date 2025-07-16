@@ -62,54 +62,40 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Reward referrer
-      await tx.user.update({
-        where: { id: referral.userId },
-        data: {
-          exp: { increment: referrerReward.exp },
-          coins: { increment: referrerReward.coins }
-        }
-      })
+      // Note: Referrer reward will be given later when referral completes first reading
+      // This is handled by /api/referrals/claim-first-reading endpoint
 
-      // Reward referred user
+      // Reward referred user (immediate signup bonus)
       await tx.user.update({
         where: { id: newUserId },
         data: {
           exp: { increment: referredReward.exp },
           coins: { increment: referredReward.coins },
-          freePoint: { increment: referredReward.freeCredits }
+          stars: { increment: referredReward.stars }
         }
       })
 
-      // Record transactions
-      await tx.pointTransaction.createMany({
-        data: [
-          {
-            id: `referral_reward_${referral.userId}_${Date.now()}`,
-            userId: referral.userId,
-            eventType: 'REFERRAL_REWARD',
-            deltaPoint: 0,
-            deltaCoins: referrerReward.coins,
-            deltaExp: referrerReward.exp,
-            metadata: { referredUserId: newUserId }
-          },
-          {
-            id: `referral_welcome_${newUserId}_${Date.now()}`,
-            userId: newUserId,
-            eventType: 'REFERRAL_WELCOME',
-            deltaPoint: referredReward.freeCredits,
-            deltaCoins: referredReward.coins,
-            deltaExp: referredReward.exp,
-            metadata: { referredBy: referral.userId }
-          }
-        ]
+      // Record transaction for referred user signup bonus
+      await tx.pointTransaction.create({
+        data: {
+          id: `referral_welcome_${newUserId}_${Date.now()}`,
+          userId: newUserId,
+          eventType: 'REFERRAL_WELCOME',
+          deltaPoint: referredReward.stars,
+          deltaCoins: referredReward.coins,
+          deltaExp: referredReward.exp,
+          metadata: { referredBy: referral.userId, rewardType: 'signup_bonus' }
+        }
       })
     })
 
     return NextResponse.json({
       success: true,
       data: {
-        referrerReward,
+        referrerReward: { 
+          note: 'Referrer will receive reward when referral completes first reading',
+          ...referrerReward 
+        },
         referredReward
       }
     })

@@ -8,6 +8,7 @@ import { BottomNavigation } from "@/components/navigation/BottomNavigation";
 import { Logo, ProfileLoadingState, ErrorState } from "@/components/ui";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
+import { ReferralSection } from "@/components/referral/ReferralSection";
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
@@ -219,6 +220,9 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+
+            {/* Referral Section */}
+            <ReferralSection />
 
             {/* Preferences Card */}
             <div className="card card-mystical">
