@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
-import { CardFallback } from "@/components/cards/CardFallback";
 
 interface Card {
   id: number;
@@ -51,9 +50,17 @@ interface ReadingCardProps {
 }
 
 // Card Preview Component with error handling
-const CardPreview = ({ card, index, totalCards }: { card: Card; index: number; totalCards: number }) => {
+const CardPreview = ({
+  card,
+  index,
+  totalCards,
+}: {
+  card: Card;
+  index: number;
+  totalCards: number;
+}) => {
   const [imageError, setImageError] = useState(false);
-  
+
   return (
     <div
       className="relative w-6 h-9 rounded-sm overflow-hidden border border-base-300 bg-base-200 group"
@@ -73,7 +80,7 @@ const CardPreview = ({ card, index, totalCards }: { card: Card; index: number; t
           <div className="text-primary text-xs">🔮</div>
         </div>
       )}
-      
+
       {/* Hover overlay */}
       <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
     </div>
@@ -85,13 +92,6 @@ export const ReadingCard = ({
   onClick,
   onDelete,
 }: ReadingCardProps) => {
-  const truncateReading = (text: string, maxLength = 120) => {
-    // Handle string input for reading preview
-    const textString = String(text || "");
-
-    if (textString.length <= maxLength) return textString;
-    return textString.substring(0, maxLength).trim() + "...";
-  };
 
   const getTopicEmoji = (topic: string | undefined) => {
     const topicEmojis: { [key: string]: string } = {
@@ -156,36 +156,12 @@ export const ReadingCard = ({
               <span className="mr-1">🕐</span>
               {safeFormatDistanceToNow(reading.createdAt, "ไม่ทราบวันที่")}
             </p>
-            {/* Review Status Indicator with Percentage */}
-            {reading.isReviewed && (
-              <div className="flex items-center text-xs text-success">
-                <span className="mr-1">⭐</span>
-                <span className="hidden sm:inline">รีวิวแล้ว</span>
-                {reading.reviewAccuracy !== undefined && (
-                  <span className="ml-1 font-semibold">
-                    ({reading.reviewAccuracy}%)
-                  </span>
-                )}
-              </div>
-            )}
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {reading.analysis?.topic && (
               <div className="badge badge-outline badge-xs text-xs">
                 {reading.analysis.topic}
-              </div>
-            )}
-            {/* Review Percentage Display for larger screens */}
-            {reading.isReviewed && reading.reviewAccuracy !== undefined && (
-              <div className="hidden md:flex items-center text-xs text-success">
-                <span className="mr-1">
-                  {reading.reviewAccuracy === 0 ? '😞' : 
-                   reading.reviewAccuracy === 20 ? '🙁' : 
-                   reading.reviewAccuracy === 50 ? '😐' : 
-                   reading.reviewAccuracy === 80 ? '😊' : '🤩'}
-                </span>
-                <span className="font-semibold">{reading.reviewAccuracy}%</span>
               </div>
             )}
           </div>
@@ -204,14 +180,37 @@ export const ReadingCard = ({
             <div className="flex items-center space-x-3 text-xs md:text-sm">
               <div className="flex items-center space-x-1">
                 <span className="text-primary">⭐</span>
-                <span className="text-neutral-content">+{reading.expEarned}</span>
+                <span className="text-neutral-content">
+                  +{reading.expEarned}
+                </span>
               </div>
               <div className="flex items-center space-x-1">
                 <span className="text-warning">🪙</span>
-                <span className="text-neutral-content">+{reading.coinsEarned}</span>
+                <span className="text-neutral-content">
+                  +{reading.coinsEarned}
+                </span>
               </div>
             </div>
           </div>
+          {/* Review Status Display */}
+          {reading.isReviewed && reading.reviewAccuracy !== undefined && (
+            <div className="flex items-center justify-center mb-3">
+              <div className="flex items-center space-x-2 text-xs text-success bg-success/10 px-3 py-1 rounded-full">
+                <span className="text-sm">
+                  {reading.reviewAccuracy === 0
+                    ? "😞"
+                    : reading.reviewAccuracy === 20
+                    ? "🙁"
+                    : reading.reviewAccuracy === 50
+                    ? "😐"
+                    : reading.reviewAccuracy === 80
+                    ? "😊"
+                    : "🤩"}
+                </span>
+                <span className="font-semibold">รีวิวแล้ว {reading.reviewAccuracy}%</span>
+              </div>
+            </div>
+          )}
           <div className="flex gap-2 items-center justify-between">
             <button className="btn btn-sm btn-primary flex-1 text-primary-content">
               อ่านรายละเอียด
