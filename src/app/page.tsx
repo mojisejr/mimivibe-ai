@@ -1,8 +1,93 @@
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+"use client";
+
+import { SignedIn, SignedOut, SignInButton, useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { Navbar } from "@/components/layout";
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import { useToast } from "@/components/ui/ToastContainer";
 
 export default function HomePage() {
+  const { isSignedIn, userId } = useAuth();
+  const searchParams = useSearchParams();
+  const { addToast } = useToast();
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [hasProcessedReferral, setHasProcessedReferral] = useState(false);
+
+  // Handle referral code from URL
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode && !referralCode) {
+      handleReferralCode(refCode);
+    }
+  }, [searchParams, referralCode]);
+
+  // Process referral after login
+  useEffect(() => {
+    if (isSignedIn && userId && !hasProcessedReferral) {
+      const storedReferralCode = localStorage.getItem('pendingReferral');
+      if (storedReferralCode) {
+        processReferral(storedReferralCode, userId);
+        setHasProcessedReferral(true);
+      }
+    }
+  }, [isSignedIn, userId, hasProcessedReferral]);
+
+  const handleReferralCode = useCallback(async (code: string) => {
+    try {
+      // Validate referral code
+      const response = await fetch('/api/referrals/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralCode: code })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Store referral code for later processing
+          localStorage.setItem('pendingReferral', code);
+          setReferralCode(code);
+          addToast({ type: 'success', title: '🎉 Referral code valid!', message: 'You\'ll receive bonus rewards when you sign up!' });
+        } else {
+          addToast({ type: 'error', title: '❌ Invalid referral code', message: 'Please check your referral link and try again.' });
+        }
+      } else {
+        addToast({ type: 'error', title: '❌ Invalid referral code', message: 'Please check your referral link and try again.' });
+      }
+    } catch (error) {
+      console.error('Referral validation error:', error);
+      addToast({ type: 'error', title: '❌ Error validating referral code', message: 'Please try again later.' });
+    }
+  }, [addToast]);
+
+  const processReferral = useCallback(async (code: string, newUserId: string) => {
+    try {
+      const response = await fetch('/api/referrals/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralCode: code, newUserId })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          addToast({ type: 'success', title: '🎁 Welcome!', message: 'You received referral bonus rewards!' });
+          localStorage.removeItem('pendingReferral');
+        } else {
+          console.error('Referral processing failed:', data.error);
+          localStorage.removeItem('pendingReferral');
+        }
+      } else {
+        console.error('Referral processing failed');
+        localStorage.removeItem('pendingReferral');
+      }
+    } catch (error) {
+      console.error('Referral processing error:', error);
+      localStorage.removeItem('pendingReferral');
+    }
+  }, [addToast]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300">
       {/* Header */}
