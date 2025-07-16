@@ -14,25 +14,6 @@ export default function HomePage() {
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [hasProcessedReferral, setHasProcessedReferral] = useState(false);
 
-  // Handle referral code from URL
-  useEffect(() => {
-    const refCode = searchParams.get('ref');
-    if (refCode && !referralCode) {
-      handleReferralCode(refCode);
-    }
-  }, [searchParams, referralCode]);
-
-  // Process referral after login
-  useEffect(() => {
-    if (isSignedIn && userId && !hasProcessedReferral) {
-      const storedReferralCode = localStorage.getItem('pendingReferral');
-      if (storedReferralCode) {
-        processReferral(storedReferralCode, userId);
-        setHasProcessedReferral(true);
-      }
-    }
-  }, [isSignedIn, userId, hasProcessedReferral]);
-
   const handleReferralCode = useCallback(async (code: string) => {
     try {
       // Validate referral code
@@ -87,6 +68,25 @@ export default function HomePage() {
       localStorage.removeItem('pendingReferral');
     }
   }, [addToast]);
+
+  // Handle referral code from URL
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode && !referralCode) {
+      handleReferralCode(refCode);
+    }
+  }, [searchParams, referralCode, handleReferralCode]);
+
+  // Process referral after login
+  useEffect(() => {
+    if (isSignedIn && userId && !hasProcessedReferral) {
+      const storedReferralCode = localStorage.getItem('pendingReferral');
+      if (storedReferralCode) {
+        processReferral(storedReferralCode, userId);
+        setHasProcessedReferral(true);
+      }
+    }
+  }, [isSignedIn, userId, hasProcessedReferral, processReferral]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300">
