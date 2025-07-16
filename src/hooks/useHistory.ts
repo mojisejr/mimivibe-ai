@@ -39,6 +39,7 @@ interface Reading {
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
+  isReviewed?: boolean; // Add review status
 }
 
 interface HistoryData {
@@ -131,6 +132,7 @@ export const useHistory = (initialLimit = 6) => {
           createdAt: reading.createdAt || new Date().toISOString(),
           expEarned: 25, // Default reward
           coinsEarned: 5, // Default reward
+          isReviewed: reading.isReviewed || false // Add review status
         })) : [],
         total: typeof pagination.total === 'number' ? pagination.total : 0,
         page: typeof pagination.page === 'number' ? pagination.page : 1,

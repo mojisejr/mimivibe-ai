@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
           question: true,
           answer: true,
           type: true,
+          isReviewed: true, // Add review status
           createdAt: true,
           cards: {
             select: {

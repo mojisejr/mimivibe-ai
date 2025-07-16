@@ -40,6 +40,7 @@ interface Reading {
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
+  isReviewed?: boolean; // Add review status
 }
 
 interface ReadingCardProps {
@@ -149,10 +150,20 @@ export const ReadingCard = ({
 
         {/* Date and Analysis */}
         <div className="flex items-center justify-between mb-4">
-          <p className="text-xs text-neutral-content flex items-center">
-            <span className="mr-1">🕐</span>
-            {safeFormatDistanceToNow(reading.createdAt, "ไม่ทราบวันที่")}
-          </p>
+          <div className="flex items-center space-x-2">
+            <p className="text-xs text-neutral-content flex items-center">
+              <span className="mr-1">🕐</span>
+              {safeFormatDistanceToNow(reading.createdAt, "ไม่ทราบวันที่")}
+            </p>
+            {/* Review Status Indicator */}
+            {reading.isReviewed && (
+              <div className="flex items-center text-xs text-success">
+                <span className="mr-1">⭐</span>
+                <span className="hidden sm:inline">รีวิวแล้ว</span>
+              </div>
+            )}
+          </div>
+          
           {reading.analysis?.topic && (
             <div className="badge badge-outline badge-xs text-xs">
               {reading.analysis.topic}

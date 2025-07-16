@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useUser } from '@clerk/nextjs';
-import { useHistory } from '@/hooks/useHistory';
-import { BottomNavigation } from '@/components/navigation/BottomNavigation';
-import { ReadingCard } from '@/components/history/ReadingCard';
-import { ReadingDetailModal } from '@/components/history/ReadingDetailModal';
-import { HistoryLoadingState, ErrorState, EmptyState } from '@/components/ui';
-import { UnifiedNavbar } from '@/components/layout/UnifiedNavbar';
+import { useUser } from "@clerk/nextjs";
+import { useHistory } from "@/hooks/useHistory";
+import { BottomNavigation } from "@/components/navigation/BottomNavigation";
+import { ReadingCard } from "@/components/history/ReadingCard";
+import { ReadingDetailModal } from "@/components/history/ReadingDetailModal";
+import { HistoryLoadingState, ErrorState, EmptyState } from "@/components/ui";
+import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 
 interface Card {
   id: number;
@@ -50,15 +50,24 @@ interface Reading {
 
 export default function HistoryPage() {
   const { user, isLoaded } = useUser();
-  const { data, loading, error, loadMore, refresh, hasMore, loadingMore, deleteReading } = useHistory();
+  const {
+    data,
+    loading,
+    error,
+    loadMore,
+    refresh,
+    hasMore,
+    loadingMore,
+    deleteReading,
+  } = useHistory();
   const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Debug authentication state
-  console.log('🔐 Authentication state (History):', {
+  console.log("🔐 Authentication state (History):", {
     isLoaded,
     userId: user?.id,
-    isSignedIn: !!user
+    isSignedIn: !!user,
   });
 
   // Don't render until auth is loaded
@@ -76,8 +85,12 @@ export default function HistoryPage() {
       <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex items-center justify-center">
         <div className="text-center">
           <h1 className="heading-1 mb-4">Authentication Required</h1>
-          <p className="body-normal text-neutral-content mb-4">Please sign in to view your reading history</p>
-          <Link href="/sign-in" className="btn btn-primary">Sign In</Link>
+          <p className="body-normal text-neutral-content mb-4">
+            Please sign in to view your reading history
+          </p>
+          <Link href="/sign-in" className="btn btn-primary">
+            Sign In
+          </Link>
         </div>
       </div>
     );
@@ -101,7 +114,7 @@ export default function HistoryPage() {
         handleCloseModal();
       }
     } catch (error) {
-      console.error('Failed to delete reading:', error);
+      console.error("Failed to delete reading:", error);
       // TODO: Show error toast/notification
     }
   };
@@ -118,7 +131,7 @@ export default function HistoryPage() {
           <p className="body-large text-neutral-content">
             Review your past tarot readings and insights
           </p>
-          {data && typeof data.total === 'number' && (
+          {data && typeof data.total === "number" && (
             <p className="text-sm text-neutral-content">
               Total readings: {data.total}
             </p>
@@ -134,10 +147,13 @@ export default function HistoryPage() {
             onRetry={refresh}
             retryText="โหลดประวัติใหม่"
           />
-        ) : data && data.readings && Array.isArray(data.readings) && data.readings.length > 0 ? (
+        ) : data &&
+          data.readings &&
+          Array.isArray(data.readings) &&
+          data.readings.length > 0 ? (
           <>
             {/* Reading Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
               {data.readings.map((reading) => (
                 <ReadingCard
                   key={reading.id}
@@ -151,7 +167,7 @@ export default function HistoryPage() {
             {/* Load More */}
             {hasMore && (
               <div className="text-center">
-                <button 
+                <button
                   onClick={loadMore}
                   disabled={loadingMore}
                   className="btn btn-outline btn-primary"
@@ -186,7 +202,7 @@ export default function HistoryPage() {
             title="ยังไม่มีประวัติการอ่าน"
             message="เริ่มต้นการเดินทางทางจิตวิญญาณของคุณด้วยการถามไพ่ทาโรต์"
             actionText="Ask the Cards"
-            onAction={() => window.location.href = '/ask'}
+            onAction={() => (window.location.href = "/ask")}
           />
         )}
       </main>

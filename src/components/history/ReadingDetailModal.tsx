@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Logo } from "@/components/ui";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
+import { ReviewModal, ReviewData } from "@/components/modals/ReviewModal";
 
 interface Card {
   id: number;
@@ -40,6 +41,7 @@ interface Reading {
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
+  isReviewed?: boolean; // Add review status
 }
 
 interface ReadingDetailModalProps {
@@ -113,6 +115,51 @@ export const ReadingDetailModal = ({
   onDelete,
 }: ReadingDetailModalProps) => {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
+
+  // Update review status when reading changes
+  useEffect(() => {
+    if (reading) {
+      setHasReviewed(reading.isReviewed || false);
+    }
+  }, [reading]);
+
+  const handleReviewSubmit = async (reviewData: ReviewData) => {
+    if (!reading) return;
+    
+    setIsSubmittingReview(true);
+    
+    try {
+      const response = await fetch(`/api/reviews/${reading.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(reviewData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit review');
+      }
+
+      // Update local state
+      setHasReviewed(true);
+      setIsReviewModalOpen(false);
+      
+      // Optional: Show success message or trigger parent refresh
+      console.log('Review submitted successfully');
+      
+    } catch (error) {
+      console.error('Review submission error:', error);
+      // Could show error toast here
+      throw error; // Re-throw to let ReviewModal handle the error
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   if (!isOpen || !reading) return null;
 
@@ -307,6 +354,25 @@ export const ReadingDetailModal = ({
               </button>
             )}
             
+            {/* Review Button */}
+            {!hasReviewed && (
+              <button 
+                onClick={() => setIsReviewModalOpen(true)}
+                className="btn btn-sm btn-primary"
+                disabled={isSubmittingReview}
+              >
+                <span>⭐</span>
+                <span className="hidden sm:inline">รีวิวการทำนาย</span>
+              </button>
+            )}
+            
+            {hasReviewed && (
+              <div className="flex items-center text-sm text-success">
+                <span className="mr-1">✅</span>
+                <span className="hidden sm:inline">รีวิวแล้ว</span>
+              </div>
+            )}
+            
             {/* Close Button */}
             <div className="flex space-x-2 ml-auto">
               <button onClick={onClose} className="btn btn-primary">
@@ -361,6 +427,15 @@ export const ReadingDetailModal = ({
           </div>
         </>
       )}
+
+      {/* Review Modal */}
+      <ReviewModal
+        readingId={reading?.id || null}
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        onSubmit={handleReviewSubmit}
+        isSubmitting={isSubmittingReview}
+      />
     </>
   );
 };
