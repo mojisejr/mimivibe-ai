@@ -26,6 +26,15 @@ interface ReadingStructure {
   notice: string;
 }
 
+interface ReviewData {
+  id: number;
+  accurateLevel: number;
+  createdAt: string;
+  reviewPeriod: number;
+  liked: boolean;
+  comment?: string;
+}
+
 interface Reading {
   id: string;
   question: string;
@@ -40,6 +49,9 @@ interface Reading {
   expEarned: number;
   coinsEarned: number;
   isReviewed?: boolean; // Add review status
+  reviewAccuracy?: number; // Add review percentage (0-100)
+  reviewComment?: string; // Add review comment
+  reviewData?: ReviewData | null; // Add review data
 }
 
 interface HistoryData {
@@ -118,7 +130,7 @@ export const useHistory = (initialLimit = 6) => {
             meaningTh: card.shortMeaning || '',
             category: card.arcana || '',
           })) : [],
-          analysis: reading.questionAnalysis || { mood: '', topic: '', timeframe: '' },
+          analysis: reading.analysis || { mood: '', topic: '', timeframe: '' },
           answer: reading.answer || { // Preserve full reading structure instead of just 'reading' field
             header: '',
             cards_reading: [],
@@ -130,9 +142,12 @@ export const useHistory = (initialLimit = 6) => {
             notice: ''
           },
           createdAt: reading.createdAt || new Date().toISOString(),
-          expEarned: 25, // Default reward
-          coinsEarned: 5, // Default reward
-          isReviewed: reading.isReviewed || false // Add review status
+          expEarned: reading.expEarned || 15, // Use actual value or default
+          coinsEarned: reading.coinsEarned || 3, // Use actual value or default
+          isReviewed: reading.isReviewed || false, // Add review status
+          reviewAccuracy: reading.reviewAccuracy || undefined, // Add review percentage
+          reviewComment: reading.reviewComment || undefined, // Add review comment
+          reviewData: reading.reviewData || null // Add review data
         })) : [],
         total: typeof pagination.total === 'number' ? pagination.total : 0,
         page: typeof pagination.page === 'number' ? pagination.page : 1,

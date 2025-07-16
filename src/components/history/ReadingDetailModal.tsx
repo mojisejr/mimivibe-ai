@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Logo } from "@/components/ui";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 import { ReviewModal, ReviewData } from "@/components/modals/ReviewModal";
+import { useToast } from "@/components/ui/ToastContainer";
 
 interface Card {
   id: number;
@@ -42,6 +43,8 @@ interface Reading {
   expEarned: number;
   coinsEarned: number;
   isReviewed?: boolean; // Add review status
+  reviewAccuracy?: number; // Add review percentage (0-100)
+  reviewComment?: string; // Add review comment
 }
 
 interface ReadingDetailModalProps {
@@ -118,6 +121,7 @@ export const ReadingDetailModal = ({
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
+  const { addToast } = useToast();
 
   // Update review status when reading changes
   useEffect(() => {
@@ -149,12 +153,25 @@ export const ReadingDetailModal = ({
       setHasReviewed(true);
       setIsReviewModalOpen(false);
       
-      // Optional: Show success message or trigger parent refresh
-      console.log('Review submitted successfully');
+      // Show success toast
+      addToast({
+        type: 'success',
+        title: 'รีวิวสำเร็จ!',
+        message: 'ขอบคุณสำหรับรีวิวของคุณ คุณได้รับรางวัล +10 EXP และ +2 เหรียญแล้ว',
+        duration: 4000
+      });
       
     } catch (error) {
       console.error('Review submission error:', error);
-      // Could show error toast here
+      
+      // Show error toast
+      addToast({
+        type: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        message: error instanceof Error ? error.message : 'ไม่สามารถส่งรีวิวได้ กรุณาลองใหม่อีกครั้ง',
+        duration: 5000
+      });
+      
       throw error; // Re-throw to let ReviewModal handle the error
     } finally {
       setIsSubmittingReview(false);
@@ -334,6 +351,37 @@ export const ReadingDetailModal = ({
                       <p className="body-normal">{question}</p>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Review Status Display */}
+          {hasReviewed && reading.reviewAccuracy !== undefined && (
+            <div className="card card-mystical border-success">
+              <div className="card-body">
+                <h3 className="heading-3 mb-4 text-success">รีวิวของคุณ</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="body-normal">ระดับความแม่นยำ:</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="text-2xl">
+                        {reading.reviewAccuracy === 0 ? '😞' : 
+                         reading.reviewAccuracy === 20 ? '🙁' : 
+                         reading.reviewAccuracy === 50 ? '😐' : 
+                         reading.reviewAccuracy === 80 ? '😊' : '🤩'}
+                      </div>
+                      <span className="font-semibold text-success">{reading.reviewAccuracy}%</span>
+                    </div>
+                  </div>
+                  {reading.reviewComment && (
+                    <div className="border-t border-success/20 pt-3">
+                      <h4 className="font-semibold mb-2">ความคิดเห็น:</h4>
+                      <p className="body-normal bg-success/10 p-3 rounded-lg leading-relaxed">
+                        {reading.reviewComment}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

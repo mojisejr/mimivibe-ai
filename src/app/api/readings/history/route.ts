@@ -58,6 +58,16 @@ export async function GET(request: NextRequest) {
               }
             },
             orderBy: { position: 'asc' }
+          },
+          reviews: {
+            where: { userId },
+            select: {
+              id: true,
+              accurateLevel: true,
+              createdAt: true,
+              reviewPeriod: true,
+              liked: true
+            }
           }
         }
       }),
@@ -69,10 +79,41 @@ export async function GET(request: NextRequest) {
       })
     ])
 
+    // Get review comments from point transactions
+    const reviewComments = await Promise.all(
+      readings.filter(r => r.reviews.length > 0).map(async (reading) => {
+        const transaction = await prisma.pointTransaction.findFirst({
+          where: {
+            userId,
+            eventType: 'REVIEW_REWARD',
+            metadata: {
+              path: ['readingId'],
+              equals: reading.id
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        })
+
+        const comment = transaction?.metadata && typeof transaction.metadata === 'object' && 
+                       'comment' in transaction.metadata ? 
+                       (transaction.metadata as any).comment : null
+
+        return {
+          readingId: reading.id,
+          comment
+        }
+      })
+    )
+
+    const commentMap = new Map(reviewComments.map(rc => [rc.readingId, rc.comment]))
+
     // Format readings for response
     const formattedReadings = readings.map(reading => {
       // Handle new JSON structure (answer is ReadingStructure)
       const readingAnswer = reading.answer as unknown as ReadingStructure
+      const review = reading.reviews?.[0] || null
+      const reviewComment = commentMap.get(reading.id) || null
+      
       return {
         id: reading.id,
         question: reading.question,
@@ -81,12 +122,34 @@ export async function GET(request: NextRequest) {
         cards: reading.cards.map(rc => ({
           id: rc.Card.id,
           name: rc.Card.name,
+          nameTh: rc.Card.displayName,
           displayName: rc.Card.displayName,
           imageUrl: rc.Card.imageUrl,
-          position: rc.position
+          position: rc.position,
+          keywords: rc.Card.keywords,
+          keywordsTh: rc.Card.keywords,
+          meaning: rc.Card.shortMeaning,
+          meaningTh: rc.Card.shortMeaning,
+          category: rc.Card.arcana
         })),
+        analysis: {
+          mood: 'neutral', // Default values for compatibility
+          topic: 'general',
+          timeframe: 'present'
+        },
         createdAt: reading.createdAt.toISOString(),
-        isReviewed: false // Add for compatibility
+        expEarned: 15, // Default values for compatibility
+        coinsEarned: 3,
+        isReviewed: reading.isReviewed, // Use actual value from database
+        reviewAccuracy: review?.accurateLevel || undefined,
+        reviewComment: reviewComment || undefined,
+        reviewData: review ? {
+          id: review.id,
+          accurateLevel: review.accurateLevel,
+          createdAt: review.createdAt.toISOString(),
+          reviewPeriod: review.reviewPeriod,
+          liked: review.liked
+        } : null
       }
     })
 

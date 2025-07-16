@@ -182,9 +182,29 @@ export async function GET(
       )
     }
 
+    // Get the comment from the corresponding PointTransaction
+    const transaction = await prisma.pointTransaction.findFirst({
+      where: {
+        userId,
+        eventType: 'REVIEW_REWARD',
+        metadata: {
+          path: ['readingId'],
+          equals: readingId
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    const comment = transaction?.metadata && typeof transaction.metadata === 'object' && 
+                   'comment' in transaction.metadata ? 
+                   (transaction.metadata as any).comment : null
+
     return NextResponse.json({
       success: true,
-      data: review
+      data: {
+        ...review,
+        comment
+      }
     })
 
   } catch (error) {

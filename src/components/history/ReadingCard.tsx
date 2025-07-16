@@ -41,6 +41,7 @@ interface Reading {
   expEarned: number;
   coinsEarned: number;
   isReviewed?: boolean; // Add review status
+  reviewAccuracy?: number; // Add review percentage (0-100)
 }
 
 interface ReadingCardProps {
@@ -155,20 +156,39 @@ export const ReadingCard = ({
               <span className="mr-1">🕐</span>
               {safeFormatDistanceToNow(reading.createdAt, "ไม่ทราบวันที่")}
             </p>
-            {/* Review Status Indicator */}
+            {/* Review Status Indicator with Percentage */}
             {reading.isReviewed && (
               <div className="flex items-center text-xs text-success">
                 <span className="mr-1">⭐</span>
                 <span className="hidden sm:inline">รีวิวแล้ว</span>
+                {reading.reviewAccuracy !== undefined && (
+                  <span className="ml-1 font-semibold">
+                    ({reading.reviewAccuracy}%)
+                  </span>
+                )}
               </div>
             )}
           </div>
           
-          {reading.analysis?.topic && (
-            <div className="badge badge-outline badge-xs text-xs">
-              {reading.analysis.topic}
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            {reading.analysis?.topic && (
+              <div className="badge badge-outline badge-xs text-xs">
+                {reading.analysis.topic}
+              </div>
+            )}
+            {/* Review Percentage Display for larger screens */}
+            {reading.isReviewed && reading.reviewAccuracy !== undefined && (
+              <div className="hidden md:flex items-center text-xs text-success">
+                <span className="mr-1">
+                  {reading.reviewAccuracy === 0 ? '😞' : 
+                   reading.reviewAccuracy === 20 ? '🙁' : 
+                   reading.reviewAccuracy === 50 ? '😐' : 
+                   reading.reviewAccuracy === 80 ? '😊' : '🤩'}
+                </span>
+                <span className="font-semibold">{reading.reviewAccuracy}%</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Reading Preview */}
