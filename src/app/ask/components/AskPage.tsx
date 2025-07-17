@@ -1,154 +1,159 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { ReadingResponse } from '@/types/reading'
-import { HeroSection } from './HeroSection'
-import { LoadingState } from './LoadingState'
-import { AnimatedArticleDisplay } from './AnimatedArticleDisplay'
-import { UnifiedNavbar } from '@/components/layout/UnifiedNavbar'
+import { useState } from "react";
+import { ReadingResponse } from "@/types/reading";
+import { HeroSection } from "./HeroSection";
+import { LoadingState } from "./LoadingState";
+import { AnimatedArticleDisplay } from "./AnimatedArticleDisplay";
+import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
+import { motion } from "framer-motion";
 
-type PageState = 'initial' | 'loading' | 'result' | 'error'
+type PageState = "initial" | "loading" | "result" | "error";
 
 interface ErrorState {
-  message: string
-  canRetry: boolean
+  message: string;
+  canRetry: boolean;
 }
 
 export function AskPage() {
-  const [pageState, setPageState] = useState<PageState>('initial')
-  const [currentQuestion, setCurrentQuestion] = useState('')
-  const [readingData, setReadingData] = useState<ReadingResponse['data'] | null>(null)
-  const [error, setError] = useState<ErrorState | null>(null)
+  const [pageState, setPageState] = useState<PageState>("initial");
+  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [readingData, setReadingData] = useState<
+    ReadingResponse["data"] | null
+  >(null);
+  const [error, setError] = useState<ErrorState | null>(null);
 
   const handleQuestionSubmit = async (question: string) => {
-    setCurrentQuestion(question)
-    setPageState('loading')
-    setError(null)
+    setCurrentQuestion(question);
+    setPageState("loading");
+    setError(null);
 
     try {
-      const response = await fetch('/api/readings/ask', {
-        method: 'POST',
+      const response = await fetch("/api/readings/ask", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ question }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'การทำนายล้มเหลว')
+        throw new Error(data.error || "การทำนายล้มเหลว");
       }
 
       if (data.success) {
-        setReadingData(data.data)
-        setPageState('result')
+        setReadingData(data.data);
+        setPageState("result");
       } else {
-        throw new Error(data.error || 'ไม่สามารถทำนายได้')
+        throw new Error(data.error || "ไม่สามารถทำนายได้");
       }
     } catch (err) {
-      console.error('Reading error:', err)
+      console.error("Reading error:", err);
       setError({
-        message: err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ',
-        canRetry: true
-      })
-      setPageState('error')
+        message:
+          err instanceof Error ? err.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
+        canRetry: true,
+      });
+      setPageState("error");
     }
-  }
+  };
 
   const handleSaveReading = async () => {
-    if (!readingData) return
+    if (!readingData) return;
 
     try {
-      const response = await fetch(`/api/readings/${readingData.readingId}/save`, {
-        method: 'POST',
-      })
+      const response = await fetch(
+        `/api/readings/${readingData.readingId}/save`,
+        {
+          method: "POST",
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('ไม่สามารถบันทึกการทำนายได้')
+        throw new Error("ไม่สามารถบันทึกการทำนายได้");
       }
 
       // Show success feedback (could be a toast notification)
-      console.log('Reading saved successfully')
+      console.log("Reading saved successfully");
     } catch (err) {
-      console.error('Save error:', err)
+      console.error("Save error:", err);
       // Show error feedback
     }
-  }
+  };
 
   const handleDeleteReading = async () => {
-    if (!readingData) return
+    if (!readingData) return;
 
-    const confirmed = window.confirm('คุณต้องการลบการทำนายนี้ใช่หรือไม่?')
-    if (!confirmed) return
+    const confirmed = window.confirm("คุณต้องการลบการทำนายนี้ใช่หรือไม่?");
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/readings/${readingData.readingId}`, {
-        method: 'DELETE',
-      })
+        method: "DELETE",
+      });
 
       if (!response.ok) {
-        throw new Error('ไม่สามารถลบการทำนายได้')
+        throw new Error("ไม่สามารถลบการทำนายได้");
       }
 
       // Reset to initial state
-      handleAskAgain()
+      handleAskAgain();
     } catch (err) {
-      console.error('Delete error:', err)
+      console.error("Delete error:", err);
       // Show error feedback
     }
-  }
+  };
 
   const handleAskAgain = () => {
-    setPageState('initial')
-    setCurrentQuestion('')
-    setReadingData(null)
-    setError(null)
-  }
+    setPageState("initial");
+    setCurrentQuestion("");
+    setReadingData(null);
+    setError(null);
+  };
 
   const handleQuestionClick = (question: string) => {
-    setCurrentQuestion(question)
-    setPageState('initial')
-    setReadingData(null)
-    setError(null)
+    setCurrentQuestion(question);
+    setPageState("initial");
+    setReadingData(null);
+    setError(null);
     // Auto-submit the question after a short delay to show the question was filled
     setTimeout(() => {
-      handleQuestionSubmit(question)
-    }, 100)
-  }
+      handleQuestionSubmit(question);
+    }, 100);
+  };
 
   const handleRetry = () => {
     if (currentQuestion) {
-      handleQuestionSubmit(currentQuestion)
+      handleQuestionSubmit(currentQuestion);
     } else {
-      handleAskAgain()
+      handleAskAgain();
     }
-  }
+  };
 
   return (
     <>
       {/* Auto-Hide Navbar */}
-      <UnifiedNavbar 
+      <UnifiedNavbar
         autoHide={true}
-        currentState={pageState === 'error' ? 'initial' : pageState}
-        showInStates={['initial', 'loading', 'result']}
+        currentState={pageState === "error" ? "initial" : pageState}
+        showInStates={["initial", "loading", "result"]}
       />
 
       {/* Main Content */}
       <main className="min-h-screen">
-        {pageState === 'initial' && (
-          <HeroSection 
+        {pageState === "initial" && (
+          <HeroSection
             onSubmit={handleQuestionSubmit}
             isLoading={false}
             initialQuestion={currentQuestion}
           />
         )}
 
-        {pageState === 'loading' && (
-          <LoadingState question={currentQuestion} />
-        )}
+        {pageState === "loading" && <LoadingState question={currentQuestion} />}
 
-        {pageState === 'result' && readingData && (
+        {pageState === "result" && readingData && (
           <AnimatedArticleDisplay
             readingData={readingData}
             onSave={handleSaveReading}
@@ -158,41 +163,102 @@ export function AskPage() {
           />
         )}
 
-        {pageState === 'error' && error && (
-          <div className="page-container flex flex-col items-center justify-center px-4 py-8 bg-gradient-to-br from-base-100 to-error/10">
-            <div className="w-full max-w-md mx-auto text-center">
-              <div className="mb-8">
-                <div className="w-20 h-20 bg-error/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">😞</span>
-                </div>
-                <h2 className="heading-2 text-error mb-4">
-                  เกิดข้อผิดพลาด
-                </h2>
-                <p className="body-normal text-error/80 mb-8">
-                  {error.message}
-                </p>
-              </div>
+        {pageState === "error" && error && (
+          <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-8 pt-20 lg:pt-24 overflow-hidden">
+            {/* Background Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-base-100 via-base-200 to-error/5"></div>
 
-              <div className="space-y-4">
-                {error.canRetry && (
-                  <button
-                    onClick={handleRetry}
-                    className="btn btn-error w-full"
+            {/* Floating Elements */}
+            <div className="absolute inset-0 overflow-hidden">
+              <motion.div
+                className="absolute top-20 left-10 w-20 h-20 bg-error/20 rounded-full blur-xl"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              <motion.div
+                className="absolute bottom-20 right-10 w-32 h-32 bg-primary/20 rounded-full blur-xl"
+                animate={{
+                  scale: [1.2, 1, 1.2],
+                  opacity: [0.4, 0.7, 0.4],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1,
+                }}
+              />
+            </div>
+
+            <div className="relative z-10 w-full max-w-md mx-auto text-center">
+              <motion.div
+                className="mb-8"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                <div className="bg-base-100/80 backdrop-blur-sm rounded-2xl shadow-2xl border-2 border-error/20 p-8">
+                  <motion.div
+                    className="w-24 h-24 bg-error/20 rounded-full flex items-center justify-center mx-auto mb-6"
+                    animate={{
+                      scale: [1, 1.1, 1],
+                      rotate: [0, 5, -5, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
                   >
-                    ลองอีกครั้ง
-                  </button>
+                    <span className="text-4xl">😞</span>
+                  </motion.div>
+                  <h2 className="text-2xl font-bold text-error mb-4">
+                    เกิดข้อผิดพลาด
+                  </h2>
+                  <p className="text-lg text-error/80 mb-8 leading-relaxed">
+                    {error.message}
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="space-y-4"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                {error.canRetry && (
+                  <motion.button
+                    onClick={handleRetry}
+                    className="btn btn-lg w-full bg-gradient-to-r from-error to-error-focus text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="text-xl mr-2">🔄</span>
+                    <span>ลองอีกครั้ง</span>
+                  </motion.button>
                 )}
-                <button
+                <motion.button
                   onClick={handleAskAgain}
-                  className="btn btn-neutral w-full"
+                  className="btn btn-outline btn-lg w-full border-2 border-primary/30 hover:border-primary hover:bg-primary/10"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  เริ่มใหม่
-                </button>
-              </div>
+                  <span className="text-lg mr-2">🏠</span>
+                  <span>เริ่มใหม่</span>
+                </motion.button>
+              </motion.div>
             </div>
           </div>
         )}
       </main>
     </>
-  )
+  );
 }
