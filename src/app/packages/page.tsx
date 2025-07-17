@@ -117,8 +117,7 @@ export default function PackagesPage() {
   }
 
   return (
-    <StripeProvider>
-      <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
         {/* Header */}
         <UnifiedNavbar />
 
@@ -294,13 +293,15 @@ export default function PackagesPage() {
 
                   {/* Payment Form */}
                   {clientSecret && selectedPackage && (
-                    <PaymentForm
-                      amount={selectedPackage.price}
-                      currency="thb"
-                      onSuccess={handlePaymentSuccess}
-                      onError={handlePaymentError}
-                      loading={loading}
-                    />
+                    <StripeProvider clientSecret={clientSecret}>
+                      <PaymentForm
+                        amount={selectedPackage.price}
+                        currency="thb"
+                        onSuccess={handlePaymentSuccess}
+                        onError={handlePaymentError}
+                        loading={loading}
+                      />
+                    </StripeProvider>
                   )}
                 </motion.div>
               )}
@@ -321,6 +322,5 @@ export default function PackagesPage() {
             <BottomNavigation />
           </div>
         </div>
-      </StripeProvider>
     );
 }

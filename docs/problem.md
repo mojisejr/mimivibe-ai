@@ -1,47 +1,33 @@
 #Problem From Manual Tesing by developer
 developer manual testing by run dev server and manually using the application and investigate if any problem and these are what we have found
 
-##Error นี้เกิดขึ้น ระหว่างการ refactor และ tokens ของ claude code หมด
-prisma:query COMMIT
-GET /api/referrals/status 200 in 719ms
-⨯ ./src/app/packages/page.tsx
-Error:
-× Unexpected token `div`. Expected jsx identifier
-╭─[/Users/non/dev/vibes/mimi-vibes-v3/src/app/packages/page.tsx:117:1]
-117 │ }
-118 │
-119 │ return (
-120 │ <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
-· ───
-121 │ {/_ Header _/}
-122 │ <UnifiedNavbar />
-╰────
+##Error Logs
+Unhandled Runtime Error
+IntegrationError: In order to create a payment element, you must pass a clientSecret or mode when creating the Elements group.
 
-Caused by:
-Syntax Error
+e.g. stripe.elements({clientSecret: "{{CLIENT_SECRET}}"})
 
-Import trace for requested module:
-./src/app/packages/page.tsx
-○ Compiling /packages ...
-⨯ ./src/app/packages/page.tsx
-Error:
-× Unexpected token `div`. Expected jsx identifier
-╭─[/Users/non/dev/vibes/mimi-vibes-v3/src/app/packages/page.tsx:117:1]
-117 │ }
-118 │
-119 │ return (
-120 │ <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
-· ───
-121 │ {/_ Header _/}
-122 │ <UnifiedNavbar />
-╰────
+Call Stack
+Go
+https://js.stripe.com/basil/stripe.js (1:350419)
+Ii
+https://js.stripe.com/basil/stripe.js (1:400371)
+new t
+https://js.stripe.com/basil/stripe.js (1:406631)
+t.<anonymous>
+https://js.stripe.com/basil/stripe.js (1:429643)
+t.create
+https://js.stripe.com/basil/stripe.js (1:72216)
+eval
+node_modules/@stripe/react-stripe-js/dist/react-stripe.umd.js (870:1)
 
-Caused by:
-Syntax Error
+##Problem Description
+error เกิดขึ้นหลังจากที่ได้ทดสอบ กด เพื่อซื้อ package ใน local dev server ครับ
 
-Import trace for requested module:
-./src/app/packages/page.tsx
-GET /packages 500 in 27ms
-GET /service-worker.js 500 in 12ms
+##Addition Requirement
+คุณจะช่วยผมวิเคราะห์ปัญหาที่เกิดขึ้น โดยวิเคราะห์ ทั้ง payment flow จากนั้น หากมีคำถามเพิ่มเติม หรือความต้องการ ข้อมูลเพิ่มเติมให้ ถามก่อน refactoring หรือ bug fixing ครับ
+คุณจะวางแผนอย่างรอบคอบและ ทำตาม best practice
+และ convention ของโปรเจคเสมอครับ
 
-## และใน remaining create ในหน้า /package ไม่ขึ้น แต่ขึ้นเป็น NAN แทน
+##Notice
+ก่อนที่คุณจะแก้ไขส่วนต่างๆ ให้ตรวจเชคการทำงานก่อน ว่าเป็นไปตามความต้องการหรือยัง หากเป็นไปตามต้องการแล้ว ไม่ต้องแก่้ไข ให้แก้ **เฉพาะ** ส่วนที่ต้องแก้ไขเท่านั้น
