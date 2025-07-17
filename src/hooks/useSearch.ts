@@ -187,11 +187,11 @@ function applyFilters(results: SearchResult[], filters: FilterOptions): SearchRe
 
 export function useSearch(initialData: SearchResult[] = []): UseSearchReturn {
   const [state, setState] = useState<SearchState>({
-    results: initialData,
-    filteredResults: initialData,
+    results: [],
+    filteredResults: [],
     loading: false,
     error: null,
-    total: initialData.length,
+    total: 0,
     hasMore: false,
     page: 1,
     filters: {
@@ -203,6 +203,17 @@ export function useSearch(initialData: SearchResult[] = []): UseSearchReturn {
       topic: "all",
     }
   });
+
+  // Update results when initialData changes
+  useEffect(() => {
+    if (initialData && initialData.length > 0) {
+      setState(prev => ({
+        ...prev,
+        results: initialData,
+        page: 1 // Reset pagination when new data comes in
+      }));
+    }
+  }, [initialData]);
 
   // Apply filters when filters change or data changes
   const filteredResults = useMemo(() => {

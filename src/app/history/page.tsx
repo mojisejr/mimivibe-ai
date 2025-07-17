@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { useHistory } from "@/hooks/useHistory";
@@ -75,7 +75,6 @@ export default function HistoryPage() {
     filters,
     setFilters,
     loadMore: loadMoreSearch,
-    refresh: refreshSearch,
   } = useSearch(historyData?.readings || []);
   
   const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
@@ -90,13 +89,8 @@ export default function HistoryPage() {
     enabled: searchResults.length > 0,
   });
 
-  // Update search data when history data changes
-  useEffect(() => {
-    if (historyData?.readings) {
-      // Update search hook with new data - this would typically be handled by the search hook internally
-      refreshSearch();
-    }
-  }, [historyData?.readings, refreshSearch]);
+  // Search hook now automatically updates when historyData?.readings changes
+  // No manual refresh needed
 
   // Debug authentication state
   console.log("🔐 Authentication state (History):", {
@@ -148,8 +142,7 @@ export default function HistoryPage() {
       if (selectedReading?.id === readingId) {
         handleCloseModal();
       }
-      // Refresh search results after deletion
-      refreshSearch();
+      // Search results will automatically update when historyData changes
     } catch (error) {
       console.error("Failed to delete reading:", error);
       // TODO: Show error toast/notification
