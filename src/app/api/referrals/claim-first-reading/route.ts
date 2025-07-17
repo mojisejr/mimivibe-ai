@@ -3,6 +3,9 @@ import { auth } from '@clerk/nextjs'
 import { prisma } from '@/lib/prisma'
 import { GAMIFICATION_CONFIG } from '@/lib/gamification/levels'
 
+// Force dynamic rendering for authentication
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = auth()

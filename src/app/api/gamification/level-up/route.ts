@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { calculateLevel, checkLevelUp } from '@/lib/gamification/levels'
 
+// Force dynamic rendering for authentication
+export const dynamic = 'force-dynamic'
+
 export async function POST() {
   try {
     const { userId } = auth()

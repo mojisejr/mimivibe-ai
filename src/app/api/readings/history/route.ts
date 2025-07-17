@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import type { ReadingStructure } from '@/types/reading'
 
+// Force dynamic rendering for authentication and request.url
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const { userId } = auth()
