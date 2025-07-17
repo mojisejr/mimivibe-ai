@@ -16,6 +16,8 @@
     "@langchain/google-genai": "^0.2.14",
     "@langchain/langgraph": "^0.3.8",
     "@prisma/client": "^6.11.1",
+    "@stripe/react-stripe-js": "^3.7.0",
+    "@stripe/stripe-js": "^7.5.0",
     "clsx": "^2.1.1",
     "daisyui": "^4.4.0",
     "date-fns": "^4.1.0",
