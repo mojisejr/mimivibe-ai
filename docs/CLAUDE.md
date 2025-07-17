@@ -21,7 +21,7 @@
 - **Backend**: Node.js API routes, Supabase PostgreSQL
 - **Database**: Prisma ORM, PostgreSQL
 - **Authentication**: Clerk (LINE LIFF integration)
-- **AI**: LangGraph workflow + Gemini 2.0 Flash
+- **AI**: LangGraph workflow + Multi-LLM Architecture (OpenAI GPT-4-turbo + Gemini 2.0 Flash)
 - **Payments**: Stripe integration
 - **Animation**: Framer Motion
 - **Deployment**: Vercel
@@ -1095,6 +1095,62 @@ NODE_ENV="production"
 ---
 
 #### Round 9.4: Vercel Build Fixes - Dynamic Exports Complete (COMPLETED ✅)
+
+#### Round 9.5: Multi-LLM Architecture Refactor (🚀 NEXT)
+**Context Files**: `CLAUDE.md` + `AI-ARCHITECTURE.md`  
+**Estimated Duration**: 4-5 hours  
+**Priority**: High (AI Infrastructure Enhancement)
+
+**Planned Tasks**:
+- **Task A**: Implement provider abstraction layer with LLMProvider interface
+- **Task B**: Create OpenAI provider implementation alongside existing Gemini
+- **Task C**: Refactor LangGraph workflow to use provider abstraction
+- **Task D**: Add environment configuration for provider selection (OpenAI as default)
+
+**Success Criteria**:
+- [ ] LLMProvider interface with consistent API across providers
+- [ ] OpenAI GPT-4-turbo provider implementation
+- [ ] Gemini provider refactored to use abstraction
+- [ ] LangGraph workflow provider-agnostic
+- [ ] Environment-based provider selection (OPENAI_API_KEY already configured)
+- [ ] OpenAI set as default provider
+- [ ] Maintain existing workflow structure and functionality
+
+**Multi-LLM Architecture Specifications**:
+- Provider abstraction with unified interface for all AI operations
+- OpenAI GPT-4-turbo as default provider with existing Gemini as fallback
+- Environment variable configuration for easy provider switching
+- Maintain existing LangGraph 4-node workflow (questionFilter → cardPicker → questionAnalyzer → readingAgent)
+- Cost optimization potential with provider-based routing
+- Future-ready architecture for additional AI providers
+
+**Technical Implementation Plan**:
+```typescript
+// Provider Architecture Structure
+/src/lib/ai/
+├── providers/
+│   ├── base.ts          // LLMProvider interface
+│   ├── gemini.ts        // Gemini implementation  
+│   ├── openai.ts        // OpenAI implementation
+│   └── factory.ts       // Provider factory
+├── manager.ts           // Multi-provider manager
+├── config.ts            // Provider configurations
+└── index.ts             // Public API
+```
+
+**Environment Configuration**:
+- `DEFAULT_AI_PROVIDER=openai` (OpenAI as default)
+- `OPENAI_API_KEY=...` (already configured)
+- `GOOGLE_AI_API_KEY=...` (existing fallback)
+- `AI_PROVIDER_FALLBACK=gemini` (fallback strategy)
+
+**LangGraph Integration**:
+- Replace `createGeminiWithPrompt()` with `createProviderWithPrompt()`
+- Maintain existing 4-node workflow structure
+- Provider-agnostic prompt system
+- Seamless fallback mechanisms
+
+**Dependencies**: ✅ Round 9.4 complete
 **Context Files**: `CLAUDE.md` + Documentation Update + Codebase Analysis  
 **Actual Duration**: 1 hour  
 **Priority**: Critical (Final production deployment preparation)
@@ -1240,6 +1296,7 @@ const roundContextMap = {
   // Phase 2: Enhanced Features (UPDATED 🚀)
   Round8: { supplement: "UI-INTEGRATION.md", focus: "Frontend API Integration" },
   Round9: { supplement: "PAYMENT-UI.md", focus: "Stripe Payment UI Integration" },
+  Round95: { supplement: "AI-ARCHITECTURE.md", focus: "Multi-LLM Architecture" },
   Round10: { supplement: "GAMIFICATION-UI.md", focus: "Gamification UI Components" },
   Round11: { supplement: "UI-INTEGRATION.md", focus: "Error Handling & Loading States" },
   Round12: { supplement: "UI-INTEGRATION.md", focus: "Performance Optimization" },
@@ -1285,8 +1342,8 @@ claude → [CLAUDE.md + UI-COMPONENTS.md] → Round 7C → test → commit
 ---
 
 **Updated**: January 2025 - Phase 1.5 Extended + Phase 2 Round 9.4 Vercel Build Fixes Complete  
-**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅ | Round 7C.3 ✅ | Round 7D ✅ | Round 7D.1 ✅ | Round 7D.2 ✅ | Round 7D.3 ✅ | Round 7E ✅ | Review Display ✅ | Position Refinement ✅ | Review Logic Fix ✅ | Round 7F ✅ | Round 7G ✅ | Round 7G.1 ✅ | Round 7H ✅ | Round 8 ✅ | Round 9 ✅ | Round 9.1 ✅ | Round 9.2 ✅ | Round 9.3 ✅ | Round 9.4 ✅  
+**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅ | Round 7C.3 ✅ | Round 7D ✅ | Round 7D.1 ✅ | Round 7D.2 ✅ | Round 7D.3 ✅ | Round 7E ✅ | Review Display ✅ | Position Refinement ✅ | Review Logic Fix ✅ | Round 7F ✅ | Round 7G ✅ | Round 7G.1 ✅ | Round 7H ✅ | Round 8 ✅ | Round 9 ✅ | Round 9.1 ✅ | Round 9.2 ✅ | Round 9.3 ✅ | Round 9.4 ✅ | Round 9.5 🚀  
 **Production Status**: 100% Ready for Vercel Deployment 🚀  
-**Next Action**: Deploy to Vercel or Execute Round 10 (Phase 2 - Gamification UI Components)  
+**Next Action**: Execute Round 9.5 (Multi-LLM Architecture Refactor) → Round 10 (Gamification UI Components) or Deploy to Vercel  
 **Phase 1.5 Extended Duration**: 30-35 hours actual  
-**Phase 2 Progress**: Round 8 ✅ (Frontend API Integration) + Round 9 ✅ (Stripe Payment UI Integration) + Round 9.1 ✅ (clientSecret Timing Fix) + Round 9.2 ✅ (Pricing Display Correction) + Round 9.3 ✅ (Vercel Deployment Analysis) + Round 9.4 ✅ (Dynamic Exports Complete)
+**Phase 2 Progress**: Round 8 ✅ (Frontend API Integration) + Round 9 ✅ (Stripe Payment UI Integration) + Round 9.1 ✅ (clientSecret Timing Fix) + Round 9.2 ✅ (Pricing Display Correction) + Round 9.3 ✅ (Vercel Deployment Analysis) + Round 9.4 ✅ (Dynamic Exports Complete) + Round 9.5 🚀 (Multi-LLM Architecture Refactor)
