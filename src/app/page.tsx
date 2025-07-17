@@ -1,25 +1,106 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+"use client";
+
+import { SignedIn, SignedOut, SignInButton, useAuth } from "@clerk/nextjs";
 import Link from "next/link";
+import { Navbar } from "@/components/layout";
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import { useToast } from "@/components/ui/ToastContainer";
 
 export default function HomePage() {
+  const { isSignedIn, userId } = useAuth();
+  const searchParams = useSearchParams();
+  const { addToast } = useToast();
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [hasProcessedReferral, setHasProcessedReferral] = useState(false);
+
+  const handleReferralCode = useCallback(async (code: string) => {
+    try {
+      // Validate referral code
+      const response = await fetch('/api/referrals/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralCode: code })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Store referral code for later processing
+          localStorage.setItem('pendingReferral', code);
+          setReferralCode(code);
+          addToast({ type: 'success', title: '🎉 Referral code valid!', message: 'You\'ll receive bonus rewards when you sign up!' });
+        } else {
+          addToast({ type: 'error', title: '❌ Invalid referral code', message: 'Please check your referral link and try again.' });
+        }
+      } else {
+        addToast({ type: 'error', title: '❌ Invalid referral code', message: 'Please check your referral link and try again.' });
+      }
+    } catch (error) {
+      console.error('Referral validation error:', error);
+      addToast({ type: 'error', title: '❌ Error validating referral code', message: 'Please try again later.' });
+    }
+  }, [addToast]);
+
+  const processReferral = useCallback(async (code: string, newUserId: string) => {
+    try {
+      const response = await fetch('/api/referrals/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralCode: code, newUserId })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          addToast({ type: 'success', title: '🎁 Welcome!', message: 'You received referral bonus rewards!' });
+          localStorage.removeItem('pendingReferral');
+        } else {
+          console.error('Referral processing failed:', data.error);
+          localStorage.removeItem('pendingReferral');
+        }
+      } else {
+        console.error('Referral processing failed');
+        localStorage.removeItem('pendingReferral');
+      }
+    } catch (error) {
+      console.error('Referral processing error:', error);
+      localStorage.removeItem('pendingReferral');
+    }
+  }, [addToast]);
+
+  // Handle referral code from URL
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode && !referralCode) {
+      handleReferralCode(refCode);
+    }
+  }, [searchParams, referralCode, handleReferralCode]);
+
+  // Process referral after login
+  useEffect(() => {
+    if (isSignedIn && userId && !hasProcessedReferral) {
+      const storedReferralCode = localStorage.getItem('pendingReferral');
+      if (storedReferralCode) {
+        processReferral(storedReferralCode, userId);
+        setHasProcessedReferral(true);
+      }
+    }
+  }, [isSignedIn, userId, hasProcessedReferral, processReferral]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300">
       {/* Header */}
-      <header className="navbar bg-base-100/90 backdrop-blur-sm shadow-lg">
-        <div className="navbar-start">
-          <h1 className="text-2xl font-bold text-primary">MiMiVibes</h1>
+      <Navbar logoSize="xl" showText={false} />
+
+      {/* Sign In Button for Non-Authenticated Users */}
+      <SignedOut>
+        <div className="fixed top-4 right-4 z-50">
+          <SignInButton mode="modal">
+            <button className="btn btn-primary">Sign In</button>
+          </SignInButton>
         </div>
-        <div className="navbar-end">
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="btn btn-primary">Sign In</button>
-            </SignInButton>
-          </SignedOut>
-        </div>
-      </header>
+      </SignedOut>
 
       {/* Hero Section */}
       <main className="content-container">

@@ -1,6 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { ToastProvider } from '@/components/ui/ToastContainer'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -21,9 +22,11 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" data-theme="mimivibes">
         <body className={inter.className}>
-          <div className="page-container safe-area-full">
-            {children}
-          </div>
+          <ToastProvider>
+            <div className="page-container safe-area-full">
+              {children}
+            </div>
+          </ToastProvider>
         </body>
       </html>
     </ClerkProvider>
