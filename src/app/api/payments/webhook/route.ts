@@ -3,6 +3,9 @@ import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
 
+// Force dynamic rendering for headers() usage
+export const dynamic = 'force-dynamic'
+
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
 const DEBUG_MODE = process.env.NODE_ENV === 'development'
 

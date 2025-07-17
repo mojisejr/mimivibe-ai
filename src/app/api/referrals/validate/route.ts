@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic rendering for database access
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   console.log('🔍 Referral validation request received')
   
