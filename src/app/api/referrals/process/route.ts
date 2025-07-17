@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma'
 import { generateReferralCode } from '@/lib/gamification/referrals'
 import { GAMIFICATION_CONFIG } from '@/lib/gamification/levels'
 
+// Force dynamic rendering for database access
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()

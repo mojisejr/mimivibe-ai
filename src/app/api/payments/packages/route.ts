@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic rendering for database access
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const packages = await prisma.pack.findMany({

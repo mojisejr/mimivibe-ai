@@ -1,5 +1,5 @@
 import { StateGraph, Annotation, START, END } from '@langchain/langgraph'
-import { geminiAI, SYSTEM_PROMPTS, createGeminiWithPrompt } from '@/lib/ai/gemini'
+import { SYSTEM_PROMPTS, createProviderWithPrompt } from '@/lib/ai'
 import { pickRandomCards, formatCardsForWorkflow, getCardMeaningsContext, SelectedCard } from '@/lib/utils/card-picker'
 import { parseAndValidateAIResponse, logParsingError } from '@/lib/utils/json-parser'
 import { prisma } from '@/lib/prisma'
@@ -26,7 +26,7 @@ async function questionFilterNode(state: typeof ReadingState.State) {
   try {
     console.log('🔍 Question Filter Node - Processing:', state.question)
     
-    const filterAI = createGeminiWithPrompt(SYSTEM_PROMPTS.questionFilter)
+    const filterAI = createProviderWithPrompt(SYSTEM_PROMPTS.questionFilter)
     
     const response = await filterAI.invoke([
       { role: 'user', content: `Question to validate: "${state.question}"` }
@@ -95,7 +95,7 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
       return { error: 'Cannot analyze invalid question or missing cards' }
     }
     
-    const analysisAI = createGeminiWithPrompt(SYSTEM_PROMPTS.questionAnalysis)
+    const analysisAI = createProviderWithPrompt(SYSTEM_PROMPTS.questionAnalysis)
     
     const response = await analysisAI.invoke([
       { role: 'user', content: `Analyze this question: "${state.question}"` }
@@ -163,8 +163,6 @@ async function readingAgentNode(state: typeof ReadingState.State) {
     }))
     
     const cardContext = getCardMeaningsContext(state.selectedCards)
-    const readingAI = createGeminiWithPrompt(SYSTEM_PROMPTS.readingAgent)
-    
     const prompt = `User Question: "${state.question}"
 
 Question Analysis:
@@ -190,26 +188,62 @@ Return JSON with this structure:
 
 เขียนด้วยภาษาไทยที่อบอุ่น เป็นกันเอง และให้กำลังใจ`
 
-    const response = await readingAI.invoke([
-      { role: 'user', content: prompt }
-    ])
+    // Try with primary provider first
+    let parsed;
+    let response;
     
-    const parsed = parseAndValidateAIResponse<{
-      header: string;
-      reading: string;
-      suggestions: string[];
-      next_questions: string[];
-      final: string;
-      end: string;
-      notice: string;
-    }>(
-      response.content as string,
-      ['header', 'reading', 'suggestions', 'next_questions', 'final', 'end', 'notice']
-    )
-    
-    if (!parsed.success) {
-      logParsingError('ReadingAgent', response.content as string, parsed.error || 'Unknown error')
-      return { error: 'Failed to parse reading response' }
+    try {
+      const readingAI = createProviderWithPrompt(SYSTEM_PROMPTS.readingAgent)
+      response = await readingAI.invoke([
+        { role: 'user', content: prompt }
+      ])
+      
+      parsed = parseAndValidateAIResponse<{
+        header: string;
+        reading: string;
+        suggestions: string[];
+        next_questions: string[];
+        final: string;
+        end: string;
+        notice: string;
+      }>(
+        response.content as string,
+        ['header', 'reading', 'suggestions', 'next_questions', 'final', 'end', 'notice']
+      )
+      
+      if (!parsed.success) {
+        logParsingError('ReadingAgent', response.content as string, parsed.error || 'Unknown error')
+        
+        // Try fallback provider
+        console.log('⚠️ Primary provider failed, trying fallback provider...')
+        const fallbackAI = createProviderWithPrompt(SYSTEM_PROMPTS.readingAgent, 'gemini')
+        response = await fallbackAI.invoke([
+          { role: 'user', content: prompt }
+        ])
+        
+        parsed = parseAndValidateAIResponse<{
+          header: string;
+          reading: string;
+          suggestions: string[];
+          next_questions: string[];
+          final: string;
+          end: string;
+          notice: string;
+        }>(
+          response.content as string,
+          ['header', 'reading', 'suggestions', 'next_questions', 'final', 'end', 'notice']
+        )
+        
+        if (!parsed.success) {
+          logParsingError('ReadingAgent-Fallback', response.content as string, parsed.error || 'Unknown error')
+          return { error: 'Failed to parse reading response from both providers' }
+        }
+        
+        console.log('✅ Fallback provider succeeded')
+      }
+    } catch (error) {
+      console.error('Error in reading generation:', error)
+      return { error: 'Failed to generate reading' }
     }
     
     const reading = parsed.data!

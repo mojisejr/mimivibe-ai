@@ -3,6 +3,52 @@
  * Handles various AI response formats including markdown code blocks
  */
 
+/**
+ * Attempt to fix truncated JSON by closing unclosed structures
+ */
+function tryFixTruncatedJson(jsonString: string): string | null {
+  try {
+    // Count open and closed braces/brackets to detect truncation
+    const openBraces = (jsonString.match(/\{/g) || []).length;
+    const closeBraces = (jsonString.match(/\}/g) || []).length;
+    const openBrackets = (jsonString.match(/\[/g) || []).length;
+    const closeBrackets = (jsonString.match(/\]/g) || []).length;
+    
+    // If we have more open than close, try to fix it
+    if (openBraces > closeBraces || openBrackets > closeBrackets) {
+      let fixed = jsonString;
+      
+      // Remove any trailing incomplete content after the last complete structure
+      const lastCompleteIndex = Math.max(
+        fixed.lastIndexOf('"}'),
+        fixed.lastIndexOf('"]'),
+        fixed.lastIndexOf('}'),
+        fixed.lastIndexOf(']')
+      );
+      
+      if (lastCompleteIndex > 0) {
+        fixed = fixed.substring(0, lastCompleteIndex + 2);
+      }
+      
+      // Add missing closing brackets
+      for (let i = 0; i < openBrackets - closeBrackets; i++) {
+        fixed += ']';
+      }
+      
+      // Add missing closing braces
+      for (let i = 0; i < openBraces - closeBraces; i++) {
+        fixed += '}';
+      }
+      
+      return fixed;
+    }
+    
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
 export interface ParsedResponse<T = any> {
   success: boolean;
   data?: T;
@@ -65,6 +111,18 @@ export function parseAIResponse<T = any>(response: string): ParsedResponse<T> {
         result.success = true;
         return result;
       } catch (error) {
+        // If JSON parsing fails, try to fix common truncation issues
+        const jsonString = jsonMatch[0];
+        const fixedJson = tryFixTruncatedJson(jsonString);
+        if (fixedJson) {
+          try {
+            result.data = JSON.parse(fixedJson);
+            result.success = true;
+            return result;
+          } catch (fixError) {
+            // Continue to original error
+          }
+        }
         result.error = `Failed to parse extracted JSON: ${error}`;
         return result;
       }
@@ -142,8 +200,15 @@ export function logParsingError(
 ): void {
   console.error(`🚨 AI Response Parsing Error in ${node}:`, {
     error,
-    responsePreview: response.substring(0, 300),
+    responsePreview: response.substring(0, 500),
     responseLength: response.length,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    // Add more debugging info for truncation issues
+    hasCompleteJson: response.includes('"}') && response.includes('}'),
+    endsWithBrace: response.trim().endsWith('}'),
+    openBraces: (response.match(/\{/g) || []).length,
+    closeBraces: (response.match(/\}/g) || []).length,
+    openBrackets: (response.match(/\[/g) || []).length,
+    closeBrackets: (response.match(/\]/g) || []).length,
   });
 }
