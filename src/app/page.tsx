@@ -403,7 +403,7 @@ export default function HomePage() {
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           {/* Main Title */}
           <motion.h1
-            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-relaxed"
             variants={fadeInUp}
             initial="initial"
             animate="animate"
