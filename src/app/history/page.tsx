@@ -11,7 +11,10 @@ import { ReadingCard } from "@/components/history/ReadingCard";
 import { ReadingDetailModal } from "@/components/history/ReadingDetailModal";
 import { SearchFilters } from "@/components/history/SearchFilters";
 import { HistoryLoadingState, ErrorState, EmptyState } from "@/components/ui";
-import { SkeletonGrid, SkeletonSearchFilters } from "@/components/common/SkeletonLoader";
+import {
+  SkeletonGrid,
+  SkeletonSearchFilters,
+} from "@/components/common/SkeletonLoader";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 
 interface Card {
@@ -64,7 +67,7 @@ export default function HistoryPage() {
     loadingMore: loadingMoreHistory,
     deleteReading,
   } = useHistory();
-  
+
   // Initialize search with history data
   const {
     results: searchResults,
@@ -76,7 +79,7 @@ export default function HistoryPage() {
     setFilters,
     loadMore: loadMoreSearch,
   } = useSearch(historyData?.readings || []);
-  
+
   const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -177,14 +180,17 @@ export default function HistoryPage() {
         </div>
 
         {/* Search and Filters */}
-        {!isLoading && !error && historyData?.readings && historyData.readings.length > 0 && (
-          <SearchFilters
-            onFiltersChange={setFilters}
-            initialFilters={filters}
-            totalResults={total}
-            isLoading={searchLoading}
-          />
-        )}
+        {!isLoading &&
+          !error &&
+          historyData?.readings &&
+          historyData.readings.length > 0 && (
+            <SearchFilters
+              onFiltersChange={setFilters}
+              initialFilters={filters}
+              totalResults={total}
+              isLoading={searchLoading}
+            />
+          )}
 
         {isLoading && !results.length ? (
           <>
@@ -203,7 +209,7 @@ export default function HistoryPage() {
         ) : results && results.length > 0 ? (
           <>
             {/* Reading Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3 gap-4 md:gap-6 mb-8">
               {results.map((reading) => (
                 <ReadingCard
                   key={reading.id}
@@ -220,7 +226,9 @@ export default function HistoryPage() {
                 {searchLoading ? (
                   <div className="flex items-center justify-center space-x-2">
                     <span className="loading loading-spinner loading-md"></span>
-                    <span className="text-base-content/70">Loading more readings...</span>
+                    <span className="text-base-content/70">
+                      Loading more readings...
+                    </span>
                   </div>
                 ) : (
                   <button
@@ -257,10 +265,9 @@ export default function HistoryPage() {
             {!hasMore && !hasMoreHistory && results.length > 6 && (
               <div className="text-center mt-8">
                 <p className="body-normal text-neutral-content mb-4">
-                  {total === historyData?.total 
+                  {total === historyData?.total
                     ? "คุณได้ดูการอ่านทั้งหมดแล้ว"
-                    : `Showing ${total} of ${historyData?.total} readings`
-                  }
+                    : `Showing ${total} of ${historyData?.total} readings`}
                 </p>
                 <Link href="/ask" className="btn btn-primary">
                   <span className="mr-2">🔮</span>
