@@ -193,7 +193,7 @@ export function usePayment() {
       const result = await response.json();
       
       if (result.success) {
-        return result.data.stars + result.data.freePoints;
+        return result.data.stars + result.data.freePoint;
       }
       return 0;
     } catch (error) {
