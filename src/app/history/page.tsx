@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { useHistory } from "@/hooks/useHistory";
+import { useSearch } from "@/hooks/useSearch";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { BottomNavigation } from "@/components/navigation/BottomNavigation";
 import { ReadingCard } from "@/components/history/ReadingCard";
 import { ReadingDetailModal } from "@/components/history/ReadingDetailModal";
+import { SearchFilters } from "@/components/history/SearchFilters";
 import { HistoryLoadingState, ErrorState, EmptyState } from "@/components/ui";
+import { SkeletonGrid, SkeletonSearchFilters } from "@/components/common/SkeletonLoader";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 
 interface Card {
@@ -51,17 +55,48 @@ interface Reading {
 export default function HistoryPage() {
   const { user, isLoaded } = useUser();
   const {
-    data,
-    loading,
-    error,
-    loadMore,
-    refresh,
-    hasMore,
-    loadingMore,
+    data: historyData,
+    loading: historyLoading,
+    error: historyError,
+    loadMore: loadMoreHistory,
+    refresh: refreshHistory,
+    hasMore: hasMoreHistory,
+    loadingMore: loadingMoreHistory,
     deleteReading,
   } = useHistory();
+  
+  // Initialize search with history data
+  const {
+    results: searchResults,
+    loading: searchLoading,
+    error: searchError,
+    total: searchTotal,
+    hasMore: searchHasMore,
+    filters,
+    setFilters,
+    loadMore: loadMoreSearch,
+    refresh: refreshSearch,
+  } = useSearch(historyData?.readings || []);
+  
   const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+
+  // Infinite scroll setup (must be called before any early returns)
+  const { sentinelRef } = useInfiniteScroll({
+    hasMore: searchHasMore,
+    isLoading: searchLoading,
+    onLoadMore: loadMoreSearch,
+    threshold: 300,
+    enabled: searchResults.length > 0,
+  });
+
+  // Update search data when history data changes
+  useEffect(() => {
+    if (historyData?.readings) {
+      // Update search hook with new data - this would typically be handled by the search hook internally
+      refreshSearch();
+    }
+  }, [historyData?.readings, refreshSearch]);
 
   // Debug authentication state
   console.log("🔐 Authentication state (History):", {
@@ -113,11 +148,21 @@ export default function HistoryPage() {
       if (selectedReading?.id === readingId) {
         handleCloseModal();
       }
+      // Refresh search results after deletion
+      refreshSearch();
     } catch (error) {
       console.error("Failed to delete reading:", error);
       // TODO: Show error toast/notification
     }
   };
+
+  // Determine which data to show based on search state
+  const isLoading = historyLoading || searchLoading;
+  const error = historyError || searchError;
+  const results = searchResults;
+  const total = searchTotal;
+  const hasMore = searchHasMore;
+  const loadMore = loadMoreSearch;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex flex-col">
@@ -131,30 +176,42 @@ export default function HistoryPage() {
           <p className="body-large text-neutral-content">
             Review your past tarot readings and insights
           </p>
-          {data && typeof data.total === "number" && (
+          {historyData && typeof historyData.total === "number" && (
             <p className="text-sm text-neutral-content">
-              Total readings: {data.total}
+              Total readings: {historyData.total}
             </p>
           )}
         </div>
 
-        {loading ? (
-          <HistoryLoadingState />
+        {/* Search and Filters */}
+        {!isLoading && !error && historyData?.readings && historyData.readings.length > 0 && (
+          <SearchFilters
+            onFiltersChange={setFilters}
+            initialFilters={filters}
+            totalResults={total}
+            isLoading={searchLoading}
+          />
+        )}
+
+        {isLoading && !results.length ? (
+          <>
+            {historyData?.readings && historyData.readings.length > 0 && (
+              <SkeletonSearchFilters />
+            )}
+            <SkeletonGrid count={6} columns={4} />
+          </>
         ) : error ? (
           <ErrorState
             title="เกิดข้อผิดพลาด"
             message={error}
-            onRetry={refresh}
+            onRetry={refreshHistory}
             retryText="โหลดประวัติใหม่"
           />
-        ) : data &&
-          data.readings &&
-          Array.isArray(data.readings) &&
-          data.readings.length > 0 ? (
+        ) : results && results.length > 0 ? (
           <>
             {/* Reading Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6 mb-8">
-              {data.readings.map((reading) => (
+              {results.map((reading) => (
                 <ReadingCard
                   key={reading.id}
                   reading={reading}
@@ -164,31 +221,53 @@ export default function HistoryPage() {
               ))}
             </div>
 
-            {/* Load More */}
+            {/* Infinite Scroll Sentinel */}
             {hasMore && (
-              <div className="text-center">
+              <div ref={sentinelRef} className="text-center py-8">
+                {searchLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <span className="loading loading-spinner loading-md"></span>
+                    <span className="text-base-content/70">Loading more readings...</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={loadMore}
+                    className="btn btn-outline btn-primary"
+                  >
+                    Load More Readings
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Load More from Server */}
+            {!hasMore && hasMoreHistory && (
+              <div className="text-center mb-8">
                 <button
-                  onClick={loadMore}
-                  disabled={loadingMore}
-                  className="btn btn-outline btn-primary"
+                  onClick={loadMoreHistory}
+                  disabled={loadingMoreHistory}
+                  className="btn btn-ghost btn-sm"
                 >
-                  {loadingMore ? (
+                  {loadingMoreHistory ? (
                     <>
-                      <span className="loading loading-spinner loading-sm mr-2" />
-                      กำลังโหลด...
+                      <span className="loading loading-spinner loading-xs mr-2" />
+                      Loading more from server...
                     </>
                   ) : (
-                    "Load More Readings"
+                    "Load more from server"
                   )}
                 </button>
               </div>
             )}
 
             {/* End Message */}
-            {!hasMore && data.readings && data.readings.length > 6 && (
+            {!hasMore && !hasMoreHistory && results.length > 6 && (
               <div className="text-center mt-8">
                 <p className="body-normal text-neutral-content mb-4">
-                  คุณได้ดูการอ่านทั้งหมดแล้ว
+                  {total === historyData?.total 
+                    ? "คุณได้ดูการอ่านทั้งหมดแล้ว"
+                    : `Showing ${total} of ${historyData?.total} readings`
+                  }
                 </p>
                 <Link href="/ask" className="btn btn-primary">
                   <span className="mr-2">🔮</span>
