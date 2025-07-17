@@ -149,16 +149,6 @@ model ReferralCode {
   @@map("referral_codes")
 }
 
-model ReferralTransaction {
-  id                                        Int      @id @default(autoincrement())
-  referrerId                                String
-  referredId                                String
-  code                                      String
-  rewarded                                  Boolean  @default(false)
-  createdAt                                 DateTime @default(now())
-  User_ReferralTransaction_referredIdToUser User     @relation("ReferralTransaction_referredIdToUser", fields: [referredId], references: [id], map: "fk_referral_referred")
-  User_ReferralTransaction_referrerIdToUser User     @relation("ReferralTransaction_referrerIdToUser", fields: [referrerId], references: [id], map: "fk_referral_referrer")
-}
 
 model RequestLog {
   id        Int      @id @default(autoincrement())
@@ -207,8 +197,6 @@ model User {
   ReferralCode                                             ReferralCode[]
   referredUsers                                            ReferralCode[]        @relation("UserReferrals")
   dailyLoginCampaigns                                      DailyLoginCampaign[]
-  ReferralTransaction_ReferralTransaction_referredIdToUser ReferralTransaction[] @relation("ReferralTransaction_referredIdToUser")
-  ReferralTransaction_ReferralTransaction_referrerIdToUser ReferralTransaction[] @relation("ReferralTransaction_referrerIdToUser")
   Review                                                   Review[]
   UserLimit                                                UserLimit[]
 }

@@ -168,10 +168,10 @@ async function handleUserCreated(userData: ClerkEvent['data']) {
         deltaExp: 0,
         deltaCoins: 0,
         deltaPoint: 5, // Welcome free points
-        metadata: JSON.stringify({
+        metadata: {
           reason: 'Welcome to MiMiVibes!',
           timestamp: new Date().toISOString()
-        })
+        }
       }
     });
 
