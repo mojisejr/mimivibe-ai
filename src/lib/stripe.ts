@@ -10,9 +10,11 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 })
 
 export const formatAmountForStripe = (amount: number): number => {
-  return Math.round(amount)
+  // Convert THB to satang (smallest unit for Stripe)
+  return Math.round(amount * 100)
 }
 
 export const formatAmountFromStripe = (amount: number): number => {
-  return Math.round(amount)
+  // Convert satang back to THB
+  return Math.round(amount / 100)
 }

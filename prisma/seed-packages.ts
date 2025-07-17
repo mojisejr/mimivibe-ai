@@ -7,7 +7,7 @@ const defaultPackages = [
     id: 1,
     title: "แพ็คเริ่มต้น",
     subtitle: "เหมาะสำหรับผู้เริ่มต้นสำรวจโลกแห่งการทำนาย",
-    price: 9900, // ฿99
+    price: 99, // ฿99
     creditAmount: 8, // 99/8 = 12.38 บาทต่อคำถาม
     ctaText: "เริ่มต้นเลย",
     popular: false,
@@ -28,7 +28,7 @@ const defaultPackages = [
     id: 2,
     title: "แพ็คคุ้มค่า", 
     subtitle: "ตัวเลือกที่ดีที่สุดสำหรับการทำนายสม่ำเสมอ",
-    price: 19900, // ฿199
+    price: 199, // ฿199
     creditAmount: 22, // 199/22 = 9.05 บาทต่อคำถาม (คุ้มค่าที่สุด!)
     ctaText: "เลือกแพ็คนี้",
     popular: true,
@@ -52,7 +52,7 @@ const defaultPackages = [
     id: 3,
     title: "แพ็คพรีเมียม",
     subtitle: "สำหรับผู้แสวงหาจิตวิญญาณระดับสูง",
-    price: 39900, // ฿399  
+    price: 399, // ฿399  
     creditAmount: 35, // 399/35 = 11.4 บาทต่อคำถาม
     ctaText: "อัปเกรดเลย",
     popular: false,
@@ -79,15 +79,14 @@ const defaultPackages = [
 async function main() {
   console.log('🌱 Start seeding packages...')
   
-  // ลบ packages เก่าทั้งหมดก่อน
-  await prisma.pack.deleteMany({})
-  console.log('🗑️ Cleared existing packages')
-  
+  // อัพเดต packages ด้วย upsert
   for (const pack of defaultPackages) {
-    await prisma.pack.create({
-      data: pack,
+    await prisma.pack.upsert({
+      where: { id: pack.id },
+      update: pack,
+      create: pack,
     })
-    const priceInBaht = pack.price / 100
+    const priceInBaht = pack.price
     const pricePerQuestion = priceInBaht / pack.creditAmount
     console.log(`✓ "${pack.title}": ${priceInBaht}฿ | ${pack.creditAmount} คำถาม | ${pricePerQuestion.toFixed(2)}฿/คำถาม ${pack.popular ? '⭐ POPULAR' : ''}`)
   }
