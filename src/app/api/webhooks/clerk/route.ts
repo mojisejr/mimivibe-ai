@@ -3,6 +3,9 @@ import { headers } from 'next/headers';
 import { Webhook } from 'svix';
 import { prisma } from '@/lib/prisma';
 
+// Force dynamic rendering for headers() usage
+export const dynamic = 'force-dynamic';
+
 // Clerk webhook event types
 type ClerkEventType = 
   | 'user.created' 

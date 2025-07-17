@@ -5,6 +5,9 @@ import { prisma } from '@/lib/prisma'
 import { generateTarotReading } from '@/lib/langgraph/workflow'
 import type { ReadingResponse, ReadingError } from '@/types/reading'
 
+// Force dynamic rendering for authentication
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = auth()
