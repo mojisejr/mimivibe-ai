@@ -1,32 +1,33 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { ReadingResponse } from '@/types/reading'
-import { CardFallback } from '@/components/cards/CardFallback'
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { ReadingResponse } from "@/types/reading";
+import { CardFallback } from "@/components/cards/CardFallback";
 
 interface CardImageProps {
-  src: string
-  alt: string
-  position: number
+  src: string;
+  alt: string;
+  position: number;
 }
 
 function CardImage({ src, alt, position }: CardImageProps) {
-  const [hasError, setHasError] = useState(false)
+  const [hasError, setHasError] = useState(false);
 
   if (hasError) {
     return (
-      <div className="relative">
+      <div className="relative group">
         <CardFallback className="w-full transition-transform duration-300 group-hover:scale-105" />
-        <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-content text-sm font-semibold rounded-full flex items-center justify-center shadow-lg">
+        <div className="absolute bottom-1 right-1 w-6 h-6 bg-primary/80 text-primary-content text-xs font-medium rounded-full flex items-center justify-center shadow-sm">
           {position}
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="relative">
-      <div className="card card-mystical w-full aspect-[2/3] overflow-hidden transition-transform duration-300 group-hover:scale-105 p-0 shadow-lg">
+    <div className="relative group">
+      <div className="w-full aspect-[2/3] overflow-hidden rounded-lg shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:scale-[1.02]">
         <img
           src={src}
           alt={alt}
@@ -34,79 +35,97 @@ function CardImage({ src, alt, position }: CardImageProps) {
           onError={() => setHasError(true)}
         />
       </div>
-      <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-content text-sm font-semibold rounded-full flex items-center justify-center shadow-lg">
+      <div className="absolute bottom-1 right-1 w-6 h-6 bg-primary/80 text-primary-content text-xs font-medium rounded-full flex items-center justify-center shadow-sm">
         {position}
       </div>
     </div>
-  )
+  );
 }
 
 interface ArticleDisplayProps {
-  readingData: ReadingResponse['data']
-  onSave?: () => void
-  onDelete?: () => void
-  onAskAgain?: () => void
+  readingData: ReadingResponse["data"];
+  onSave?: () => void;
+  onDelete?: () => void;
+  onAskAgain?: () => void;
 }
 
-export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: ArticleDisplayProps) {
-  const [isSaved, setIsSaved] = useState(false)
+export function ArticleDisplay({
+  readingData,
+  onSave,
+  onDelete,
+  onAskAgain,
+}: ArticleDisplayProps) {
+  const [isSaved, setIsSaved] = useState(false);
 
   const handleSave = () => {
-    onSave?.()
-    setIsSaved(true)
-  }
+    onSave?.();
+    setIsSaved(true);
+  };
 
   return (
-    <div className="page-container bg-base-200 pt-20 lg:pt-24">
-      <div className="content-container">
+    <div className="min-h-screen bg-base-100 pt-20 lg:pt-24">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Article Header */}
-        <header className="mb-12 text-center">
-          <div className="mb-6">
-            <h1 className="heading-1 md:text-4xl text-base-content mb-4 leading-tight">
+        <motion.header
+          className="mb-16 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-base-content mb-6 leading-tight">
               {readingData.reading.header}
             </h1>
-            <div className="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto"></div>
+            <div className="w-16 h-px bg-gradient-to-r from-primary to-accent mx-auto"></div>
           </div>
-          
+
           {/* Question */}
           <div className="max-w-2xl mx-auto mb-8">
-            <p className="body-large text-neutral-content italic border-l-4 border-primary/30 pl-4">
+            <p className="text-lg md:text-xl text-neutral-content italic border-l-4 border-primary/30 pl-6 py-2 leading-relaxed">
               &ldquo;{readingData.question}&rdquo;
             </p>
           </div>
 
-          {/* Reading Meta Info */}
-          <div className="flex flex-wrap justify-center items-center gap-4 mb-8">
-            <div className="badge badge-primary gap-2">
-              <span>🔮</span>
+          {/* Reading Meta Info - Chip Style */}
+          <div className="flex flex-wrap justify-center items-center gap-3 mb-8">
+            <div className="px-4 py-2 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm font-medium">
+              <span className="mr-2">🔮</span>
               <span>แม่หมอมีมี่</span>
             </div>
-            <div className="badge badge-secondary gap-2">
-              <span>📅</span>
-              <span>{new Date(readingData.createdAt).toLocaleDateString('th-TH')}</span>
+            <div className="px-4 py-2 rounded-full border border-secondary/20 bg-secondary/5 text-secondary text-sm font-medium">
+              <span className="mr-2">📅</span>
+              <span>
+                {new Date(readingData.createdAt).toLocaleDateString("th-TH")}
+              </span>
             </div>
-            <div className="badge badge-accent gap-2">
-              <span>🃏</span>
+            <div className="px-4 py-2 rounded-full border border-accent/20 bg-accent/5 text-accent text-sm font-medium">
+              <span className="mr-2">🃏</span>
               <span>{readingData.cards.length} ใบ</span>
             </div>
           </div>
-        </header>
+        </motion.header>
 
         {/* Cards Section */}
         <section className="mb-12">
-          <h2 className="heading-2 text-base-content mb-8 text-center">ไพ่ที่จั่วได้</h2>
+          <h2 className="heading-2 text-base-content mb-8 text-center">
+            ไพ่ที่หยิบได้
+          </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 max-w-4xl mx-auto">
             {readingData.cards.map((card, index) => (
               <div key={card.id} className="text-center">
                 <div className="relative group mb-4">
-                  <CardImage 
+                  <CardImage
                     src={card.imageUrl}
                     alt={card.displayName}
                     position={index + 1}
                   />
                 </div>
-                <h3 className="font-semibold text-base-content text-sm sm:text-base mb-2">{card.displayName}</h3>
-                <p className="text-xs text-neutral-content leading-relaxed">{card.shortMeaning}</p>
+                <h3 className="font-semibold text-base-content text-sm sm:text-base mb-2">
+                  {card.displayName}
+                </h3>
+                <p className="text-xs text-neutral-content leading-relaxed">
+                  {card.shortMeaning}
+                </p>
               </div>
             ))}
           </div>
@@ -115,96 +134,123 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
         {/* Main Reading Content */}
         <article className="max-w-3xl mx-auto px-4 sm:px-6">
           {/* Main Reading */}
-          <section className="prose prose-lg max-w-none mb-12">
-            <div className="card card-mystical p-6 sm:p-8 shadow-lg">
-              <h2 className="heading-2 text-base-content mb-6 text-center sm:text-left">การทำนาย</h2>
-              <div className="body-normal text-base-content leading-relaxed whitespace-pre-line text-left">
-                {readingData.reading.reading}
-              </div>
+          <motion.section
+            className="mb-12 border-l-4 border-primary/50 pl-8 py-6"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="heading-2 text-base-content mb-6">การทำนาย</h2>
+            <div className="body-normal text-base-content leading-relaxed whitespace-pre-line">
+              {readingData.reading.reading}
             </div>
-          </section>
+          </motion.section>
 
           {/* Suggestions */}
-          {readingData.reading.suggestions && readingData.reading.suggestions.length > 0 && (
-            <section className="mb-12">
-              <div className="alert alert-info p-6 sm:p-8 shadow-lg">
-                <div className="w-full">
-                  <h2 className="heading-2 text-info-content mb-6 text-center sm:text-left">คำแนะนำ</h2>
-                  <ul className="space-y-4">
-                    {readingData.reading.suggestions.map((suggestion, index) => (
-                      <li key={index} className="flex items-start space-x-3">
-                        <span className="flex-shrink-0 w-7 h-7 bg-info text-info-content text-sm rounded-full flex items-center justify-center font-semibold shadow-sm">
-                          {index + 1}
-                        </span>
-                        <span className="body-normal text-info-content leading-relaxed text-left">{suggestion}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </section>
-          )}
+          {readingData.reading.suggestions &&
+            readingData.reading.suggestions.length > 0 && (
+              <motion.section
+                className="mb-12 border-l-4 border-info/50 pl-8 py-6"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="heading-2 text-base-content mb-6">คำแนะนำ</h2>
+                <ul className="space-y-4">
+                  {readingData.reading.suggestions.map((suggestion, index) => (
+                    <li key={index} className="flex items-start space-x-3">
+                      <span className="flex-shrink-0 mt-1 text-info font-semibold text-sm">
+                        {index + 1}.
+                      </span>
+                      <span className="body-normal text-base-content leading-relaxed">
+                        {suggestion}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.section>
+            )}
 
           {/* Final Message */}
           {readingData.reading.final && (
-            <section className="mb-12">
-              <div className="alert alert-success p-6 sm:p-8 shadow-lg">
-                <div className="w-full">
-                  <h2 className="heading-2 text-success-content mb-6 text-center sm:text-left">ข้อสรุป</h2>
-                  <div className="body-normal text-success-content leading-relaxed whitespace-pre-line text-left">
-                    {readingData.reading.final}
-                  </div>
-                </div>
+            <motion.section
+              className="mb-12 border-l-4 border-success/50 pl-8 py-6"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="heading-2 text-base-content mb-6">ข้อสรุป</h2>
+              <div className="body-normal text-base-content leading-relaxed whitespace-pre-line">
+                {readingData.reading.final}
               </div>
-            </section>
+            </motion.section>
           )}
 
           {/* End Message */}
           {readingData.reading.end && (
-            <section className="mb-12">
-              <div className="card card-mystical p-6 sm:p-8 text-center bg-gradient-to-br from-primary/10 to-secondary/10 shadow-lg">
-                <div className="body-normal text-base-content leading-relaxed">
-                  {readingData.reading.end}
-                </div>
+            <motion.section
+              className="mb-12 text-center py-8 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <div className="body-normal text-base-content leading-relaxed">
+                {readingData.reading.end}
               </div>
-            </section>
+            </motion.section>
           )}
 
           {/* Notice */}
           {readingData.reading.notice && (
-            <section className="mb-12">
-              <div className="alert alert-warning p-6 shadow-lg">
-                <div className="w-full">
-                  <h3 className="heading-3 mb-3 text-warning-content text-center sm:text-left">หมายเหตุ</h3>
-                  <p className="body-normal text-warning-content leading-relaxed text-left">{readingData.reading.notice}</p>
-                </div>
-              </div>
-            </section>
+            <motion.section
+              className="mb-12 border-l-4 border-warning/50 pl-8 py-6"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="heading-3 mb-3 text-base-content">หมายเหตุ</h3>
+              <p className="body-normal text-base-content leading-relaxed">
+                {readingData.reading.notice}
+              </p>
+            </motion.section>
           )}
 
           {/* Rewards */}
           {readingData.rewards && (
-            <section className="mb-12">
-              <div className="alert alert-success p-6 shadow-lg">
-                <div className="w-full">
-                  <h3 className="heading-3 mb-6 text-center text-success-content">รางวัลที่ได้รับ</h3>
-                  <div className="flex justify-center space-x-8">
-                    <div className="text-center">
-                      <div className="w-14 h-14 bg-warning rounded-full flex items-center justify-center mb-3 mx-auto shadow-lg">
-                        <span className="text-warning-content text-xl">⭐</span>
-                      </div>
-                      <div className="body-small text-success-content font-medium">+{readingData.rewards.exp} EXP</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="w-14 h-14 bg-accent rounded-full flex items-center justify-center mb-3 mx-auto shadow-lg">
-                        <span className="text-accent-content text-xl">🪙</span>
-                      </div>
-                      <div className="body-small text-success-content font-medium">+{readingData.rewards.coins} เหรียญ</div>
-                    </div>
+            <motion.section
+              className="mb-12 border-l-4 border-success/50 pl-8 py-6"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 1.0 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="heading-3 mb-6 text-center text-base-content">
+                รางวัลที่ได้รับ
+              </h3>
+              <div className="flex justify-center space-x-8">
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-warning rounded-full flex items-center justify-center mb-3 mx-auto shadow-sm">
+                    <span className="text-warning-content text-xl">⭐</span>
+                  </div>
+                  <div className="body-small text-base-content font-medium">
+                    +{readingData.rewards.exp} EXP
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-accent rounded-full flex items-center justify-center mb-3 mx-auto shadow-sm">
+                    <span className="text-accent-content text-xl">🪙</span>
+                  </div>
+                  <div className="body-small text-base-content font-medium">
+                    +{readingData.rewards.coins} เหรียญ
                   </div>
                 </div>
               </div>
-            </section>
+            </motion.section>
           )}
         </article>
 
@@ -212,38 +258,49 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
         <div className="pb-8">
           {/* Desktop Action Buttons */}
           <div className="hidden sm:block sticky bottom-8 max-w-2xl mx-auto">
-            <div className="card card-mystical p-6 shadow-xl bg-base-100/95 backdrop-blur-sm">
+            <motion.div
+              className="card card-mystical p-6 shadow-xl bg-base-100/95 backdrop-blur-sm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
               <div className="flex gap-4">
-                <button
+                <motion.button
                   onClick={handleSave}
                   disabled={isSaved}
                   className={`btn flex-1 ${
                     isSaved
-                      ? 'btn-success'
-                      : 'btn btn-primary'
+                      ? "btn-ghost text-success"
+                      : "btn btn-ghost text-primary"
                   }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <span>{isSaved ? '✓' : '💾'}</span>
-                  <span>{isSaved ? 'บันทึกแล้ว' : 'บันทึกการทำนาย'}</span>
-                </button>
-                
-                <button
+                  <span>{isSaved ? "✓" : "💾"}</span>
+                  <span>{isSaved ? "บันทึกแล้ว" : "บันทึกการทำนาย"}</span>
+                </motion.button>
+
+                <motion.button
                   onClick={onDelete}
-                  className="btn btn-outline btn-error flex-1"
+                  className="btn btn-ghost text-error flex-1"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <span>🗑️</span>
                   <span>ลบการทำนาย</span>
-                </button>
-                
-                <button
+                </motion.button>
+
+                <motion.button
                   onClick={onAskAgain}
                   className="btn btn-accent flex-1"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <span>🔮</span>
                   <span>ถามใหม่</span>
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Mobile Action Buttons - Inline Layout */}
@@ -257,7 +314,7 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
                 <span>🔮</span>
                 <span>ถามใหม่</span>
               </button>
-              
+
               {/* Secondary Actions - Horizontal */}
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -265,17 +322,19 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
                   disabled={isSaved}
                   className={`btn btn-sm ${
                     isSaved
-                      ? 'btn-success'
-                      : 'btn btn-primary btn-outline'
+                      ? "btn-ghost text-success"
+                      : "btn btn-ghost text-primary"
                   }`}
                 >
-                  <span className="text-xs">{isSaved ? '✓' : '💾'}</span>
-                  <span className="text-xs">{isSaved ? 'บันทึกแล้ว' : 'บันทึก'}</span>
+                  <span className="text-xs">{isSaved ? "✓" : "💾"}</span>
+                  <span className="text-xs">
+                    {isSaved ? "บันทึกแล้ว" : "บันทึก"}
+                  </span>
                 </button>
-                
+
                 <button
                   onClick={onDelete}
-                  className="btn btn-sm btn-outline btn-error"
+                  className="btn btn-sm btn-ghost text-error"
                 >
                   <span className="text-xs">🗑️</span>
                   <span className="text-xs">ลบ</span>
@@ -286,5 +345,5 @@ export function ArticleDisplay({ readingData, onSave, onDelete, onAskAgain }: Ar
         </div>
       </div>
     </div>
-  )
+  );
 }

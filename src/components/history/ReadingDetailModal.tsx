@@ -135,7 +135,8 @@ export const ReadingDetailModal = ({
   useEffect(() => {
     if (reading) {
       // Check if reading actually has review data, not just isReviewed flag
-      const actuallyReviewed = reading.isReviewed === true && reading.reviewAccuracy !== undefined;
+      const actuallyReviewed =
+        reading.isReviewed === true && reading.reviewAccuracy !== undefined;
       setHasReviewed(actuallyReviewed);
     }
   }, [reading]);
@@ -162,7 +163,7 @@ export const ReadingDetailModal = ({
       // Update local state with proper review data
       setHasReviewed(true);
       setIsReviewModalOpen(false);
-      
+
       // Update reading object with review data for immediate display
       if (reading) {
         reading.isReviewed = true;
@@ -238,144 +239,130 @@ export const ReadingDetailModal = ({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Question & Meta */}
-          <div className="card card-mystical">
-            <div className="card-body">
-              <div className="flex items-start justify-between mb-4">
-                <h2 className="heading-3 flex-1 mr-4">{reading.question}</h2>
-                <div className="text-right text-sm text-neutral-content">
-                  <p>
-                    {safeFormatDistanceToNow(
-                      reading.createdAt,
-                      "ไม่ทราบวันที่"
-                    )}
-                  </p>
-                </div>
-              </div>
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-base-content mb-4 leading-tight">
+              {reading.question}
+            </h2>
+            <div className="w-12 h-px bg-gradient-to-r from-primary to-accent mx-auto mb-6"></div>
 
-              {/* Analysis Badges */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                <div className="badge badge-primary">
-                  <span className="mr-1">😊</span>
-                  {reading.analysis.mood}
-                </div>
-                <div className="badge badge-secondary">
-                  <span className="mr-1">📖</span>
-                  {reading.analysis.topic}
-                </div>
-                <div className="badge badge-accent">
-                  <span className="mr-1">⏰</span>
-                  {reading.analysis.timeframe}
-                </div>
-              </div>
+            <div className="text-sm text-neutral-content mb-6">
+              {safeFormatDistanceToNow(reading.createdAt, "ไม่ทราบวันที่")}
+            </div>
 
-              {/* Rewards */}
-              <div className="flex items-center justify-end space-x-4 text-sm">
-                <div className="flex items-center space-x-1 text-primary">
-                  <span>⭐</span>
-                  <span>+{reading.expEarned} EXP</span>
-                </div>
-                <div className="flex items-center space-x-1 text-warning">
-                  <span>🪙</span>
-                  <span>+{reading.coinsEarned} Coins</span>
-                </div>
+            {/* Analysis Badges - Chip Style */}
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              <div className="px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm">
+                <span className="mr-1">😊</span>
+                {reading.analysis.mood}
+              </div>
+              <div className="px-3 py-1 rounded-full border border-secondary/20 bg-secondary/5 text-secondary text-sm">
+                <span className="mr-1">📖</span>
+                {reading.analysis.topic}
+              </div>
+              <div className="px-3 py-1 rounded-full border border-accent/20 bg-accent/5 text-accent text-sm">
+                <span className="mr-1">⏰</span>
+                {reading.analysis.timeframe}
+              </div>
+            </div>
+
+            {/* Rewards */}
+            <div className="flex items-center justify-center space-x-6 text-sm">
+              <div className="flex items-center space-x-1 text-primary">
+                <span>⭐</span>
+                <span>+{reading.expEarned} EXP</span>
+              </div>
+              <div className="flex items-center space-x-1 text-warning">
+                <span>🪙</span>
+                <span>+{reading.coinsEarned} Coins</span>
               </div>
             </div>
           </div>
 
           {/* Cards */}
-          <div className="card card-mystical">
-            <div className="card-body">
-              <h3 className="heading-3 mb-4">ไพ่ที่จั่วได้</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {reading.cards.map((card) => (
-                  <EnhancedCardDisplay
-                    key={card.id}
-                    card={card}
-                    onClick={() => setSelectedCard(card)}
-                  />
-                ))}
-              </div>
+          <div className="mb-8">
+            <h3 className="heading-3 mb-6 text-center text-base-content">
+              ไพ่ที่หยิบได้
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {reading.cards.map((card) => (
+                <EnhancedCardDisplay
+                  key={card.id}
+                  card={card}
+                  onClick={() => setSelectedCard(card)}
+                />
+              ))}
             </div>
           </div>
 
           {/* Main Reading */}
-          <div className="card card-mystical">
-            <div className="card-body">
-              <h3 className="heading-3 mb-4">การทำนาย</h3>
-              <div className="prose prose-sm max-w-none">
-                {reading.answer.reading.split("\n").map(
-                  (paragraph, index) =>
-                    paragraph.trim() && (
-                      <p
-                        key={index}
-                        className="body-normal mb-3 leading-relaxed"
-                      >
-                        {paragraph.trim()}
-                      </p>
-                    )
-                )}
-              </div>
+          <div className="border-l-4 border-primary/50 pl-6 py-4 mb-8">
+            <h3 className="heading-3 mb-4 text-base-content">การทำนาย</h3>
+            <div className="prose prose-sm max-w-none">
+              {reading.answer.reading.split("\n").map(
+                (paragraph, index) =>
+                  paragraph.trim() && (
+                    <p
+                      key={index}
+                      className="body-normal mb-3 leading-relaxed text-base-content"
+                    >
+                      {paragraph.trim()}
+                    </p>
+                  )
+              )}
             </div>
           </div>
 
           {/* Suggestions */}
           {reading.answer.suggestions &&
             reading.answer.suggestions.length > 0 && (
-              <div className="card card-mystical">
-                <div className="card-body">
-                  <h3 className="heading-3 mb-4">คำแนะนำ</h3>
-                  <div className="space-y-2">
-                    {reading.answer.suggestions.map((suggestion, index) => (
-                      <div key={index} className="flex items-start space-x-2">
-                        <span className="text-primary mt-1">•</span>
-                        <p className="body-normal leading-relaxed">
-                          {suggestion}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+              <div className="border-l-4 border-info/50 pl-6 py-4 mb-8">
+                <h3 className="heading-3 mb-4 text-base-content">คำแนะนำ</h3>
+                <div className="space-y-2">
+                  {reading.answer.suggestions.map((suggestion, index) => (
+                    <div key={index} className="flex items-start space-x-2">
+                      <span className="text-info mt-1 font-semibold text-sm">
+                        {index + 1}.
+                      </span>
+                      <p className="body-normal leading-relaxed text-base-content">
+                        {suggestion}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
           {/* Final Thoughts */}
           {reading.answer.final && (
-            <div className="card card-mystical">
-              <div className="card-body">
-                <h3 className="heading-3 mb-4">ข้อสรุป</h3>
-                <div className="prose prose-sm max-w-none">
-                  <p className="body-normal leading-relaxed">
-                    {reading.answer.final}
-                  </p>
-                </div>
+            <div className="border-l-4 border-success/50 pl-6 py-4 mb-8">
+              <h3 className="heading-3 mb-4 text-base-content">ข้อสรุป</h3>
+              <div className="prose prose-sm max-w-none">
+                <p className="body-normal leading-relaxed text-base-content">
+                  {reading.answer.final}
+                </p>
               </div>
             </div>
           )}
 
           {/* End Message */}
           {reading.answer.end && (
-            <div className="card card-mystical">
-              <div className="card-body">
-                <h3 className="heading-3 mb-4">Closing</h3>
-                <div className="prose prose-sm max-w-none">
-                  <p className="body-normal leading-relaxed text-neutral-content">
-                    {reading.answer.end}
-                  </p>
-                </div>
+            <div className="text-center py-6 mb-8 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg">
+              <div className="prose prose-sm max-w-none">
+                <p className="body-normal leading-relaxed text-base-content">
+                  {reading.answer.end}
+                </p>
               </div>
             </div>
           )}
 
           {/* Notice */}
           {reading.answer.notice && (
-            <div className="card card-mystical border-warning">
-              <div className="card-body">
-                <h3 className="heading-3 mb-4 text-warning">หมายเหตุ</h3>
-                <div className="prose prose-sm max-w-none">
-                  <p className="body-normal leading-relaxed text-warning">
-                    {reading.answer.notice}
-                  </p>
-                </div>
+            <div className="border-l-4 border-warning/50 pl-6 py-4 mb-8">
+              <h3 className="heading-3 mb-4 text-base-content">หมายเหตุ</h3>
+              <div className="prose prose-sm max-w-none">
+                <p className="body-normal leading-relaxed text-base-content">
+                  {reading.answer.notice}
+                </p>
               </div>
             </div>
           )}
@@ -383,57 +370,59 @@ export const ReadingDetailModal = ({
           {/* Next Questions */}
           {reading.answer.next_questions &&
             reading.answer.next_questions.length > 0 && (
-              <div className="card card-mystical">
-                <div className="card-body">
-                  <h3 className="heading-3 mb-4">Suggested Next Questions</h3>
-                  <div className="space-y-2">
-                    {reading.answer.next_questions.map((question, index) => (
-                      <div
-                        key={index}
-                        className="p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors cursor-pointer"
-                      >
-                        <p className="body-normal">{question}</p>
-                      </div>
-                    ))}
-                  </div>
+              <div className="border-l-4 border-accent/50 pl-6 py-4 mb-8">
+                <h3 className="heading-3 mb-4 text-base-content">คำถามแนะนำ</h3>
+                <div className="space-y-2">
+                  {reading.answer.next_questions.map((question, index) => (
+                    <div
+                      key={index}
+                      className="p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors cursor-pointer"
+                    >
+                      <p className="body-normal text-base-content">
+                        {question}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
           {/* Review Status Display */}
           {hasReviewed && (
-            <div className="card card-mystical border-success">
-              <div className="card-body">
-                <h3 className="heading-3 mb-4 text-success">รีวิวของคุณ</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="body-normal">ระดับความแม่นยำ:</span>
-                    <div className="flex items-center space-x-2">
-                      <div className="text-2xl">
-                        {reading.reviewAccuracy === 0
-                          ? "😞"
-                          : reading.reviewAccuracy === 20
-                          ? "🙁"
-                          : reading.reviewAccuracy === 50
-                          ? "😐"
-                          : reading.reviewAccuracy === 80
-                          ? "😊"
-                          : "🤩"}
-                      </div>
-                      <span className="font-semibold text-success">
-                        {reading.reviewAccuracy}%
-                      </span>
+            <div className="border-l-4 border-success/50 pl-6 py-4 mb-8">
+              <h3 className="heading-3 mb-4 text-base-content">รีวิวของคุณ</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="body-normal text-base-content">
+                    ระดับความแม่นยำ:
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <div className="text-2xl">
+                      {reading.reviewAccuracy === 0
+                        ? "😞"
+                        : reading.reviewAccuracy === 20
+                        ? "🙁"
+                        : reading.reviewAccuracy === 50
+                        ? "😐"
+                        : reading.reviewAccuracy === 80
+                        ? "😊"
+                        : "🤩"}
                     </div>
+                    <span className="font-semibold text-success">
+                      {reading.reviewAccuracy}%
+                    </span>
                   </div>
-                  {reading.reviewComment && (
-                    <div className="border-t border-success/20 pt-3">
-                      <h4 className="font-semibold mb-2">ความคิดเห็น:</h4>
-                      <p className="body-normal bg-success/10 p-3 rounded-lg leading-relaxed">
-                        {reading.reviewComment}
-                      </p>
-                    </div>
-                  )}
                 </div>
+                {reading.reviewComment && (
+                  <div className="border-t border-success/20 pt-3">
+                    <h4 className="font-semibold mb-2 text-base-content">
+                      ความคิดเห็น:
+                    </h4>
+                    <p className="body-normal bg-success/10 p-3 rounded-lg leading-relaxed text-base-content">
+                      {reading.reviewComment}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -446,7 +435,7 @@ export const ReadingDetailModal = ({
             {onDelete && (
               <button
                 onClick={() => onDelete(reading.id)}
-                className="btn btn-sm btn-outline btn-error"
+                className="btn btn-sm btn-ghost text-error"
               >
                 <span>🗑️</span>
                 <span className="hidden sm:inline">ลบการทำนาย</span>
@@ -457,7 +446,7 @@ export const ReadingDetailModal = ({
             {!hasReviewed && (
               <button
                 onClick={() => setIsReviewModalOpen(true)}
-                className="btn btn-sm btn-primary"
+                className="btn btn-sm btn-ghost text-primary"
                 disabled={isSubmittingReview}
               >
                 <span>⭐</span>
