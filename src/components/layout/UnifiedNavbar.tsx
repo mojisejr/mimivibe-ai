@@ -23,7 +23,7 @@ export function UnifiedNavbar({
   const { scrollY } = useScroll()
   const router = useRouter()
   const pathname = usePathname()
-  const { data: profileData } = useProfile()
+  const { data: profileData, loading } = useProfile()
 
   // State-based visibility (only for /ask page)
   const shouldShowBasedOnState = !showInStates || !currentState || showInStates.includes(currentState)
@@ -95,22 +95,31 @@ export function UnifiedNavbar({
         {/* Right: User Info and Avatar */}
         <div className="flex items-center space-x-3">
           {/* Credits Display (Hidden on mobile) */}
-          {profileData?.credits && (
-            <div className="hidden sm:flex items-center space-x-3">
-              <div className="badge badge-warning gap-1">
-                <span>⭐</span>
-                <span className="text-sm font-medium">
-                  {profileData.credits.stars}
-                </span>
-              </div>
-              <div className="badge badge-secondary gap-1">
-                <span>🎁</span>
-                <span className="text-sm font-medium">
-                  {profileData.credits.freePoint}
-                </span>
-              </div>
-            </div>
-          )}
+          <div className="hidden sm:flex items-center space-x-3">
+            {loading ? (
+              // Loading skeleton for credits
+              <>
+                <div className="skeleton h-6 w-16 rounded-full"></div>
+                <div className="skeleton h-6 w-16 rounded-full"></div>
+              </>
+            ) : profileData?.credits ? (
+              // Actual credits display
+              <>
+                <div className="badge badge-warning gap-1">
+                  <span>⭐</span>
+                  <span className="text-sm font-medium">
+                    {profileData.credits.stars}
+                  </span>
+                </div>
+                <div className="badge badge-secondary gap-1">
+                  <span>🎁</span>
+                  <span className="text-sm font-medium">
+                    {profileData.credits.freePoint}
+                  </span>
+                </div>
+              </>
+            ) : null}
+          </div>
 
           {/* User Button */}
           <UserButton afterSignOutUrl="/" />

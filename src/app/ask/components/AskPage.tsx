@@ -64,22 +64,40 @@ export function AskPage() {
     if (!readingData) return;
 
     try {
-      const response = await fetch(
-        `/api/readings/${readingData.readingId}/save`,
-        {
-          method: "POST",
-        }
-      );
+      const response = await fetch("/api/readings/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          readingId: readingData.readingId,
+          question: readingData.question,
+          answer: readingData.reading,
+          selectedCards: readingData.selectedCards,
+          transactionId: readingData.transactionId,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("ไม่สามารถบันทึกการทำนายได้");
       }
+
+      const result = await response.json();
+      
+      // Update reading data with permanent ID and saved status
+      setReadingData(prev => prev ? {
+        ...prev,
+        readingId: result.data.readingId,
+        isSaved: true,
+        createdAt: result.data.createdAt
+      } : null);
 
       // Show success feedback (could be a toast notification)
       console.log("Reading saved successfully");
     } catch (err) {
       console.error("Save error:", err);
       // Show error feedback
+      throw err;
     }
   };
 
@@ -125,6 +143,12 @@ export function AskPage() {
   };
 
   const handleRetry = () => {
+    // Reset all workflow state
+    setPageState("initial");
+    setReadingData(null);
+    setError(null);
+    
+    // Restart with current question
     if (currentQuestion) {
       handleQuestionSubmit(currentQuestion);
     } else {

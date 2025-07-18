@@ -10,8 +10,7 @@ export interface FilterOptions {
   customEndDate?: string;
   sortBy: "newest" | "oldest" | "rating" | "reviewed" | "unreviewed";
   hasReview: "all" | "reviewed" | "unreviewed";
-  cardCount: "all" | "1" | "3" | "5";
-  topic: string;
+  cardCount: "all" | "3" | "5";
 }
 
 interface SearchFiltersProps {
@@ -27,7 +26,6 @@ const defaultFilters: FilterOptions = {
   sortBy: "newest",
   hasReview: "all",
   cardCount: "all",
-  topic: "all",
 };
 
 export function SearchFilters({
@@ -105,16 +103,10 @@ export function SearchFilters({
     });
   }, [filters]);
 
-  const topicOptions = [
-    { value: "all", label: "All Topics" },
-    { value: "love", label: "❤️ Love & Relationships" },
-    { value: "career", label: "💼 Career & Work" },
-    { value: "spiritual", label: "🔮 Spiritual Growth" },
-    { value: "finance", label: "💰 Money & Finance" },
-    { value: "health", label: "🌱 Health & Wellness" },
-    { value: "family", label: "👨‍👩‍👧‍👦 Family & Friends" },
-    { value: "personal", label: "🌟 Personal Development" },
-    { value: "other", label: "🤔 Other Questions" },
+  const cardCountOptions = [
+    { value: "all", label: "ทุกจำนวน" },
+    { value: "3", label: "3 ใบ" },
+    { value: "5", label: "5 ใบ" },
   ];
 
   return (
@@ -259,8 +251,8 @@ export function SearchFilters({
                 )}
               </AnimatePresence>
 
-              {/* Second Row: Review Status and Topic */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Second Row: Review Status and Card Count */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="label label-text font-medium">Review Status</label>
                   <select
@@ -281,21 +273,7 @@ export function SearchFilters({
                     value={filters.cardCount}
                     onChange={(e) => handleFilterChange("cardCount", e.target.value)}
                   >
-                    <option value="all">Any Number</option>
-                    <option value="1">🃏 Single Card</option>
-                    <option value="3">🃏🃏🃏 Three Cards</option>
-                    <option value="5">🃏🃏🃏🃏🃏 Five Cards</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="label label-text font-medium">Topic</label>
-                  <select
-                    className="select select-bordered w-full"
-                    value={filters.topic}
-                    onChange={(e) => handleFilterChange("topic", e.target.value)}
-                  >
-                    {topicOptions.map((option) => (
+                    {cardCountOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>

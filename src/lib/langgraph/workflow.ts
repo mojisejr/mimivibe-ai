@@ -1,9 +1,17 @@
-import { StateGraph, Annotation, START, END } from '@langchain/langgraph'
-import { SYSTEM_PROMPTS, createProviderWithPrompt } from '@/lib/ai'
-import { pickRandomCards, formatCardsForWorkflow, getCardMeaningsContext, SelectedCard } from '@/lib/utils/card-picker'
-import { parseAndValidateAIResponse, logParsingError } from '@/lib/utils/json-parser'
-import { prisma } from '@/lib/prisma'
-import type { CardReading, ReadingStructure } from '@/types/reading'
+import { StateGraph, Annotation, START, END } from "@langchain/langgraph";
+import { SYSTEM_PROMPTS, createProviderWithPrompt } from "@/lib/ai";
+import {
+  pickRandomCards,
+  formatCardsForWorkflow,
+  getCardMeaningsContext,
+  SelectedCard,
+} from "@/lib/utils/card-picker";
+import {
+  parseAndValidateAIResponse,
+  logParsingError,
+} from "@/lib/utils/json-parser";
+import { prisma } from "@/lib/prisma";
+import type { CardReading, ReadingStructure } from "@/types/reading";
 
 // Define the state interface for the reading workflow
 export const ReadingState = Annotation.Root({
@@ -13,132 +21,146 @@ export const ReadingState = Annotation.Root({
   selectedCards: Annotation<SelectedCard[]>,
   cardCount: Annotation<number>,
   questionAnalysis: Annotation<{
-    mood: string
-    topic: string
-    period: string
+    mood: string;
+    topic: string;
+    period: string;
   }>,
   reading: Annotation<ReadingStructure>,
-  error: Annotation<string>
-})
+  error: Annotation<string>,
+});
 
 // Node 1: Question Filter - Validates if the question is appropriate
 async function questionFilterNode(state: typeof ReadingState.State) {
   try {
-    console.log('🔍 Question Filter Node - Processing:', state.question)
-    
-    const filterAI = createProviderWithPrompt(SYSTEM_PROMPTS.questionFilter)
-    
+    console.log("🔍 Question Filter Node - Processing:", state.question);
+
+    const filterAI = createProviderWithPrompt(SYSTEM_PROMPTS.questionFilter);
+
     const response = await filterAI.invoke([
-      { role: 'user', content: `Question to validate: "${state.question}"` }
-    ])
-    
-    const parsed = parseAndValidateAIResponse<{isValid: boolean; reason?: string}>(
-      response.content as string,
-      ['isValid']
-    )
-    
+      { role: "user", content: `Question to validate: "${state.question}"` },
+    ]);
+
+    const parsed = parseAndValidateAIResponse<{
+      isValid: boolean;
+      reason?: string;
+    }>(response.content as string, ["isValid"]);
+
     if (!parsed.success) {
-      logParsingError('QuestionFilter', response.content as string, parsed.error || 'Unknown error')
+      logParsingError(
+        "QuestionFilter",
+        response.content as string,
+        parsed.error || "Unknown error"
+      );
       return {
         isValid: false,
-        validationReason: 'Failed to parse AI response',
-        error: 'Question validation failed due to parsing error'
-      }
+        validationReason: "Failed to parse AI response",
+        error: "Question validation failed due to parsing error",
+      };
     }
-    
-    const result = parsed.data!
-    
+
+    const result = parsed.data!;
+
     return {
       isValid: result.isValid,
-      validationReason: result.reason || '',
-      error: result.isValid ? '' : (result.reason || 'Question is invalid')
-    }
+      validationReason: result.reason || "",
+      error: result.isValid ? "" : result.reason || "Question is invalid",
+    };
   } catch (error) {
-    console.error('Question filter error:', error)
+    console.error("Question filter error:", error);
     return {
       isValid: false,
-      validationReason: 'Failed to validate question',
-      error: 'Question validation failed'
-    }
+      validationReason: "Failed to validate question",
+      error: "Question validation failed",
+    };
   }
 }
 
 // Node 2: Card Picker - Randomly selects 3-5 cards
 async function cardPickerNode(state: typeof ReadingState.State) {
   try {
-    console.log('🎴 Card Picker Node - Selecting cards')
-    
+    console.log("🎴 Card Picker Node - Selecting cards");
+
     if (!state.isValid) {
-      return { error: 'Cannot pick cards for invalid question' }
+      return { error: "Cannot pick cards for invalid question" };
     }
-    
-    const cardResult = await pickRandomCards()
-    
+
+    const cardResult = await pickRandomCards();
+
     return {
       selectedCards: cardResult.selectedCards,
-      cardCount: cardResult.cardCount
-    }
+      cardCount: cardResult.cardCount,
+    };
   } catch (error) {
-    console.error('Card picker error:', error)
+    console.error("Card picker error:", error);
     return {
-      error: 'Failed to select cards'
-    }
+      error: "Failed to select cards",
+    };
   }
 }
 
 // Node 3: Question Analyzer - Analyzes mood, topic, and timeframe
 async function questionAnalyzerNode(state: typeof ReadingState.State) {
   try {
-    console.log('🔮 Question Analysis Node - Analyzing question')
-    
+    console.log("🔮 Question Analysis Node - Analyzing question");
+
     if (!state.isValid || !state.selectedCards) {
-      return { error: 'Cannot analyze invalid question or missing cards' }
+      return { error: "Cannot analyze invalid question or missing cards" };
     }
-    
-    const analysisAI = createProviderWithPrompt(SYSTEM_PROMPTS.questionAnalysis)
-    
+
+    const analysisAI = createProviderWithPrompt(
+      SYSTEM_PROMPTS.questionAnalysis
+    );
+
     const response = await analysisAI.invoke([
-      { role: 'user', content: `Analyze this question: "${state.question}"` }
-    ])
-    
-    const parsed = parseAndValidateAIResponse<{mood: string; topic: string; period: string}>(
-      response.content as string,
-      ['mood', 'topic', 'period']
-    )
-    
+      { role: "user", content: `Analyze this question: "${state.question}"` },
+    ]);
+
+    const parsed = parseAndValidateAIResponse<{
+      mood: string;
+      topic: string;
+      period: string;
+    }>(response.content as string, ["mood", "topic", "period"]);
+
     if (!parsed.success) {
-      logParsingError('QuestionAnalyzer', response.content as string, parsed.error || 'Unknown error')
-      return { error: 'Failed to parse question analysis response' }
+      logParsingError(
+        "QuestionAnalyzer",
+        response.content as string,
+        parsed.error || "Unknown error"
+      );
+      return { error: "Failed to parse question analysis response" };
     }
-    
-    const analysis = parsed.data!
-    
+
+    const analysis = parsed.data!;
+
     return {
       questionAnalysis: {
         mood: analysis.mood,
         topic: analysis.topic,
-        period: analysis.period
-      }
-    }
+        period: analysis.period,
+      },
+    };
   } catch (error) {
-    console.error('Question analysis error:', error)
+    console.error("Question analysis error:", error);
     return {
-      error: 'Failed to analyze question'
-    }
+      error: "Failed to analyze question",
+    };
   }
 }
 
 // Node 4: Reading Agent - Generates the final tarot reading
 async function readingAgentNode(state: typeof ReadingState.State) {
   try {
-    console.log('✨ Reading Agent Node - Generating reading')
-    
+    console.log("✨ Reading Agent Node - Generating reading");
+
     if (!state.isValid || !state.selectedCards || !state.questionAnalysis) {
-      return { error: 'Cannot generate reading without valid question, cards, and analysis' }
+      return {
+        error:
+          "Cannot generate reading without valid question, cards, and analysis",
+      };
     }
-    
+
     // Fetch full card objects from database
-    const cardIds = state.selectedCards.map(card => card.id)
+    const cardIds = state.selectedCards.map((card) => card.id);
     const cards = await prisma.card.findMany({
       where: { id: { in: cardIds } },
       select: {
@@ -147,10 +169,10 @@ async function readingAgentNode(state: typeof ReadingState.State) {
         displayName: true,
         imageUrl: true,
         shortMeaning: true,
-        keywords: true
-      }
-    })
-    
+        keywords: true,
+      },
+    });
+
     // Create cards_reading with position
     const cardsReading: CardReading[] = cards.map((card, index) => ({
       id: card.id,
@@ -159,10 +181,10 @@ async function readingAgentNode(state: typeof ReadingState.State) {
       imageUrl: card.imageUrl,
       position: index + 1,
       shortMeaning: card.shortMeaning,
-      keywords: card.keywords
-    }))
-    
-    const cardContext = getCardMeaningsContext(state.selectedCards)
+      keywords: card.keywords,
+    }));
+
+    const cardContext = getCardMeaningsContext(state.selectedCards);
     const prompt = `User Question: "${state.question}"
 
 Question Analysis:
@@ -186,18 +208,16 @@ Return JSON with this structure:
   "notice": "ข้อความแจ้งเตือนเกี่ยวกับการดูดวง"
 }
 
-เขียนด้วยภาษาไทยที่อบอุ่น เป็นกันเอง และให้กำลังใจ`
+เขียนด้วยภาษาไทยที่อบอุ่น เป็นกันเอง และให้กำลังใจ`;
 
     // Try with primary provider first
     let parsed;
     let response;
-    
+
     try {
-      const readingAI = createProviderWithPrompt(SYSTEM_PROMPTS.readingAgent)
-      response = await readingAI.invoke([
-        { role: 'user', content: prompt }
-      ])
-      
+      const readingAI = createProviderWithPrompt(SYSTEM_PROMPTS.readingAgent);
+      response = await readingAI.invoke([{ role: "user", content: prompt }]);
+
       parsed = parseAndValidateAIResponse<{
         header: string;
         reading: string;
@@ -206,21 +226,31 @@ Return JSON with this structure:
         final: string;
         end: string;
         notice: string;
-      }>(
-        response.content as string,
-        ['header', 'reading', 'suggestions', 'next_questions', 'final', 'end', 'notice']
-      )
-      
+      }>(response.content as string, [
+        "header",
+        "reading",
+        "suggestions",
+        "next_questions",
+        "final",
+        "end",
+        "notice",
+      ]);
+
       if (!parsed.success) {
-        logParsingError('ReadingAgent', response.content as string, parsed.error || 'Unknown error')
-        
+        logParsingError(
+          "ReadingAgent",
+          response.content as string,
+          parsed.error || "Unknown error"
+        );
+
         // Try fallback provider
-        console.log('⚠️ Primary provider failed, trying fallback provider...')
-        const fallbackAI = createProviderWithPrompt(SYSTEM_PROMPTS.readingAgent, 'gemini')
-        response = await fallbackAI.invoke([
-          { role: 'user', content: prompt }
-        ])
-        
+        console.log("⚠️ Primary provider failed, trying fallback provider...");
+        const fallbackAI = createProviderWithPrompt(
+          SYSTEM_PROMPTS.readingAgent,
+          "gemini"
+        );
+        response = await fallbackAI.invoke([{ role: "user", content: prompt }]);
+
         parsed = parseAndValidateAIResponse<{
           header: string;
           reading: string;
@@ -229,114 +259,155 @@ Return JSON with this structure:
           final: string;
           end: string;
           notice: string;
-        }>(
-          response.content as string,
-          ['header', 'reading', 'suggestions', 'next_questions', 'final', 'end', 'notice']
-        )
-        
+        }>(response.content as string, [
+          "header",
+          "reading",
+          "suggestions",
+          "next_questions",
+          "final",
+          "end",
+          "notice",
+        ]);
+
         if (!parsed.success) {
-          logParsingError('ReadingAgent-Fallback', response.content as string, parsed.error || 'Unknown error')
-          return { error: 'Failed to parse reading response from both providers' }
+          logParsingError(
+            "ReadingAgent-Fallback",
+            response.content as string,
+            parsed.error || "Unknown error"
+          );
+          return {
+            error: "Failed to parse reading response from both providers",
+          };
         }
-        
-        console.log('✅ Fallback provider succeeded')
+
+        console.log("✅ Fallback provider succeeded");
       }
     } catch (error) {
-      console.error('Error in reading generation:', error)
-      return { error: 'Failed to generate reading' }
+      console.error("Error in reading generation:", error);
+      return { error: "Failed to generate reading" };
     }
-    
-    const reading = parsed.data!
-    
+
+    const reading = parsed.data!;
+
     return {
       reading: {
         header: reading.header,
         cards_reading: cardsReading, // Include full card objects
         reading: reading.reading,
-        suggestions: Array.isArray(reading.suggestions) ? reading.suggestions : [],
-        next_questions: Array.isArray(reading.next_questions) ? reading.next_questions : [],
+        suggestions: Array.isArray(reading.suggestions)
+          ? reading.suggestions
+          : [],
+        next_questions: Array.isArray(reading.next_questions)
+          ? reading.next_questions
+          : [],
         final: reading.final,
         end: reading.end,
-        notice: reading.notice
-      }
-    }
+        notice: reading.notice,
+      },
+    };
   } catch (error) {
-    console.error('Reading agent error:', error)
+    console.error("Reading agent error:", error);
     return {
-      error: 'Failed to generate reading'
-    }
+      error: "Failed to generate reading",
+    };
   }
 }
 
 // Conditional edge function to route based on validation result
 function shouldContinue(state: typeof ReadingState.State) {
   if (state.error) {
-    return END
+    return END;
   }
   if (!state.isValid) {
-    return END
+    return END;
   }
-  return 'cardPicker'
+  return "cardPicker";
 }
 
 // Create and configure the workflow graph
 export function createReadingWorkflow() {
   const workflow = new StateGraph(ReadingState)
-    .addNode('questionFilter', questionFilterNode)
-    .addNode('cardPicker', cardPickerNode)
-    .addNode('questionAnalyzer', questionAnalyzerNode)
-    .addNode('readingAgent', readingAgentNode)
-    .addEdge(START, 'questionFilter')
-    .addConditionalEdges('questionFilter', shouldContinue, {
-      cardPicker: 'cardPicker',
-      [END]: END
+    .addNode("questionFilter", questionFilterNode)
+    .addNode("cardPicker", cardPickerNode)
+    .addNode("questionAnalyzer", questionAnalyzerNode)
+    .addNode("readingAgent", readingAgentNode)
+    .addEdge(START, "questionFilter")
+    .addConditionalEdges("questionFilter", shouldContinue, {
+      cardPicker: "cardPicker",
+      [END]: END,
     })
-    .addEdge('cardPicker', 'questionAnalyzer')
-    .addEdge('questionAnalyzer', 'readingAgent')
-    .addEdge('readingAgent', END)
+    .addEdge("cardPicker", "questionAnalyzer")
+    .addEdge("questionAnalyzer", "readingAgent")
+    .addEdge("readingAgent", END);
 
-  return workflow.compile()
+  return workflow.compile();
 }
 
 // Main function to run the complete reading workflow
 export async function generateTarotReading(question: string) {
   try {
-    console.log('🚀 Starting tarot reading workflow for question:', question)
-    
-    const workflow = createReadingWorkflow()
-    
+    console.log("🚀 Starting tarot reading workflow for question:", question);
+
+    const workflow = createReadingWorkflow();
+
     const initialState = {
       question: question.trim(),
       isValid: false,
-      validationReason: '',
+      validationReason: "",
       selectedCards: [],
       cardCount: 0,
-      questionAnalysis: { mood: '', topic: '', period: '' },
-      reading: { header: '', cards_reading: [], reading: '', suggestions: [], next_questions: [], final: '', end: '', notice: '' },
-      error: ''
-    }
-    
-    const result = await workflow.invoke(initialState)
-    
+      questionAnalysis: { mood: "", topic: "", period: "" },
+      reading: {
+        header: "",
+        cards_reading: [],
+        reading: "",
+        suggestions: [],
+        next_questions: [],
+        final: "",
+        end: "",
+        notice: "",
+      },
+      error: "",
+    };
+
+    // Add timeout handling for Vercel 60s limit - timeout at 55s
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("TIMEOUT")), 55000);
+    });
+
+    const workflowPromise = workflow.invoke(initialState);
+
+    const result = (await Promise.race([
+      workflowPromise,
+      timeoutPromise,
+    ])) as typeof ReadingState.State;
+
     if (result.error) {
-      throw new Error(result.error)
+      throw new Error(result.error);
     }
-    
+
     if (!result.isValid) {
-      throw new Error(result.validationReason || 'Invalid question')
+      throw new Error(result.validationReason || "Invalid question");
     }
-    
-    console.log('✅ Tarot reading workflow completed successfully')
-    
+
+    console.log("✅ Tarot reading workflow completed successfully");
+
     return {
       questionAnalysis: result.questionAnalysis,
       selectedCards: result.selectedCards,
       cardCount: result.cardCount,
-      reading: result.reading
-    }
-    
+      reading: result.reading,
+    };
   } catch (error) {
-    console.error('Workflow execution error:', error)
-    throw error
+    console.error("Workflow execution error:", error);
+
+    // Handle timeout error with user-friendly message
+    if (error instanceof Error && error.message === "TIMEOUT") {
+      throw new Error(
+        "Reading timeout - please try again (no credit deducted)"
+      );
+    }
+
+    throw error;
   }
 }

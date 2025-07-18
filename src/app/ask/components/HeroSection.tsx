@@ -16,7 +16,7 @@ export function HeroSection({
   initialQuestion = "",
 }: HeroSectionProps) {
   const [question, setQuestion] = useState(initialQuestion);
-  const { data: profileData } = useProfile();
+  const { data: profileData, loading } = useProfile();
 
   useEffect(() => {
     setQuestion(initialQuestion);
@@ -24,8 +24,17 @@ export function HeroSection({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (question.trim() && !isLoading) {
+    if (question.trim() && !isLoading && question.length >= 10) {
       onSubmit(question.trim());
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (question.trim() && !isLoading && question.length >= 10) {
+        onSubmit(question.trim());
+      }
     }
   };
 
@@ -108,25 +117,34 @@ export function HeroSection({
             </p>
 
             {/* Stars Counter with Glassmorphism */}
-            {profileData?.credits && (
-              <motion.div
-                className="flex items-center justify-center space-x-4 mb-8"
-                variants={fadeInUp}
-              >
-                <div className="flex items-center space-x-2 bg-base-100/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-xl border border-primary/20 hover:shadow-2xl transition-all duration-300">
-                  <span className="text-warning text-xl">⭐</span>
-                  <span className="font-semibold text-base-content">
-                    {profileData.credits.stars}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2 bg-base-100/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-xl border border-secondary/20 hover:shadow-2xl transition-all duration-300">
-                  <span className="text-secondary text-xl">🎁</span>
-                  <span className="font-semibold text-base-content">
-                    {profileData.credits.freePoint}
-                  </span>
-                </div>
-              </motion.div>
-            )}
+            <motion.div
+              className="flex items-center justify-center space-x-4 mb-8"
+              variants={fadeInUp}
+            >
+              {loading ? (
+                // Loading skeleton for credits
+                <>
+                  <div className="skeleton h-12 w-20 rounded-full"></div>
+                  <div className="skeleton h-12 w-20 rounded-full"></div>
+                </>
+              ) : profileData?.credits ? (
+                // Actual credits display
+                <>
+                  <div className="flex items-center space-x-2 bg-base-100/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-xl border border-primary/20 hover:shadow-2xl transition-all duration-300">
+                    <span className="text-warning text-xl">⭐</span>
+                    <span className="font-semibold text-base-content">
+                      {profileData.credits.stars}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-base-100/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-xl border border-secondary/20 hover:shadow-2xl transition-all duration-300">
+                    <span className="text-secondary text-xl">🎁</span>
+                    <span className="font-semibold text-base-content">
+                      {profileData.credits.freePoint}
+                    </span>
+                  </div>
+                </>
+              ) : null}
+            </motion.div>
           </motion.div>
 
           {/* Question Input Form with Glassmorphism */}
@@ -140,20 +158,23 @@ export function HeroSection({
                 <textarea
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="เช่น: ความรักของฉันจะเป็นอย่างไรในช่วงนี้..."
+                  onKeyDown={handleKeyDown}
+                  placeholder="เช่น: ความรักของฉันจะเป็นอย่างไรในช่วงนี้... (กด Enter เพื่อส่ง)"
                   className="textarea w-full h-32 text-lg resize-none bg-transparent border-0 focus:outline-none focus:ring-0 placeholder-neutral-content/60"
                   disabled={isLoading}
                   maxLength={180}
                 />
               </div>
-              <div className="absolute bottom-4 right-4 text-xs text-neutral-content bg-base-100/80 backdrop-blur-sm rounded-full px-2 py-1">
-                {question.length}/180
+              <div className={`absolute bottom-4 right-4 text-xs bg-base-100/80 backdrop-blur-sm rounded-full px-2 py-1 ${
+                question.length < 10 ? 'text-warning' : 'text-neutral-content'
+              }`}>
+                {question.length}/180 {question.length < 10 && '(ต้องการอย่างน้อย 10 ตัวอักษร)'}
               </div>
             </div>
 
             <motion.button
               type="submit"
-              disabled={!question.trim() || isLoading}
+              disabled={!question.trim() || isLoading || question.length < 10}
               className="btn btn-lg w-full py-4 px-8 text-lg font-semibold disabled:opacity-50 bg-gradient-to-r from-accent to-accent-focus text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -173,7 +194,7 @@ export function HeroSection({
           </motion.form>
 
           {/* Insufficient Credits Warning with Glassmorphism */}
-          {profileData?.credits && !profileData.credits.canRead && (
+          {!loading && profileData?.credits && !profileData.credits.canRead && (
             <motion.div className="mt-6" variants={fadeInUp}>
               <div className="alert alert-warning bg-warning/10 border-2 border-warning/30 backdrop-blur-sm shadow-lg">
                 <div className="flex items-center space-x-2">

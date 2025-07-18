@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/ToastContainer";
 import { motion } from "framer-motion";
+import { PricingCards } from "@/components/landing/PricingCards";
 
 // ===== OLD IMPLEMENTATION (COMMENTED OUT) =====
 /*
@@ -690,140 +691,11 @@ export default function HomePage() {
               แพ็กเกจที่ <span className="text-primary">คุ้มค่า</span> 💎
             </h2>
             <p className="text-lg text-neutral-content max-w-2xl mx-auto">
-              เลือกแพ็กเกจที่เหมาะกับคุณ เริ่มต้นเพียง 29 บาทต่อการทำนาย
+              เลือกแพ็กเกจที่เหมาะกับคุณ
             </p>
           </motion.div>
 
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            {/* Basic Package */}
-            <motion.div variants={cardHover} className="group">
-              <div className="card bg-gradient-to-br from-base-100 to-base-200 border-2 border-neutral/20 shadow-xl hover:shadow-2xl transition-all duration-300">
-                <div className="card-body text-center p-8">
-                  <div className="mb-6">
-                    <span className="text-4xl">⭐</span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-base-content mb-2">
-                    แพ็กเกจเริ่มต้น
-                  </h3>
-                  <div className="text-3xl font-bold text-primary mb-4">
-                    29 บาท
-                  </div>
-                  <ul className="text-left space-y-3 mb-8">
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>การทำนาย 1 ครั้ง</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>คำแนะนำจาก AI</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>บันทึกผลการทำนาย</span>
-                    </li>
-                  </ul>
-                  <Link href="/packages">
-                    <button className="btn btn-outline btn-primary w-full">
-                      เลือกแพ็กเกจนี้
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Popular Package */}
-            <motion.div variants={cardHover} className="group relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="badge badge-accent badge-lg">ยอดนิยม</div>
-              </div>
-              <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary shadow-2xl hover:shadow-3xl transition-all duration-300">
-                <div className="card-body text-center p-8">
-                  <div className="mb-6">
-                    <span className="text-4xl">💎</span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-base-content mb-2">
-                    แพ็กเกจยอดนิยม
-                  </h3>
-                  <div className="text-3xl font-bold text-primary mb-4">
-                    99 บาท
-                  </div>
-                  <ul className="text-left space-y-3 mb-8">
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>การทำนาย 5 ครั้ง</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>คำแนะนำจาก AI</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>บันทึกผลการทำนาย</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>ประวัติการทำนาย</span>
-                    </li>
-                  </ul>
-                  <Link href="/packages">
-                    <button className="btn btn-primary w-full shadow-lg">
-                      เลือกแพ็กเกจนี้
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Premium Package */}
-            <motion.div variants={cardHover} className="group">
-              <div className="card bg-gradient-to-br from-base-100 to-base-200 border-2 border-accent/20 shadow-xl hover:shadow-2xl transition-all duration-300">
-                <div className="card-body text-center p-8">
-                  <div className="mb-6">
-                    <span className="text-4xl">👑</span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-base-content mb-2">
-                    แพ็กเกจพรีเมียม
-                  </h3>
-                  <div className="text-3xl font-bold text-accent mb-4">
-                    199 บาท
-                  </div>
-                  <ul className="text-left space-y-3 mb-8">
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>การทำนาย 15 ครั้ง</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>คำแนะนำจาก AI</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>บันทึกผลการทำนาย</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>ประวัติการทำนาย</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-success mr-2">✓</span>
-                      <span>การแจ้งเตือนพิเศษ</span>
-                    </li>
-                  </ul>
-                  <Link href="/packages">
-                    <button className="btn btn-outline btn-accent w-full">
-                      เลือกแพ็กเกจนี้
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
+          <PricingCards />
         </div>
       </section>
 

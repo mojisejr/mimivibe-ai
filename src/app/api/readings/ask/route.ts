@@ -82,9 +82,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate reading using LangGraph workflow
-    const workflowResult = await generateTarotReading(question)
+    let workflowResult
+    try {
+      workflowResult = await generateTarotReading(question)
+    } catch (error) {
+      // Handle timeout error - don't deduct credits
+      if (error instanceof Error && error.message.includes('Reading timeout')) {
+        return NextResponse.json({
+          success: false,
+          error: 'Reading timeout',
+          message: error.message,
+          timestamp: new Date().toISOString(),
+          path: '/api/readings/ask'
+        } as ReadingError, { status: 408 }) // 408 Request Timeout
+      }
+      // Re-throw other errors
+      throw error
+    }
 
-    // Process in database transaction
+    // Deduct credits only after successful reading generation
     const result = await prisma.$transaction(async (tx) => {
       // Get current user state again within transaction
       const currentUser = await tx.user.findUnique({
@@ -114,32 +130,11 @@ export async function POST(request: NextRequest) {
         throw new Error('Insufficient credits')
       }
 
-      // Create reading record with new JSON structure
-      const readingId = `reading_${Date.now()}_${userId.slice(-8)}`
-      
-      const reading = await tx.reading.create({
-        data: {
-          id: readingId,
-          userId,
-          question: question.trim(),
-          answer: workflowResult.reading as any, // Store as JSON object
-          type: 'tarot'
-        }
-      })
-
-      // Create reading-card relationships
-      await tx.readingCard.createMany({
-        data: workflowResult.selectedCards.map(card => ({
-          readingId: reading.id,
-          cardId: card.id,
-          position: card.position
-        }))
-      })
-
-      // Create transaction record for credit deduction
+      // Create transaction record for credit deduction (reading generation)
+      const transactionId = `txn_${Date.now()}_${userId.slice(-8)}`
       await tx.pointTransaction.create({
         data: {
-          id: `txn_${Date.now()}_${userId.slice(-8)}`,
+          id: transactionId,
           userId,
           eventType: 'READING_SPEND',
           deltaPoint: deltaStars,
@@ -147,7 +142,6 @@ export async function POST(request: NextRequest) {
           deltaExp: 25, // Reward EXP
           metadata: {
             reason: 'Tarot reading generation',
-            readingId: reading.id,
             freePointUsed: -deltaFreePoint,
             starsUsed: -deltaStars,
             questionLength: question.length
@@ -171,18 +165,34 @@ export async function POST(request: NextRequest) {
       })
 
       return {
-        readingId: reading.id,
-        question: question.trim(),
-        questionAnalysis: workflowResult.questionAnalysis,
-        cards: workflowResult.reading.cards_reading, // Full card objects for display
-        reading: workflowResult.reading, // Complete reading structure
+        transactionId,
+        creditsUsed: {
+          freePoint: -deltaFreePoint,
+          stars: -deltaStars
+        },
         rewards: {
           exp: 25,
           coins: 5
-        },
-        createdAt: reading.createdAt.toISOString()
+        }
       }
     })
+
+    // Generate temporary reading ID for frontend (not saved to database yet)
+    const temporaryReadingId = `temp_reading_${Date.now()}_${userId.slice(-8)}`
+    
+    // Return reading data without saving to database
+    const readingResult = {
+      readingId: temporaryReadingId,
+      question: question.trim(),
+      questionAnalysis: workflowResult.questionAnalysis,
+      cards: workflowResult.reading.cards_reading, // Full card objects for display
+      reading: workflowResult.reading, // Complete reading structure
+      rewards: result.rewards,
+      transactionId: result.transactionId,
+      selectedCards: workflowResult.selectedCards, // Store for later saving
+      createdAt: new Date().toISOString(),
+      isSaved: false // Indicate this reading is not saved yet
+    }
 
     // Try to claim referral reward for first reading (async, don't wait for result)
     try {
@@ -225,7 +235,7 @@ export async function POST(request: NextRequest) {
                 deltaExp: referrerReward.exp,
                 metadata: { 
                   referredUserId: userId,
-                  readingId: result.readingId,
+                  readingId: readingResult.readingId,
                   rewardType: 'first_reading_completion'
                 }
               }
@@ -240,7 +250,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: result
+      data: readingResult
     } as ReadingResponse)
 
   } catch (error) {
