@@ -21,7 +21,7 @@ Phase 2: Enhanced Features [██████████] 6/6 complete (Round 
 Phase 3: Deployment [░░░░░░░░░░] 0/3 complete
 ```
 
-**✅ Current Status**: Round 9.6B completed + PricingCards Animation Bug Fix - All UI jumping issues resolved with skeleton loading states in navbar and credits display, Enter key support added for question submission, and enhanced user experience with proper validation feedback. PricingCards animation fix completed to ensure all 3 pricing cards display properly with fade-in animation on landing page. All 4 critical production bugs from Round 9.6A remain resolved including auto-save prevention, delete sync, timeout handling, and error recovery workflow. All 27 API routes have dynamic exports, achieving 100% Vercel compatibility. Payment system fully operational, build process validated, all dependencies verified, and complete environment variables documented. Next: Round 9.6C (Feature Improvements) or Round 10 (Gamification UI Components)
+**✅ Current Status**: Round 9.6B completed + PricingCards Animation Bug Fix + Article Design Refactoring - All UI jumping issues resolved with skeleton loading states in navbar and credits display, Enter key support added for question submission, and enhanced user experience with proper validation feedback. PricingCards animation fix completed to ensure all 3 pricing cards display properly with fade-in animation on landing page. Article Design Refactoring completed following ARTICLE-STYLE-GUIDES.md with minimalist border-l-4 pattern replacing boxy designs, light theme implementation, and chip-style badges across ArticleDisplay.tsx, ReadingDetailModal.tsx, and AnimatedArticleDisplay.tsx. All 4 critical production bugs from Round 9.6A remain resolved including auto-save prevention, delete sync, timeout handling, and error recovery workflow. All 27 API routes have dynamic exports, achieving 100% Vercel compatibility. Payment system fully operational, build process validated, all dependencies verified, and complete environment variables documented. Next: Round 9.6C (Feature Improvements) or Round 10 (Gamification UI Components)
 
 ---
 
@@ -182,6 +182,53 @@ Phase 3: Deployment [░░░░░░░░░░] 0/3 complete
 **Key Files Modified:**
 - `/src/components/landing/PricingCards.tsx` - Fixed animation variants combination
 
+### ✅ Article Design Refactoring (COMPLETED)
+
+**Status:** ✅ **COMPLETED** - UI/UX Enhancement Following Design Guidelines  
+**Actual Duration:** 4-5 hours  
+**Priority:** High (UI/UX Enhancement following ARTICLE-STYLE-GUIDES.md)
+
+**Completed Tasks:**
+- **Task A**: ✅ Redesigned ArticleDisplay.tsx and ReadingDetailModal.tsx following ARTICLE-STYLE-GUIDES.md
+- **Task B**: ✅ Redesigned AnimatedArticleDisplay.tsx to match minimalist design principles
+- **Task C**: ✅ Implemented border-l-4 pattern replacing boxy card/alert components
+- **Task D**: ✅ Updated to light theme colors (base-100: #FFF3E6, base-content: #4A3B30)
+
+**Success Criteria (ALL MET):**
+- [x] Remove "boxy" design and implement border-l-4 pattern for content sections
+- [x] Light theme implementation with base-100 background and base-content text
+- [x] Chip-style badges instead of heavy badge components
+- [x] Ghost button styling for subtle interactions
+- [x] Maintain animation functionality in AnimatedArticleDisplay.tsx
+- [x] Card position numbers moved to bottom-right with subtle styling
+
+**Implementation Results:**
+- **ArticleDisplay.tsx**: Transformed from card-heavy design to minimalist article layout with border-l-4 sections
+- **ReadingDetailModal.tsx**: Redesigned with chip-style badges and border-l-4 content sections
+- **AnimatedArticleDisplay.tsx**: Applied same principles while preserving animation functionality
+- **Color Scheme**: Updated to light theme (base-100: #FFF3E6, base-content: #4A3B30)
+- **Visual Elements**: Replaced heavy shadows with subtle ones, changed to ghost button variants
+- **Card Styling**: Position numbers moved to bottom-right corner with subtle bg-primary/80 styling
+
+**Key Design Transformations:**
+- Replaced heavy card/alert components with border-l-4 pattern for content sections
+- Transformed badge components to chip-style with transparent backgrounds and subtle borders
+- Updated button styling from solid to ghost variants for subtle interactions
+- Repositioned card numbers from top-right to bottom-right with reduced prominence
+- Applied consistent light theme colors throughout all components
+
+**Key Files Modified:**
+- `/src/app/ask/components/ArticleDisplay.tsx` - Complete redesign following ARTICLE-STYLE-GUIDES.md
+- `/src/components/history/ReadingDetailModal.tsx` - Chip-style badges and border-l-4 sections
+- `/src/app/ask/components/AnimatedArticleDisplay.tsx` - Minimalist design with preserved animations
+
+**UX Improvements:**
+- Eliminated "boxy" feel with border-l-4 pattern for content sections
+- Enhanced readability with light theme and proper typography
+- Reduced visual clutter with subtle shadows and ghost buttons
+- Maintained accessibility and responsive design principles
+- Preserved animation functionality in AnimatedArticleDisplay component
+
 ### 📋 Round 9.6C: Feature Improvements (NEXT 🚀)
 
 **Status:** 🚀 **READY** - Phase C Development Priority  
@@ -315,8 +362,8 @@ const phase2ContextMapping = {
 
 ---
 
-**Last Updated**: January 2025 - Phase 1.5 Extended + Phase 2 Round 9.6B Loading States & UX Polish + PricingCards Animation Bug Fix Complete  
-**Current Status**: Round 9.6B ✅ completed + PricingCards Animation Bug Fix ✅ - All UI jumping issues resolved with skeleton loading states in navbar and credits display, Enter key support added for question submission, and enhanced user experience with proper validation feedback. PricingCards animation fix completed to ensure all 3 pricing cards display properly with fade-in animation on landing page. All 4 critical production bugs from Round 9.6A remain resolved including auto-save prevention, delete sync, timeout handling, and error recovery workflow. Multi-LLM architecture with OpenAI GPT-4-turbo as default provider and Gemini fallback operational. All 27 API routes have dynamic exports, achieving 100% Vercel compatibility.  
+**Last Updated**: January 2025 - Phase 1.5 Extended + Phase 2 Round 9.6B Loading States & UX Polish + PricingCards Animation Bug Fix + Article Design Refactoring Complete  
+**Current Status**: Round 9.6B ✅ completed + PricingCards Animation Bug Fix ✅ + Article Design Refactoring ✅ - All UI jumping issues resolved with skeleton loading states in navbar and credits display, Enter key support added for question submission, and enhanced user experience with proper validation feedback. PricingCards animation fix completed to ensure all 3 pricing cards display properly with fade-in animation on landing page. Article Design Refactoring completed following ARTICLE-STYLE-GUIDES.md with minimalist border-l-4 pattern replacing boxy designs, light theme implementation, and chip-style badges across ArticleDisplay.tsx, ReadingDetailModal.tsx, and AnimatedArticleDisplay.tsx. All 4 critical production bugs from Round 9.6A remain resolved including auto-save prevention, delete sync, timeout handling, and error recovery workflow. Multi-LLM architecture with OpenAI GPT-4-turbo as default provider and Gemini fallback operational. All 27 API routes have dynamic exports, achieving 100% Vercel compatibility.  
 **Production Status**: 🚀 **100% Ready for Vercel Deployment**  
 **Next Action**: Execute Round 9.6C (Feature Improvements) → Round 10 (Gamification UI Components) or Deploy to Vercel  
 **Context Optimization**: Detailed records moved to COMPLETED-PROGRESS.md for optimal development context
@@ -330,3 +377,4 @@ const phase2ContextMapping = {
 - **Round 9.6A**: Critical data & state issues resolved - auto-save prevention, delete sync fix, timeout handling with credit protection, error recovery workflow restart, real-time data synchronization restored
 - **Round 9.6B**: Loading states & UX polish completed - UI jumping fixes with skeleton loading states, Enter key support for question submission, enhanced user validation feedback, reusable CreditsWidget component created
 - **PricingCards Animation Bug Fix**: Fixed animation variants combination to ensure all 3 pricing cards display properly with fade-in animation on landing page
+- **Article Design Refactoring**: Redesigned ArticleDisplay.tsx, ReadingDetailModal.tsx, and AnimatedArticleDisplay.tsx following ARTICLE-STYLE-GUIDES.md with minimalist border-l-4 pattern, light theme implementation, chip-style badges, and ghost button styling

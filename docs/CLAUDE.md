@@ -855,6 +855,88 @@
 
 ---
 
+#### Article Design Refactoring (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + `ARTICLE-STYLE-GUIDES.md`  
+**Actual Duration**: 4-5 hours  
+**Priority**: High (UI/UX Enhancement following design guidelines)
+
+**Completed Tasks**:
+- **Task A**: ✅ Redesigned ArticleDisplay.tsx and ReadingDetailModal.tsx following ARTICLE-STYLE-GUIDES.md
+- **Task B**: ✅ Redesigned AnimatedArticleDisplay.tsx to match minimalist design principles
+- **Task C**: ✅ Implemented border-l-4 pattern replacing boxy card/alert components
+- **Task D**: ✅ Updated to light theme colors (base-100: #FFF3E6, base-content: #4A3B30)
+
+**Success Criteria (ALL MET)**:
+- [x] Remove "boxy" design and implement border-l-4 pattern for content sections
+- [x] Light theme implementation with base-100 background and base-content text
+- [x] Chip-style badges instead of heavy badge components
+- [x] Ghost button styling for subtle interactions
+- [x] Maintain animation functionality in AnimatedArticleDisplay.tsx
+- [x] Card position numbers moved to bottom-right with subtle styling
+
+**Implementation Results**:
+- ✅ **ArticleDisplay.tsx**: Transformed from card-heavy design to minimalist article layout with border-l-4 sections
+- ✅ **ReadingDetailModal.tsx**: Redesigned with chip-style badges and border-l-4 content sections
+- ✅ **AnimatedArticleDisplay.tsx**: Applied same principles while preserving animation functionality
+- ✅ **Color Scheme**: Updated to light theme (base-100: #FFF3E6, base-content: #4A3B30)
+- ✅ **Visual Elements**: Replaced heavy shadows with subtle ones, changed to ghost button variants
+- ✅ **Card Styling**: Position numbers moved to bottom-right corner with subtle bg-primary/80 styling
+
+**Key Design Changes**:
+```typescript
+// Before: Heavy card/alert components
+<div className="card card-mystical p-6 shadow-lg">
+  <div className="alert alert-info p-6 shadow-lg">
+
+// After: Minimalist border-l-4 pattern
+<motion.section className="mb-12 border-l-4 border-primary/50 pl-8 py-6">
+  <div className="border-l-4 border-info/50 pl-6 py-4">
+```
+
+**Badge Transformation**:
+```typescript
+// Before: Heavy badge components
+<div className="badge badge-primary">
+
+// After: Chip-style badges
+<div className="px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm">
+```
+
+**Button Styling Updates**:
+```typescript
+// Before: Solid buttons
+<button className="btn btn-primary">
+
+// After: Ghost variants
+<button className="btn btn-ghost text-primary">
+```
+
+**Card Position Numbers**:
+```typescript
+// Before: Top-right prominent positioning
+<div className="absolute -top-2 -right-2 w-8 h-8 bg-primary shadow-lg">
+
+// After: Bottom-right subtle positioning
+<div className="absolute bottom-1 right-1 w-6 h-6 bg-primary/80 text-primary-content text-xs font-medium rounded-full">
+```
+
+**Key Files Modified**:
+- `/src/app/ask/components/ArticleDisplay.tsx` - Complete redesign following ARTICLE-STYLE-GUIDES.md
+- `/src/components/history/ReadingDetailModal.tsx` - Chip-style badges and border-l-4 sections
+- `/src/app/ask/components/AnimatedArticleDisplay.tsx` - Minimalist design with preserved animations
+
+**UX Improvements**:
+- Eliminated "boxy" feel with border-l-4 pattern for content sections
+- Enhanced readability with light theme and proper typography
+- Reduced visual clutter with subtle shadows and ghost buttons
+- Maintained accessibility and responsive design principles
+- Preserved animation functionality in AnimatedArticleDisplay component
+
+**Dependencies**: ✅ All three components previously implemented  
+**Breaking Changes**: None - visual enhancement only, maintaining all functionality
+
+---
+
 ### Phase 2: Enhanced Features (UPDATED 🚀)
 
 #### Round 8: Frontend API Integration (COMPLETED ✅)

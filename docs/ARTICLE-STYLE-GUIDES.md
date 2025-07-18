@@ -1,8 +1,8 @@
-# MiMiVibes Article Display Page Style Guide
+# MiMiVibes Article Display Page Style Guide (Updated)
 
 ## 📍 Introduction
 
-This guide outlines the UI/UX principles and specific styling for the `ArticleDisplay` page, aiming for a **Minimalist, Elegant, Modern, and comfortable reading experience**, heavily inspired by Medium's article layout. The goal is to eliminate the "boxy" feel, enhance readability, and align with the `MiMiVibes` brand identity defined in `tailwind.config.js` and `STYLE-GUIDE.md`.
+This updated guide outlines the UI/UX principles and specific styling for the `ArticleDisplay` page, reflecting the **new light color palette** from `tailwind.config.js`. The goal remains to achieve a **Minimalist, Elegant, Modern, and comfortable reading experience** similar to Medium, eliminating the "boxy" feel, enhancing readability, and aligning with the `MiMiVibes` brand identity.
 
 ## 💡 Core UI Principles for Article Display
 
@@ -14,31 +14,28 @@ This guide outlines the UI/UX principles and specific styling for the `ArticleDi
 
 ## 🎨 Brand Identity & Visual Elements
 
-Refer to `tailwind.config.js` for the exact color values and `STYLE-GUIDE.md` for general brand guidelines.
+Refer to the **latest `tailwind.config.js`** for exact color values and `STYLE-GUIDE.md` for general brand guidelines. The key change is the transition to a **light orange-cream base background** with **dark warm brown-grey text**.
 
-### 1. Color Palette Usage (mimivibes theme)
+### 1. Color Palette Usage (mimivibes theme - **Updated**)
 
 - **Backgrounds (`base-colors` from `tailwind.config.js`):**
-  - `base-200` (`#22193b`): Main page background, creating a mystical, elegant dark base.
-  - `base-100` (`#1a132e`): Used for slightly darker elements or subtle contrasts.
+  - `base-100` (`#FFF3E6`): Main page background, providing a very light, elegant peach/cream orange base.
+  - `base-200` (`#FFEEDD`): Used for slightly darker elements or subtle contrasts on the light background.
 - **Text Colors (`base-content`, `neutral-content`, semantic colors):**
-  - `base-content` (`#ffffff`): Main body text, headings, for high contrast on dark backgrounds.
-  - `neutral-content` (`#ffffff`): Secondary text, descriptive elements (e.g., card short meanings, italicized question).
-  - **Semantic Colors (for alerts/notices):**
-    - `info` (`#66c7ff`): For `Suggestions`. Use text color only, or a very subtle border/icon.
-    - `success` (`#629c6b`): For `Final Message`, `Rewards`. Use text color only, or a subtle border/icon.
-    - `warning` (`#ffbe00`): For `Notice`. Use text color only, or a subtle border/icon.
-    - `error` (`#ff6b6b`): For `Delete` button.
+  - `base-content` (`#4A3B30`): Main body text, headings, for excellent contrast on light backgrounds.
+  - `neutral-content` (`#4A3B30`): Secondary text, descriptive elements (e.g., card short meanings, italicized question).
+  - **Semantic Content Colors:** When using semantic colors as backgrounds for elements, the text on them will be `primary-content`, `secondary-content`, `accent-content` (all `#ffffff`). However, for subtle borders/text highlights on `base-100`/`base-200`, use `base-content` for inner text for readability.
 - **Accent & Interactive Colors (`primary`, `secondary`, `accent`):**
-  - `primary` (`#629c6b`): For subtle accents, active states, or `Save` button.
-  - `secondary` (`#5a4f78`): For subtle decorative elements, metadata badges.
-  - `accent` (`#de5b25`): For primary actions (`ถามใหม่`), badges, highlights.
+  - `primary` (`#629c6b`): Green for growth, subtle accents, active states, or `Save` button.
+  - `secondary` (`#3D5B42`): Deeper, muted green for contrasting elements, or subtle metadata badges.
+  - `accent` (`#FE9F60`): Elegant Golden Orange for primary actions (`ถามใหม่`), and badges that need to pop.
+  - `error` (`#de5b25`): Original accent orange, now used for error, good contrast.
 
 ### 2. Typography
 
 - **Font Family:** `Inter` (as defined in `tailwind.config.js`) for all text. Ensure good readability for Thai characters.
 - **Headings (`heading-1`, `heading-2`, `heading-3`):**
-  - Use `text-base-content` for headings on dark backgrounds.
+  - Use `text-base-content` for headings on light backgrounds.
   - Maintain clear hierarchy with appropriate font sizes and `font-weight` (e.g., `font-bold` or `font-semibold`).
   - `line-height`: Aim for 1.2-1.4 for headings.
 - **Body Text (`body-large`, `body-normal`, `body-small`):**
@@ -58,52 +55,53 @@ Refer to `tailwind.config.js` for the exact color values and `STYLE-GUIDE.md` fo
   - Remove `card card-mystical p-6 sm:p-8 shadow-lg`.
   - Apply `p-6 sm:p-8` directly to the `section` or an inner `div` to maintain padding.
   - Ensure `mb-12` for vertical spacing.
-  - The content should appear seamlessly on the `article`'s background (`bg-base-200` or `bg-base-100` if changed).
+  - The content should appear seamlessly on the `article`'s background (`bg-base-100` or `bg-base-200`).
 - **Suggestions (`คำแนะนำ`):**
   - Remove `alert alert-info p-6 sm:p-8 shadow-lg`.
-  - Replace with `div` having a subtle `border-l-4` (e.g., `border-info/50` or `border-info-500` if using a color scale) and appropriate `padding` (`p-6 sm:p-8`).
-  - Text color for `h2` and `li` content should be `text-base-content` or `text-neutral-content`.
+  - Replace with `div` having a subtle `border-l-4` (e.g., `border-info` or a lighter shade like `border-info/50`) and appropriate `padding` (`p-6 sm:p-8`).
+  - Text color for `h2` and `li` content should be `text-base-content`.
   - The numbered circle (`bg-info text-info-content rounded-full`) should be replaced by a simple icon or just the number with `text-info` color, without a solid background.
 - **Final Message (`ข้อสรุป`):**
   - Similar to `Suggestions`, remove `alert alert-success p-6 sm:p-8 shadow-lg`.
-  - Use `border-l-4 border-success/50` with `padding`.
-  - Text color for `h2` and content should be `text-base-content` or `text-neutral-content`.
+  - Use `border-l-4` with `border-success` or `border-success/50` and `padding`.
+  - Text color for `h2` and content should be `text-base-content`.
 - **End Message (`End`):**
-  - Remove `card card-mystical p-6 sm:p-8 ... shadow-lg`.
+  - Remove `card card-mystical p-6 sm:p-8 text-center bg-gradient-to-br from-primary/10 to-secondary/10 shadow-lg`.
   - Use `padding` and `margin-bottom`.
-  - The `bg-gradient-to-br from-primary/10 to-secondary/10` is good for a subtle mystical feel; keep this if desired, but ensure it doesn't create a strong "box" effect. Adjust opacity if too prominent.
+  - The `bg-gradient-to-br from-primary/10 to-secondary/10` can be retained if desired, as it's subtle, but ensure it works well on the new light base.
+  - Text color should be `text-base-content`.
 - **Notice (`หมายเหตุ`):**
   - Remove `alert alert-warning p-6 shadow-lg`.
-  - Apply `border-l-4 border-warning/50` with `padding`.
-  - Text color for `h3` and `p` should be `text-base-content` or `text-neutral-content`.
+  - Apply `border-l-4` with `border-warning` or `border-warning/50` and `padding`.
+  - Text color for `h3` and `p` should be `text-base-content`.
 - **Rewards (`รางวัลที่ได้รับ`):**
   - Remove `alert alert-success p-6 shadow-lg`.
-  - Apply padding. The inner circular elements (`bg-warning`, `bg-accent`) can retain their background if they are small and act as icons, but consider reducing `shadow-lg` or using `shadow-sm`.
-  - Text color should be `text-base-content` or `text-neutral-content`.
+  - Apply padding. The inner circular elements (`bg-warning`, `bg-accent`) can retain their background as they are icons, but consider reducing `shadow-lg` or using `shadow-sm`.
+  - Text color should be `text-base-content`.
 
 ### 5. Card Section (`ไพ่ที่จั่วได้`)
 
 - **CardImage (`CardImage` component):**
   - Remove `card card-mystical` from the outer `div` that wraps the `img`. The focus should be on the image itself.
-  - Consider reducing `shadow-lg` to `shadow-md` or `shadow-sm` on the image container for a lighter feel.
-  - The `position` number (`absolute -top-2 -right-2 ... bg-primary ... shadow-lg`) should be more subtle. Consider reducing its size, shadow, or using a transparent background with a border, or placing it within the card design more subtly (e.g., small text at the bottom corner).
+  - Consider reducing `shadow-lg` to `shadow-md` or `shadow-sm` on the image container for a lighter feel, especially on a light background.
+  - The `position` number (`absolute -top-2 -right-2 ... bg-primary ... shadow-lg`) should be more subtle. Consider reducing its size, shadow, or using a transparent background with a border, or placing it within the card design more subtly (e.g., small text at the bottom corner with `text-primary` color).
 
 ### 6. Article Header
 
-- **Meta Info Badges:** The `badge badge-primary`, `badge badge-secondary`, `badge badge-accent` are currently quite prominent. To align with minimalism:
+- **Meta Info Badges:** The `badge badge-primary`, `badge badge-secondary`, `badge badge-accent` are currently quite prominent. To align with minimalism and the light background:
   - Consider changing `badge` to a `chip` style with a thin border and transparent background, or just use regular text with subtle color distinctions.
-  - For example: `px-3 py-1 rounded-full border border-gray-500 text-gray-400 text-sm`.
-- **Question (`max-w-2xl mx-auto mb-8`):** The `italic border-l-4 border-primary/30 pl-4` is already good and aligns with the subtle border approach. Keep this.
+  - For example: `px-3 py-1 rounded-full border border-neutral-focus text-neutral-content text-sm`.
+- **Question (`max-w-2xl mx-auto mb-8`):** The `italic border-l-4 border-primary/30 pl-4` is still good and aligns with the subtle border approach. Keep this.
 
 ### 7. Action Buttons (Sticky Footer)
 
 - **Desktop Action Buttons:**
-  - The `card card-mystical p-6 shadow-xl bg-base-100/95 backdrop-blur-sm` for the sticky footer can remain as it creates a distinct, elegant floating effect with Glassmorphism.
+  - The `card card-mystical p-6 shadow-xl bg-base-100/95 backdrop-blur-sm` for the sticky footer can remain as it creates a distinct, elegant floating effect with Glassmorphism, which works well on a light background.
   - **Button Styles:**
     - `btn-success` (บันทึกแล้ว): Change to `btn btn-ghost text-success` or `btn btn-outline text-success` for a less solid look.
     - `btn-primary` (บันทึกการทำนาย): Change to `btn btn-ghost text-primary` or `btn btn-outline text-primary`.
     - `btn-outline btn-error` (ลบการทำนาย): Change to `btn btn-ghost text-error` or retain `btn-outline text-error` if a clear visual "danger" is needed.
-    - `btn-accent` (ถามใหม่): Can remain `btn-accent` as it's the primary action, but ensure its color (`#de5b25`) is visually appealing against the dark background.
+    - `btn-accent` (ถามใหม่): Can remain `btn-accent` as it's the primary action, its golden orange color (`#FE9F60`) should pop beautifully on the light base.
   - Consider adding subtle `hover` animations using Framer Motion for all buttons.
 - **Mobile Action Buttons:**
   - **Primary Action (ถามใหม่):** `btn btn-accent w-full btn-lg shadow-lg` is fine for primary action, but reduce `shadow-lg` to `shadow-md` or `shadow-sm`.
@@ -122,4 +120,4 @@ Refer to `tailwind.config.js` for the exact color values and `STYLE-GUIDE.md` fo
   - Subtle hover effects on buttons and interactive elements.
   - Smooth transitions for `isSaved` state changes.
 
-This detailed style guide should provide sufficient instructions for a coding agent to refactor the `ArticleDisplay` page to meet your desired elegant, minimal, and comfortable reading experience.
+This updated style guide now incorporates the new light color palette from your `tailwind.config.js` while maintaining the core principles of a minimalist, elegant, and readable article display page.
