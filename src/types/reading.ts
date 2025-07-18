@@ -39,7 +39,13 @@ export interface ReadingResponse {
       exp: number;
       coins: number;
     };
+    transactionId: string; // For saving the reading later
+    selectedCards: Array<{
+      id: number;
+      position: number;
+    }>; // For saving the reading later
     createdAt: string;
+    isSaved: boolean; // Track if reading is saved to database
   };
 }
 

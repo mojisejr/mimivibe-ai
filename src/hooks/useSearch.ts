@@ -57,33 +57,6 @@ interface UseSearchReturn {
 
 const ITEMS_PER_PAGE = 12;
 
-// Topic classification keywords
-const TOPIC_KEYWORDS = {
-  love: ['love', 'relationship', 'romance', 'partner', 'heart', 'dating', 'marriage', 'soulmate', 'ความรัก', 'คู่รัก', 'แฟน', 'สามี', 'ภรรยา'],
-  career: ['career', 'job', 'work', 'business', 'profession', 'promotion', 'interview', 'งาน', 'อาชีพ', 'ธุรกิจ', 'หางาน', 'เลื่อนตำแหน่ง'],
-  finance: ['money', 'financial', 'wealth', 'investment', 'income', 'debt', 'budget', 'เงิน', 'การเงิน', 'ลงทุน', 'รายได้', 'หนี้สิน'],
-  health: ['health', 'wellness', 'medical', 'healing', 'fitness', 'mental', 'สุขภาพ', 'การรักษา', 'ออกกำลังกาย', 'จิตใจ'],
-  spiritual: ['spiritual', 'meditation', 'enlightenment', 'soul', 'chakra', 'energy', 'จิตวิญญาณ', 'ทำสมาธิ', 'พลังงาน', 'จักระ'],
-  family: ['family', 'parent', 'child', 'sibling', 'relative', 'home', 'ครอบครัว', 'พ่อแม่', 'ลูก', 'พี่น้อง', 'ญาติ', 'บ้าน'],
-  personal: ['personal', 'growth', 'development', 'confidence', 'self', 'personality', 'พัฒนาตนเอง', 'ความมั่นใจ', 'บุคลิกภาพ', 'การเจริญเติบโต']
-};
-
-function classifyTopic(question: string, analysis?: { topic?: string }): string {
-  // First check if analysis already has topic classification
-  if (analysis?.topic && analysis.topic !== 'general') {
-    return analysis.topic;
-  }
-
-  const lowerQuestion = question.toLowerCase();
-  
-  for (const [topic, keywords] of Object.entries(TOPIC_KEYWORDS)) {
-    if (keywords.some(keyword => lowerQuestion.includes(keyword))) {
-      return topic;
-    }
-  }
-  
-  return 'other';
-}
 
 function filterByDateRange(createdAt: string, dateRange: FilterOptions['dateRange'], customStart?: string, customEnd?: string): boolean {
   const date = new Date(createdAt);
@@ -150,13 +123,6 @@ function applyFilters(results: SearchResult[], filters: FilterOptions): SearchRe
     filtered = filtered.filter(reading => reading.cards?.length === count);
   }
 
-  // Topic filter
-  if (filters.topic !== 'all') {
-    filtered = filtered.filter(reading => {
-      const detectedTopic = classifyTopic(reading.question, reading.analysis);
-      return detectedTopic === filters.topic;
-    });
-  }
 
   // Sort results
   filtered.sort((a, b) => {
@@ -200,19 +166,16 @@ export function useSearch(initialData: SearchResult[] = []): UseSearchReturn {
       sortBy: "newest",
       hasReview: "all",
       cardCount: "all",
-      topic: "all",
     }
   });
 
-  // Update results when initialData changes
+  // Update results when initialData changes (including when items are deleted)
   useEffect(() => {
-    if (initialData && initialData.length > 0) {
-      setState(prev => ({
-        ...prev,
-        results: initialData,
-        page: 1 // Reset pagination when new data comes in
-      }));
-    }
+    setState(prev => ({
+      ...prev,
+      results: initialData || [],
+      page: 1 // Reset pagination when new data comes in
+    }));
   }, [initialData]);
 
   // Apply filters when filters change or data changes
@@ -278,7 +241,6 @@ export function useSearch(initialData: SearchResult[] = []): UseSearchReturn {
         sortBy: "newest",
         hasReview: "all",
         cardCount: "all",
-        topic: "all",
       },
       page: 1
     }));

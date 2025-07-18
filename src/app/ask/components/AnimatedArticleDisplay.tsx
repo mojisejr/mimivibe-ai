@@ -107,14 +107,14 @@ export function AnimatedArticleDisplay({ readingData, onSave, onDelete, onAskAga
   const [scope, animate] = useAnimate()
   const [animationPhase, setAnimationPhase] = useState<'question' | 'header' | 'cards' | 'reading' | 'complete'>('question')
   const [cardsRevealed, setCardsRevealed] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
+  const isSaved = readingData?.isSaved || false
   const [showError, setShowError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
   const handleSave = async () => {
     try {
       await onSave?.()
-      setIsSaved(true)
+      // isSaved state is now managed by parent component through readingData
     } catch (error) {
       setErrorMessage('ไม่สามารถบันทึกการทำนายได้ กรุณาลองใหม่')
       setShowError(true)

@@ -1096,64 +1096,282 @@ NODE_ENV="production"
 
 #### Round 9.4: Vercel Build Fixes - Dynamic Exports Complete (COMPLETED ✅)
 
-#### Round 9.5: Multi-LLM Architecture Refactor (🚀 NEXT)
+#### Round 9.5: Multi-LLM Architecture Refactor (COMPLETED ✅)
 **Context Files**: `CLAUDE.md` + `AI-ARCHITECTURE.md`  
-**Estimated Duration**: 4-5 hours  
+**Actual Duration**: 6 hours (including JSON parsing bug fix)  
 **Priority**: High (AI Infrastructure Enhancement)
 
-**Planned Tasks**:
-- **Task A**: Implement provider abstraction layer with LLMProvider interface
-- **Task B**: Create OpenAI provider implementation alongside existing Gemini
-- **Task C**: Refactor LangGraph workflow to use provider abstraction
-- **Task D**: Add environment configuration for provider selection (OpenAI as default)
+**Completed Tasks**:
+- **Task A**: ✅ Implemented provider abstraction layer with LLMProvider interface
+- **Task B**: ✅ Created OpenAI provider implementation alongside existing Gemini
+- **Task C**: ✅ Refactored LangGraph workflow to use provider abstraction
+- **Task D**: ✅ Added environment configuration for provider selection (OpenAI as default)
+- **Bonus**: ✅ Fixed critical JSON parsing error with token limit increases and robustness improvements
 
-**Success Criteria**:
-- [ ] LLMProvider interface with consistent API across providers
-- [ ] OpenAI GPT-4-turbo provider implementation
-- [ ] Gemini provider refactored to use abstraction
-- [ ] LangGraph workflow provider-agnostic
-- [ ] Environment-based provider selection (OPENAI_API_KEY already configured)
-- [ ] OpenAI set as default provider
-- [ ] Maintain existing workflow structure and functionality
+**Success Criteria (ALL MET)**:
+- [x] LLMProvider interface with consistent API across providers
+- [x] OpenAI GPT-4-turbo provider implementation
+- [x] Gemini provider refactored to use abstraction
+- [x] LangGraph workflow provider-agnostic
+- [x] Environment-based provider selection (OPENAI_API_KEY already configured)
+- [x] OpenAI set as default provider
+- [x] Maintain existing workflow structure and functionality
+- [x] JSON parsing error resolved with enhanced error handling
 
-**Multi-LLM Architecture Specifications**:
-- Provider abstraction with unified interface for all AI operations
-- OpenAI GPT-4-turbo as default provider with existing Gemini as fallback
-- Environment variable configuration for easy provider switching
-- Maintain existing LangGraph 4-node workflow (questionFilter → cardPicker → questionAnalyzer → readingAgent)
-- Cost optimization potential with provider-based routing
-- Future-ready architecture for additional AI providers
+**Implementation Results**:
+- ✅ Multi-provider architecture with LLMProvider interface implemented
+- ✅ OpenAI GPT-4-turbo provider as default with Gemini fallback
+- ✅ LangGraph workflow updated to use provider abstraction
+- ✅ Environment-based configuration with fallback strategies
+- ✅ Token limits increased from 2048 to 4096 for complex tarot readings
+- ✅ Enhanced JSON parsing with truncation recovery mechanisms
+- ✅ LLM Manager with factory pattern and provider switching
+- ✅ TypeScript strict compliance and successful build
 
-**Technical Implementation Plan**:
+**Technical Architecture Implemented**:
 ```typescript
-// Provider Architecture Structure
+// Provider Architecture Structure - COMPLETED
 /src/lib/ai/
 ├── providers/
-│   ├── base.ts          // LLMProvider interface
-│   ├── gemini.ts        // Gemini implementation  
-│   ├── openai.ts        // OpenAI implementation
-│   └── factory.ts       // Provider factory
-├── manager.ts           // Multi-provider manager
-├── config.ts            // Provider configurations
-└── index.ts             // Public API
+│   ├── base.ts          // ✅ LLMProvider interface
+│   ├── gemini.ts        // ✅ Gemini implementation  
+│   ├── openai.ts        // ✅ OpenAI implementation
+│   └── factory.ts       // ✅ Provider factory
+├── manager.ts           // ✅ Multi-provider manager
+├── config.ts            // ✅ Provider configurations
+└── index.ts             // ✅ Public API
+
+// Additional Bug Fixes
+/src/lib/utils/json-parser.ts  // ✅ Enhanced JSON parsing
+/src/lib/langgraph/workflow.ts // ✅ Updated to use providers
 ```
 
 **Environment Configuration**:
-- `DEFAULT_AI_PROVIDER=openai` (OpenAI as default)
-- `OPENAI_API_KEY=...` (already configured)
-- `GOOGLE_AI_API_KEY=...` (existing fallback)
-- `AI_PROVIDER_FALLBACK=gemini` (fallback strategy)
+- `DEFAULT_AI_PROVIDER=openai` (OpenAI as default) ✅
+- `OPENAI_API_KEY=...` (already configured) ✅
+- `GOOGLE_AI_API_KEY=...` (existing fallback) ✅
+- `AI_PROVIDER_FALLBACK=gemini` (fallback strategy) ✅
+
+**Critical Bug Fix**:
+- **JSON Parsing Error**: Fixed truncated AI responses at position 2355
+- **Root Cause**: Token limit too low (2048) for complex Thai tarot readings
+- **Solution**: Increased maxTokens to 4096 for both providers + enhanced JSON recovery
+- **Enhanced Error Handling**: Added `tryFixTruncatedJson()` for incomplete responses
 
 **LangGraph Integration**:
-- Replace `createGeminiWithPrompt()` with `createProviderWithPrompt()`
-- Maintain existing 4-node workflow structure
-- Provider-agnostic prompt system
-- Seamless fallback mechanisms
+- ✅ Replaced `createGeminiWithPrompt()` with `createProviderWithPrompt()`
+- ✅ Maintained existing 4-node workflow structure
+- ✅ Provider-agnostic prompt system implemented
+- ✅ Seamless fallback mechanisms operational
 
-**Dependencies**: ✅ Round 9.4 complete
-**Context Files**: `CLAUDE.md` + Documentation Update + Codebase Analysis  
-**Actual Duration**: 1 hour  
-**Priority**: Critical (Final production deployment preparation)
+**Dependencies**: ✅ Round 9.4 complete  
+**Breaking Changes**: None - backward compatible with existing workflow
+
+---
+
+#### Round 9.6A: Critical Data & State Issues (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + Round 9.6A Critical Data & State Issues prompt  
+**Actual Duration**: 3 hours  
+**Priority**: Critical (Production Quality Issues)
+
+**Completed Tasks**:
+- **Task A**: ✅ Fixed auto-save bug in `/api/readings/ask` route (Issue #2)
+- **Task B**: ✅ Fixed delete sync between useHistory and useSearch hooks (Issue #1)
+- **Task C**: ✅ Added 59s timeout handling in LangGraph workflow (Issue #3)
+- **Task D**: ✅ Fixed error recovery workflow restart (Issue #7)
+
+**Success Criteria (ALL MET)**:
+- [x] Real-time delete sync in history page - readings disappear immediately
+- [x] Prevent auto-save without user intent - readings only save when user clicks "บันทึก"
+- [x] 59s timeout graceful error handling - no credit loss on timeout
+- [x] Error recovery restarts full workflow - proper state reset on retry
+
+**Implementation Results**:
+- ✅ **Auto-save Fix**: Modified `/api/readings/ask` to separate reading generation from saving
+- ✅ **Credit Protection**: Credits deducted only after successful reading generation, not on timeout
+- ✅ **Save Flow**: Created new `/api/readings/save` endpoint for explicit saving
+- ✅ **Delete Sync**: Fixed `useSearch` hook to properly sync when `historyData` changes
+- ✅ **Timeout Handling**: Added 55-second timeout with Promise.race pattern in LangGraph workflow
+- ✅ **Error Recovery**: Enhanced `handleRetry` function to reset all workflow state
+- ✅ **TypeScript Updates**: Updated ReadingResponse interface with new fields
+- ✅ **Build Success**: All changes compile without errors
+
+**Key Files Modified**:
+- `/src/app/api/readings/ask/route.ts` - Removed auto-save, added timeout error handling
+- `/src/app/api/readings/save/route.ts` - New endpoint for explicit saving
+- `/src/lib/langgraph/workflow.ts` - Added 55s timeout with graceful error handling
+- `/src/app/ask/components/AskPage.tsx` - Updated save handler and retry logic
+- `/src/hooks/useSearch.ts` - Fixed data synchronization logic
+- `/src/types/reading.ts` - Added selectedCards, transactionId, isSaved fields
+
+**Technical Implementation**:
+```typescript
+// Timeout handling in LangGraph workflow
+const timeoutPromise = new Promise((_, reject) => {
+  setTimeout(() => reject(new Error('TIMEOUT')), 55000);
+});
+const result = await Promise.race([workflowPromise, timeoutPromise]);
+
+// Credit protection in API route
+try {
+  workflowResult = await generateTarotReading(question)
+} catch (error) {
+  if (error.message.includes('Reading timeout')) {
+    return NextResponse.json({ /* timeout error, no credit deduction */ }, { status: 408 })
+  }
+}
+```
+
+**Critical Issues Resolved**:
+- ✅ Auto-save prevented: Readings generated but not saved until user clicks "บันทึก"
+- ✅ Credit preservation: No credits lost on timeout or errors
+- ✅ Real-time sync: Deleted readings disappear immediately from history
+- ✅ Clean retry: Error recovery properly resets all state before restart
+- ✅ Timeout handling: 55s timeout prevents Vercel 60s limit issues
+
+**Dependencies**: ✅ Round 9.5 complete  
+**Breaking Changes**: None - backward compatible enhancements
+
+---
+
+#### Round 9.6B: Loading States & UX Polish (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + Round 9.6B Loading States & UX Polish prompt  
+**Actual Duration**: 2-3 hours  
+**Priority**: High (UX Polish & User Interaction)
+
+**Completed Tasks**:
+- **Task A**: ✅ Fixed loading state UI jumping in navbar and credits display (Issue #4,#5)
+- **Task B**: ✅ Added Enter key support in textarea for question submission (Issue #6)
+- **Task C**: ✅ Enhanced loading states with proper skeleton components
+- **Task D**: ✅ Created reusable CreditsWidget component for consistency
+
+**Success Criteria (ALL MET)**:
+- [x] Loading states prevent UI jumping in navbar and credits display
+- [x] Enter key support in textarea for question submission
+- [x] Enhanced loading animations and skeleton components
+- [x] Improved mobile touch interactions and accessibility
+
+**Implementation Results**:
+- ✅ **Navbar Loading Fix**: Added skeleton loading states to `UnifiedNavbar.tsx` with `skeleton h-6 w-16 rounded-full` placeholders
+- ✅ **Credits Display Fix**: Enhanced `HeroSection.tsx` with skeleton loading states using `skeleton h-12 w-20 rounded-full` placeholders
+- ✅ **Enter Key Support**: Added `onKeyDown` handler for Enter submission, Shift+Enter for new line, with 10-character minimum validation
+- ✅ **User Feedback**: Updated placeholder text, character counter with visual warning, and button validation states
+- ✅ **Reusable Component**: Created `CreditsWidget.tsx` supporting both navbar and hero variants with consistent loading patterns
+- ✅ **Build Success**: All TypeScript compilation successful with no breaking changes
+
+**Key Files Modified**:
+- `/src/components/layout/UnifiedNavbar.tsx` - Added loading state from useProfile hook with skeleton placeholders
+- `/src/app/ask/components/HeroSection.tsx` - Enhanced with loading states, Enter key support, and character validation
+- `/src/components/ui/CreditsWidget.tsx` - New reusable component with consistent loading patterns
+- All changes follow DaisyUI skeleton classes and project conventions
+
+**Technical Implementation**:
+```typescript
+// Loading skeleton pattern
+const { data: profileData, loading } = useProfile();
+
+if (loading) {
+  return (
+    <div className="flex items-center space-x-3">
+      <div className="skeleton h-6 w-16 rounded-full"></div>
+      <div className="skeleton h-6 w-16 rounded-full"></div>
+    </div>
+  );
+}
+
+// Enter key handler
+const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (question.trim() && !isLoading && question.length >= 10) {
+      onSubmit(question.trim());
+    }
+  }
+};
+```
+
+**UX Improvements Delivered**:
+- No more UI jumping during navbar and credits loading
+- Consistent skeleton loading states across components
+- Enhanced keyboard accessibility with Enter key submission
+- Visual feedback for minimum character requirements
+- Better user experience with loading delay prevention
+
+**Dependencies**: ✅ Round 9.6A complete  
+**Breaking Changes**: None - backward compatible enhancements
+
+---
+
+#### PricingCards Animation Bug Fix (COMPLETED ✅)
+**Context Files**: `CLAUDE.md` + Manual Testing Feedback  
+**Actual Duration**: 30 minutes  
+**Priority**: Medium (Landing page UX improvement)
+
+**Completed Tasks**:
+- **Task A**: ✅ Fixed PricingCards animation variants to properly display all pricing cards
+- **Task B**: ✅ Combined fadeInUp and cardHover variants for complete animation experience
+- **Task C**: ✅ Maintained staggered animation timing and hover effects
+
+**Success Criteria (ALL MET)**:
+- [x] All 3 pricing cards display with proper fade-in animation
+- [x] Staggered animation timing preserved (0.2s between cards)
+- [x] Hover effects maintained for interactive experience
+- [x] Animation follows project conventions with Framer Motion
+
+**Implementation Results**:
+- ✅ Fixed motion.div variants in PricingCards component to include both fadeInUp and cardHover
+- ✅ Resolved issue where only last card was visible due to missing initial/animate variants
+- ✅ Maintained backward compatibility with existing animation system
+- ✅ Enhanced user experience on landing page with proper pricing card animations
+
+**Technical Implementation**:
+```typescript
+// Before: Only cardHover variants (missing fadeInUp)
+<motion.div
+  key={pkg.id}
+  variants={cardHover}
+  className="group relative"
+  whileHover="hover"
+>
+
+// After: Combined variants for complete animation
+<motion.div
+  key={pkg.id}
+  variants={{
+    ...fadeInUp,
+    ...cardHover,
+  }}
+  className="group relative"
+  whileHover="hover"
+>
+```
+
+**Key Files Modified**:
+- `/src/components/landing/PricingCards.tsx` - Fixed animation variants combination
+
+**Dependencies**: ✅ Round 9.6B complete  
+**Breaking Changes**: None - animation enhancement only
+
+---
+
+#### Round 9.6C: Feature Improvements (🚀 NEXT)
+**Context Files**: `CLAUDE.md` + Round 9.6C Feature Improvements prompt  
+**Estimated Duration**: 2 hours  
+**Priority**: Medium (Feature Accuracy & Data Sources)
+
+**Planned Tasks**:
+- **Task A**: Remove topic filter, fix card count filter (3,5 only) (Issue #8)
+- **Task B**: Connect real API data to landing page pricing cards (Issue #9)
+- **Task C**: Enhance search and filter functionality accuracy
+- **Task D**: Improve data consistency across landing and internal pages
+
+**Success Criteria**:
+- [ ] Remove topic filter, fix card count filter (3,5 only)
+- [ ] Connect real API data to landing page pricing cards
+- [ ] Enhanced search accuracy and filter reliability
+- [ ] Consistent data sources across all pages
+
+**Dependencies**: ✅ Round 9.6B complete
 
 **Completed Tasks**:
 - **Task A**: ✅ Added dynamic exports to 5 remaining API routes for 100% Vercel compatibility
@@ -1341,9 +1559,9 @@ claude → [CLAUDE.md + UI-COMPONENTS.md] → Round 7C → test → commit
 
 ---
 
-**Updated**: January 2025 - Phase 1.5 Extended + Phase 2 Round 9.4 Vercel Build Fixes Complete  
-**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅ | Round 7C.3 ✅ | Round 7D ✅ | Round 7D.1 ✅ | Round 7D.2 ✅ | Round 7D.3 ✅ | Round 7E ✅ | Review Display ✅ | Position Refinement ✅ | Review Logic Fix ✅ | Round 7F ✅ | Round 7G ✅ | Round 7G.1 ✅ | Round 7H ✅ | Round 8 ✅ | Round 9 ✅ | Round 9.1 ✅ | Round 9.2 ✅ | Round 9.3 ✅ | Round 9.4 ✅ | Round 9.5 🚀  
+**Updated**: January 2025 - Phase 1.5 Extended + Phase 2 Round 9.6B Loading States & UX Polish Complete  
+**Current Status**: Round 7A ✅ | Round 7B ✅ | Round 7C ✅ | Round 7C.1 ✅ | Round 7C.2 ✅ | Round 7C.3 ✅ | Round 7D ✅ | Round 7D.1 ✅ | Round 7D.2 ✅ | Round 7D.3 ✅ | Round 7E ✅ | Review Display ✅ | Position Refinement ✅ | Review Logic Fix ✅ | Round 7F ✅ | Round 7G ✅ | Round 7G.1 ✅ | Round 7H ✅ | Round 8 ✅ | Round 9 ✅ | Round 9.1 ✅ | Round 9.2 ✅ | Round 9.3 ✅ | Round 9.4 ✅ | Round 9.5 ✅ | Round 9.6A ✅ | Round 9.6B ✅  
 **Production Status**: 100% Ready for Vercel Deployment 🚀  
-**Next Action**: Execute Round 9.5 (Multi-LLM Architecture Refactor) → Round 10 (Gamification UI Components) or Deploy to Vercel  
+**Next Action**: Round 9.6C (Feature Improvements) → Round 10 (Gamification UI Components) or Deploy to Vercel  
 **Phase 1.5 Extended Duration**: 30-35 hours actual  
-**Phase 2 Progress**: Round 8 ✅ (Frontend API Integration) + Round 9 ✅ (Stripe Payment UI Integration) + Round 9.1 ✅ (clientSecret Timing Fix) + Round 9.2 ✅ (Pricing Display Correction) + Round 9.3 ✅ (Vercel Deployment Analysis) + Round 9.4 ✅ (Dynamic Exports Complete) + Round 9.5 🚀 (Multi-LLM Architecture Refactor)
+**Phase 2 Progress**: Round 8 ✅ (Frontend API Integration) + Round 9 ✅ (Stripe Payment UI Integration) + Round 9.1 ✅ (clientSecret Timing Fix) + Round 9.2 ✅ (Pricing Display Correction) + Round 9.3 ✅ (Vercel Deployment Analysis) + Round 9.4 ✅ (Dynamic Exports Complete) + Round 9.5 ✅ (Multi-LLM Architecture Refactor) + Round 9.6A ✅ (Critical Data & State Issues) + Round 9.6B ✅ (Loading States & UX Polish)
