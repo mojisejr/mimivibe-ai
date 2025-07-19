@@ -35,6 +35,21 @@ model CoinExchange {
   User           User     @relation(fields: [userId], references: [id])
 }
 
+model CampaignTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // "DAILY_LOGIN", "SPECIAL_EVENT"
+  isActive    Boolean  @default(true)
+  rewards     Json     // Array of day rewards configuration
+  metadata    Json?    // Additional campaign config
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("campaign_templates")
+}
+
 model DailyLoginCampaign {
   id          String   @id @default(cuid())
   userId      String
@@ -104,6 +119,36 @@ model PointTransaction {
   metadata   Json?
   createdAt  DateTime @default(now())
   User       User     @relation(fields: [userId], references: [id])
+}
+
+model PrestigeReward {
+  id           String   @id @default(cuid())
+  prestigeLevel Int     @unique
+  rewardType   String   // "COINS_BONUS", "EXP_MULTIPLIER", "SPECIAL_BADGE"
+  value        Float    // Bonus percentage or amount
+  description  String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@map("prestige_rewards")
+}
+
+model RewardConfiguration {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  type         String   // "ACHIEVEMENT", "DAILY_LOGIN", "PRESTIGE"
+  icon         String   // Emoji or icon identifier
+  title        String
+  description  String
+  criteria     Json     // Achievement criteria configuration
+  rewards      Json     // Reward values (exp, coins, etc.)
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@map("reward_configurations")
 }
 
 model Reading {

@@ -10,6 +10,7 @@ import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 import { ReferralSection } from "@/components/referral/ReferralSection";
 import { UserStats } from "@/components/profile/UserStats";
+import { PrestigeSystem } from "@/components/profile/PrestigeSystem";
 import { SkeletonProfile } from "@/components/common/SkeletonLoader";
 
 export default function ProfilePage() {
@@ -156,6 +157,9 @@ export default function ProfilePage() {
 
             {/* Enhanced Stats Dashboard */}
             <UserStats stats={data.stats} />
+
+            {/* Prestige System */}
+            <PrestigeSystem />
 
             {/* Referral Section */}
             <ReferralSection />

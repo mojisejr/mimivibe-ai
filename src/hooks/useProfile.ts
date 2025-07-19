@@ -50,6 +50,34 @@ interface ProfileState {
   error: string | null;
 }
 
+function calculateLevelProgression(currentExp: number, currentLevel: number, prestigeLevel: number = 0) {
+  // Base EXP formula: level^2 * 100 
+  // With prestige: base formula * (1 + prestigeLevel * 0.2) for scaling
+  const prestigeMultiplier = 1 + (prestigeLevel * 0.2)
+  
+  // Calculate EXP requirement for next level
+  const expForNextLevel = currentLevel < 100 
+    ? Math.floor((currentLevel * currentLevel * 100) * prestigeMultiplier)
+    : Math.floor((99 * 99 * 100) * prestigeMultiplier) // Cap at level 99 requirements
+    
+  // Calculate EXP accumulated for current level
+  let expUsedForPreviousLevels = 0
+  for (let level = 1; level < currentLevel; level++) {
+    expUsedForPreviousLevels += Math.floor((level * level * 100) * prestigeMultiplier)
+  }
+  
+  const expInCurrentLevel = currentExp - expUsedForPreviousLevels
+  const expToNextLevel = Math.max(0, expForNextLevel - expInCurrentLevel)
+  
+  return {
+    expForNextLevel,
+    expToNextLevel,
+    expInCurrentLevel,
+    totalExpUsed: expUsedForPreviousLevels,
+    prestigeMultiplier
+  }
+}
+
 export const useProfile = () => {
   const { user, isLoaded } = useUser();
   const [state, setState] = useState<ProfileState>({
@@ -68,6 +96,14 @@ export const useProfile = () => {
         fetch("/api/user/stats"),
         fetch("/api/user/credits"),
       ]);
+
+      // Check for level progression after fetching stats
+      try {
+        await fetch("/api/user/level-check", { method: "POST" });
+      } catch (levelCheckError) {
+        console.warn('Level check failed:', levelCheckError);
+        // Continue with normal flow even if level check fails
+      }
 
       console.log('📊 API Response status:', {
         profile: profileRes.status,
@@ -120,18 +156,27 @@ export const useProfile = () => {
         updatedAt: profile?.updatedAt || new Date().toISOString(),
       };
 
-      // Validate stats data with correct API field mapping
+      // Calculate level progression with current EXP
+      const currentLevel = typeof stats?.level === 'number' ? stats.level : 1;
+      const currentExp = typeof stats?.exp === 'number' ? stats.exp : 0;
+      const prestigeLevel = typeof stats?.prestigeLevel === 'number' ? stats.prestigeLevel : 0;
+      
+      // Calculate proper level progression
+      const levelProgression = calculateLevelProgression(currentExp, currentLevel, prestigeLevel);
+
+      // Validate stats data with correct level progression calculation
       const validatedStats = {
-        level: typeof stats?.level === 'number' ? stats.level : 1,
-        currentExp: typeof stats?.exp === 'number' ? stats.exp : 0, // API uses 'exp'
-        nextLevelExp: typeof stats?.expRequired === 'number' ? stats.expRequired : 100, // API uses 'expRequired'
-        expToNextLevel: typeof stats?.expToNext === 'number' ? stats.expToNext : 100, // API uses 'expToNext'
+        level: currentLevel,
+        currentExp: currentExp,
+        nextLevelExp: levelProgression.expForNextLevel,
+        expToNextLevel: levelProgression.expToNextLevel,
         totalReadings: typeof stats?.totalReadings === 'number' ? stats.totalReadings : 0,
-        totalExp: typeof stats?.exp === 'number' ? stats.exp : 0, // Use exp as totalExp
+        totalExp: currentExp, // Use exp as totalExp
         totalCoins: typeof stats?.coins === 'number' ? stats.coins : 0, // API uses 'coins'
         currentStreak: typeof stats?.loginStreak === 'number' ? stats.loginStreak : 0, // API uses 'loginStreak'
         longestStreak: typeof stats?.loginStreak === 'number' ? stats.loginStreak : 0, // Use same for now
         daysActive: typeof stats?.totalReadings === 'number' ? stats.totalReadings : 0, // Approximate
+        prestigeLevel: prestigeLevel
       };
 
       // Validate credits data (API has different structure)
