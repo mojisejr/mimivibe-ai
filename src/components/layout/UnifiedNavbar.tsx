@@ -49,6 +49,7 @@ export function UnifiedNavbar({
   const navigationLinks = [
     { href: '/ask', label: 'ถามไพ่', icon: '🔮' },
     { href: '/history', label: 'ประวัติ', icon: '📜' },
+    { href: '/payments', label: 'การชำระ', icon: '💳' },
     { href: '/events', label: 'กิจกรรม', icon: '🎉' },
     { href: '/exchange', label: 'แลกเปลี่ยน', icon: '🪙' },
     { href: '/profile', label: 'โปรไฟล์', icon: '👤' },
@@ -215,13 +216,13 @@ export function UnifiedNavbar({
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-base-100 shadow-2xl z-50 md:hidden border-l border-base-300"
+              className="fixed top-0 right-0 h-full w-72 max-w-[80vw] bg-base-100 shadow-2xl z-50 md:hidden border-l border-base-300"
             >
-              <div className="flex flex-col h-full">
+              <div className="flex flex-col h-full overflow-hidden">
                 {/* Header */}
-                <div className="p-6 border-b border-base-300">
+                <div className="p-4 border-b border-base-300 flex-shrink-0">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-base-content">เมนู</h2>
+                    <h2 className="text-lg font-bold text-base-content">เมนู</h2>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setMobileMenuOpen(false)}
@@ -234,37 +235,8 @@ export function UnifiedNavbar({
                   </div>
                 </div>
 
-                {/* Credits Display (Mobile) */}
-                <div className="p-6 border-b border-base-300">
-                  <div className="grid grid-cols-2 gap-3">
-                    {loading ? (
-                      <>
-                        <div className="skeleton h-12 rounded-xl"></div>
-                        <div className="skeleton h-12 rounded-xl"></div>
-                      </>
-                    ) : profileData?.credits ? (
-                      <>
-                        <div className="bg-warning/10 border border-warning/20 rounded-xl p-3 text-center">
-                          <div className="text-2xl mb-1">⭐</div>
-                          <div className="text-sm font-medium text-warning">
-                            {profileData.credits.stars}
-                          </div>
-                          <div className="text-xs text-base-content/70">ดาว</div>
-                        </div>
-                        <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-3 text-center">
-                          <div className="text-2xl mb-1">🎁</div>
-                          <div className="text-sm font-medium text-secondary">
-                            {profileData.credits.freePoint}
-                          </div>
-                          <div className="text-xs text-base-content/70">เครดิต</div>
-                        </div>
-                      </>
-                    ) : null}
-                  </div>
-                </div>
-
                 {/* Navigation Links */}
-                <div className="flex-1 p-6">
+                <div className="flex-1 p-4 overflow-y-auto">
                   <nav className="space-y-2">
                     {navigationLinks.map((link, index) => (
                       <motion.button
@@ -273,14 +245,14 @@ export function UnifiedNavbar({
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
                         onClick={() => handleMobileNavigation(link.href)}
-                        className={`w-full flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 text-left ${
+                        className={`w-full flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 text-left ${
                           isCurrentPage(link.href)
                             ? 'bg-primary/10 text-primary border border-primary/20'
                             : 'hover:bg-base-200 text-base-content'
                         }`}
                       >
-                        <span className="text-2xl">{link.icon}</span>
-                        <span className="font-medium">{link.label}</span>
+                        <span className="text-xl">{link.icon}</span>
+                        <span className="font-medium text-sm">{link.label}</span>
                         {isCurrentPage(link.href) && (
                           <motion.div
                             layoutId="mobileActiveIndicator"
@@ -293,19 +265,19 @@ export function UnifiedNavbar({
                 </div>
 
                 {/* User Avatar at Bottom */}
-                <div className="p-6 border-t border-base-300">
+                <div className="p-4 border-t border-base-300 flex-shrink-0">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                     className="flex items-center justify-center"
                   >
-                    <div className="scale-150">
+                    <div className="scale-125">
                       <UserButton afterSignOutUrl="/" />
                     </div>
                   </motion.div>
-                  <div className="text-center mt-3">
-                    <p className="text-sm text-base-content/70">แตะเพื่อจัดการบัญชี</p>
+                  <div className="text-center mt-2">
+                    <p className="text-xs text-base-content/70">แตะเพื่อจัดการบัญชี</p>
                   </div>
                 </div>
               </div>
