@@ -65,8 +65,7 @@ async function questionFilterNode(state: typeof ReadingState.State) {
       logParsingError(
         "QuestionFilter",
         response.content as string,
-        parsed.error,
-        state.question
+        parsed.error || "Unknown error"
       );
       
       return {
@@ -79,6 +78,13 @@ async function questionFilterNode(state: typeof ReadingState.State) {
     const result = parsed.data;
     console.log("✅ Question Filter Result:", result);
 
+    if (!result) {
+      return {
+        isValid: false,
+        validationReason: "No data returned from parsing",
+      };
+    }
+
     return {
       isValid: result.isValid,
       validationReason: result.reason || "",
@@ -88,7 +94,7 @@ async function questionFilterNode(state: typeof ReadingState.State) {
     return {
       isValid: false,
       validationReason: "System error during validation",
-      error: `Question filter failed: ${error.message}`,
+      error: `Question filter failed: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }
@@ -103,18 +109,20 @@ async function cardPickerNode(state: typeof ReadingState.State) {
       return { selectedCards: [] };
     }
 
-    const cardCount = state.cardCount || 3;
-    const selectedCards = await pickRandomCards(cardCount);
+    const cardResult = await pickRandomCards();
 
-    console.log(`✅ Selected ${selectedCards.length} cards:`, 
-      selectedCards.map(c => c.displayName));
+    console.log(`✅ Selected ${cardResult.selectedCards.length} cards:`, 
+      cardResult.selectedCards.map(c => c.displayName));
 
-    return { selectedCards };
+    return { 
+      selectedCards: cardResult.selectedCards,
+      cardCount: cardResult.cardCount
+    };
   } catch (error) {
     console.error("❌ Card Picker Node Error:", error);
     return {
       selectedCards: [],
-      error: `Card picker failed: ${error.message}`,
+      error: `Card picker failed: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }
@@ -152,8 +160,7 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
       logParsingError(
         "QuestionAnalyzer",
         response.content as string,
-        parsed.error,
-        state.question
+        parsed.error || "Unknown error"
       );
 
       // Provide default analysis to continue workflow
@@ -178,7 +185,7 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
         topic: "ทั่วไป", 
         period: "ปัจจุบัน",
       },
-      error: `Question analyzer failed: ${error.message}`,
+      error: `Question analyzer failed: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }
@@ -237,8 +244,7 @@ Question Analysis:
       logParsingError(
         "ReadingAgent", 
         response.content as string,
-        parsed.error,
-        state.question
+        parsed.error || "Unknown error"
       );
 
       return {
@@ -255,7 +261,7 @@ Question Analysis:
     console.error("❌ Reading Agent Node Error:", error);
     return {
       reading: null,
-      error: `Reading agent failed: ${error.message}`,
+      error: `Reading agent failed: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }
@@ -346,9 +352,10 @@ export async function executeWorkflowWithDB(
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
     
-    console.error(`❌ Workflow failed after ${duration.toFixed(2)} seconds:`, error.message);
+    console.error(`❌ Workflow failed after ${duration.toFixed(2)} seconds:`, error instanceof Error ? error.message : String(error));
     
-    if (error.message.includes('timeout')) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('timeout')) {
       throw new Error('คำขอใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
     }
     

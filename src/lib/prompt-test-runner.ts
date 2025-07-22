@@ -1,7 +1,6 @@
-import { executeWorkflow } from './langgraph/workflow';
-import { PromptManager } from './prompt-manager';
-import { LLMManager } from './ai/manager';
-import { PrismaClient } from '@prisma/client';
+import { PromptManager } from "./prompt-manager";
+import { LLMManager } from "./ai/manager";
+import { PrismaClient } from "@prisma/client";
 
 export interface TestStepResult {
   stepName: string;
@@ -41,7 +40,7 @@ export class PromptTestRunner {
    * Run full tarot reading test with step-by-step tracking
    */
   async runFullTest(
-    question: string, 
+    question: string,
     options: {
       versionOverrides?: Record<string, number>;
       saveResults?: boolean;
@@ -53,16 +52,16 @@ export class PromptTestRunner {
     let totalTokens = 0;
 
     try {
-      console.log('🔮 Starting Tarot Reading Test...');
+      console.log("🔮 Starting Tarot Reading Test...");
       if (options.debugMode) {
-        console.log('🔍 Debug Mode - Step by Step Analysis');
+        console.log("🔍 Debug Mode - Step by Step Analysis");
       }
       console.log();
 
       // Step 1: Question Filter
       const filterStep = await this.runStep(
-        'questionFilter',
-        'Question Filter',
+        "questionFilter",
+        "Question Filter",
         question,
         options.versionOverrides?.questionFilter,
         options.debugMode
@@ -74,28 +73,32 @@ export class PromptTestRunner {
         throw new Error(`Question filter failed: ${filterStep.error}`);
       }
 
-      const filterResult = typeof filterStep.output === 'string' 
-        ? JSON.parse(filterStep.output) 
-        : filterStep.output;
+      const filterResult =
+        typeof filterStep.output === "string"
+          ? JSON.parse(filterStep.output)
+          : filterStep.output;
 
       if (!filterResult.isValid) {
         throw new Error(`Question validation failed: ${filterResult.reason}`);
       }
 
-      console.log('✅ Filter Result:', JSON.stringify(filterResult, null, 2));
+      console.log("✅ Filter Result:", JSON.stringify(filterResult, null, 2));
 
       // Step 2: Card Selection (Database operation, no AI)
       const cardStep = await this.runCardSelection(options.debugMode);
       steps.push(cardStep);
 
-      console.log('🎯 Selected Cards:', cardStep.output.cardIds, 
-        `(${cardStep.output.cardNames.join(', ')})`);
+      console.log(
+        "🎯 Selected Cards:",
+        cardStep.output.cardIds,
+        `(${cardStep.output.cardNames.join(", ")})`
+      );
 
       // Step 3: Question Analysis
       const analysisStep = await this.runStep(
-        'questionAnalysis',
-        'Question Analysis',
-        { question, context: 'tarot_reading' },
+        "questionAnalysis",
+        "Question Analysis",
+        { question, context: "tarot_reading" },
         options.versionOverrides?.questionAnalysis,
         options.debugMode
       );
@@ -106,20 +109,21 @@ export class PromptTestRunner {
         throw new Error(`Question analysis failed: ${analysisStep.error}`);
       }
 
-      const analysisResult = typeof analysisStep.output === 'string'
-        ? JSON.parse(analysisStep.output)
-        : analysisStep.output;
+      const analysisResult =
+        typeof analysisStep.output === "string"
+          ? JSON.parse(analysisStep.output)
+          : analysisStep.output;
 
-      console.log('📊 Analysis:', JSON.stringify(analysisResult, null, 2));
+      console.log("📊 Analysis:", JSON.stringify(analysisResult, null, 2));
 
       // Step 4: Reading Generation
       const readingStep = await this.runStep(
-        'readingAgent',
-        'Reading Generation',
+        "readingAgent",
+        "Reading Generation",
         {
           question,
           selectedCards: cardStep.output.cards,
-          analysis: analysisResult
+          analysis: analysisResult,
         },
         options.versionOverrides?.readingAgent,
         options.debugMode
@@ -131,14 +135,15 @@ export class PromptTestRunner {
         throw new Error(`Reading generation failed: ${readingStep.error}`);
       }
 
-      const finalResult = typeof readingStep.output === 'string'
-        ? JSON.parse(readingStep.output)
-        : readingStep.output;
+      const finalResult =
+        typeof readingStep.output === "string"
+          ? JSON.parse(readingStep.output)
+          : readingStep.output;
 
       const totalTime = Date.now() - startTime;
 
       console.log();
-      console.log('🌟 Final Reading:');
+      console.log("🌟 Final Reading:");
       console.log(JSON.stringify(finalResult, null, 2));
       console.log();
       console.log(`⏱️  Total Time: ${this.formatDuration(totalTime)}`);
@@ -147,7 +152,7 @@ export class PromptTestRunner {
       // Save test results if requested
       if (options.saveResults) {
         await this.saveTestResults(question, steps, totalTime, totalTokens);
-        console.log('💾 Results saved to database for analysis');
+        console.log("💾 Results saved to database for analysis");
       }
 
       return {
@@ -156,13 +161,14 @@ export class PromptTestRunner {
         totalTokens,
         steps,
         finalResult,
-        success: true
+        success: true,
       };
-
     } catch (error) {
       const totalTime = Date.now() - startTime;
-      
-      console.error(`❌ Test failed: ${error.message}`);
+
+      console.error(`❌ Test failed: ${error instanceof Error ? error.message : String(error)}`);
+
+      console.log(error);
 
       return {
         question,
@@ -171,7 +177,7 @@ export class PromptTestRunner {
         steps,
         finalResult: null,
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -187,37 +193,52 @@ export class PromptTestRunner {
     debugMode = false
   ): Promise<TestStepResult> {
     const startTime = Date.now();
-    
+
     try {
       // Get prompt (specific version or active)
-      const prompt = versionOverride 
+      const prompt = versionOverride
         ? await this.manager.getPromptVersion(promptName, versionOverride)
         : await this.manager.getPrompt(promptName);
 
       // Get version info for tracking
       const templates = await this.manager.listPrompts(true);
-      const template = templates.find(t => t.name === promptName);
+      const template = templates.find((t) => t.name === promptName);
       const version = versionOverride || template?.version || 1;
 
       if (debugMode) {
-        const currentStepNumber = steps.length + 1;
-        console.log(`Step ${currentStepNumber}: ${stepName}`);
+        console.log(`Step: ${stepName}`);
         console.log(`📝 Prompt Used: [${promptName} v${version}]`);
-        console.log(`🤖 Provider: ${process.env.DEFAULT_AI_PROVIDER || 'unknown'}`);
-        console.log(`📤 Input:`, typeof input === 'string' ? input : JSON.stringify(input));
+        console.log(
+          `🤖 Provider: ${process.env.DEFAULT_AI_PROVIDER || "unknown"}`
+        );
+        console.log(
+          `📤 Input:`,
+          typeof input === "string" ? input : JSON.stringify(input)
+        );
       }
 
       // Execute LLM call
       const llmManager = new LLMManager();
       const llmInstance = llmManager.createWithPrompt(prompt);
-      
-      const inputText = typeof input === 'string' ? input : JSON.stringify(input);
+
+      const inputText =
+        typeof input === "string" ? input : JSON.stringify(input);
       const result = await llmInstance.invoke([
-        { role: "user", content: inputText }
+        { role: "user", content: inputText },
       ]);
       const executionTime = Date.now() - startTime;
 
       const outputContent = result.content || result;
+
+      let cleanedOutput = outputContent;
+      if (typeof outputContent === "string") {
+        // Remove markdown code block fences if present
+        cleanedOutput = outputContent
+          .replace(/^```json\s*/, "")
+          .replace(/\s*```$/, "");
+        // Attempt to remove any leading/trailing whitespace that might remain
+        cleanedOutput = cleanedOutput.trim();
+      }
 
       if (debugMode) {
         console.log(`⚡ Response Time: ${this.formatDuration(executionTime)}`);
@@ -229,18 +250,18 @@ export class PromptTestRunner {
         stepName,
         promptUsed: promptName,
         version,
-        provider: process.env.DEFAULT_AI_PROVIDER || 'unknown',
+        provider: process.env.DEFAULT_AI_PROVIDER || "unknown",
         executionTime,
         input,
-        output: outputContent,
-        success: true
+        // output: outputContent,
+        output: cleanedOutput,
+        success: true,
       };
-
     } catch (error) {
       const executionTime = Date.now() - startTime;
-      
+
       if (debugMode) {
-        console.error(`❌ Step failed: ${error.message}`);
+        console.error(`❌ Step failed: ${error instanceof Error ? error.message : String(error)}`);
         console.log();
       }
 
@@ -248,12 +269,12 @@ export class PromptTestRunner {
         stepName,
         promptUsed: promptName,
         version: versionOverride || 1,
-        provider: process.env.DEFAULT_AI_PROVIDER || 'unknown',
+        provider: process.env.DEFAULT_AI_PROVIDER || "unknown",
         executionTime,
         input,
         output: null,
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -282,43 +303,44 @@ export class PromptTestRunner {
       const executionTime = Date.now() - startTime;
 
       const result = {
-        cardIds: selectedCards.map(c => c.id),
-        cardNames: selectedCards.map(c => c.displayName),
-        cards: selectedCards
+        cardIds: selectedCards.map((c) => c.id),
+        cardNames: selectedCards.map((c) => c.displayName),
+        cards: selectedCards,
       };
 
       if (debugMode) {
         console.log(`Step 2: Card Selection`);
-        console.log(`🎲 Random Cards: [${result.cardIds.join(', ')}]`);
-        console.log(`🃏 Card Names: [${result.cardNames.map(n => `"${n}"`).join(', ')}]`);
+        console.log(`🎲 Random Cards: [${result.cardIds.join(", ")}]`);
+        console.log(
+          `🃏 Card Names: [${result.cardNames.map((n) => `"${n}"`).join(", ")}]`
+        );
         console.log(`⚡ Response Time: ${this.formatDuration(executionTime)}`);
         console.log();
       }
 
       return {
-        stepName: 'Card Selection',
-        promptUsed: 'database',
+        stepName: "Card Selection",
+        promptUsed: "database",
         version: 1,
-        provider: 'database',
+        provider: "database",
         executionTime,
         input: { requestedCards: 3 },
         output: result,
-        success: true
+        success: true,
       };
-
     } catch (error) {
       const executionTime = Date.now() - startTime;
 
       return {
-        stepName: 'Card Selection',
-        promptUsed: 'database',
+        stepName: "Card Selection",
+        promptUsed: "database",
         version: 1,
-        provider: 'database',
+        provider: "database",
         executionTime,
         input: { requestedCards: 3 },
         output: null,
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -333,10 +355,10 @@ export class PromptTestRunner {
     totalTokens: number
   ): Promise<void> {
     for (const step of steps) {
-      if (step.promptUsed !== 'database') {
+      if (step.promptUsed !== "database") {
         const templates = await this.manager.listPrompts(true);
-        const template = templates.find(t => t.name === step.promptUsed);
-        
+        const template = templates.find((t) => t.name === step.promptUsed);
+
         if (template) {
           await this.manager.saveTestResult({
             templateId: template.id,
@@ -347,11 +369,11 @@ export class PromptTestRunner {
               input: step.input,
               output: step.output,
               success: step.success,
-              error: step.error
+              error: step.error,
             },
             executionTimeMs: step.executionTime,
             tokenUsage: totalTokens, // Approximate token distribution
-            aiProvider: step.provider
+            aiProvider: step.provider,
           });
         }
       }

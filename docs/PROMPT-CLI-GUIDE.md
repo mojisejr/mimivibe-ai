@@ -36,6 +36,7 @@ npm run prompt:test-filter "ความรักจะเป็นอย่า�
 ### 🏗️ การจัดการ Prompts
 
 #### `npm run prompt:init`
+
 **การใช้งาน**: เริ่มต้นระบบ prompt management ครั้งแรก
 
 ```bash
@@ -43,10 +44,11 @@ npm run prompt:init
 ```
 
 **ผลลัพธ์**:
+
 ```
 🔄 Initializing prompt templates from existing prompts.ts...
 ✅ Initialized prompt: questionFilter
-✅ Initialized prompt: questionAnalysis  
+✅ Initialized prompt: questionAnalysis
 ✅ Initialized prompt: readingAgent
 ✅ Initialization complete
 ```
@@ -56,6 +58,7 @@ npm run prompt:init
 ---
 
 #### `npm run prompt:list`
+
 **การใช้งาน**: ดู prompts ที่ active อยู่
 
 ```bash
@@ -67,6 +70,7 @@ npm run prompt:list-all
 ```
 
 **ผลลัพธ์**:
+
 ```
 📋 Active Prompt Templates
 
@@ -86,6 +90,7 @@ readingAgent:
 ---
 
 #### `npm run prompt:show <name> [--version <number>]`
+
 **การใช้งาน**: ดูเนื้อหา prompt
 
 ```bash
@@ -97,6 +102,7 @@ npm run prompt:show questionFilter --version 2
 ```
 
 **ผลลัพธ์**:
+
 ```
 📄 Active Prompt Content: questionFilter
 ────────────────────────────────────────────────────────────
@@ -108,6 +114,7 @@ npm run prompt:show questionFilter --version 2
 ---
 
 #### `npm run prompt:update <name> "<content>" [--description "<desc>"]`
+
 **การใช้งาน**: อัปเดต prompt (สร้าง version ใหม่)
 
 ```bash
@@ -122,6 +129,7 @@ npm run prompt:update readingAgent "เนื้อหาใหม่..."
 ```
 
 **ผลลัพธ์**:
+
 ```
 ✅ Updated prompt 'questionFilter' to version 4
 💡 Tip: Add --description "what changed" for better version tracking
@@ -132,6 +140,7 @@ npm run prompt:update readingAgent "เนื้อหาใหม่..."
 ### 🔄 การจัดการ Versions
 
 #### `npm run prompt:versions <name>`
+
 **การใช้งาน**: ดูประวัติ versions ของ prompt
 
 ```bash
@@ -139,6 +148,7 @@ npm run prompt:versions questionFilter
 ```
 
 **ผลลัพธ์**:
+
 ```
 📋 Version History: questionFilter
 
@@ -155,6 +165,7 @@ npm run prompt:versions questionFilter
 ---
 
 #### `npm run prompt:activate <name> <version>`
+
 **การใช้งาน**: เปลี่ยนไปใช้ version เฉพาะ
 
 ```bash
@@ -163,6 +174,7 @@ npm run prompt:activate questionFilter 2
 ```
 
 **ผลลัพธ์**:
+
 ```
 ✅ Activated prompt 'questionFilter' version 2
 ```
@@ -172,6 +184,7 @@ npm run prompt:activate questionFilter 2
 ---
 
 #### `npm run prompt:compare <name> <version1> <version2>`
+
 **การใช้งาน**: เปรียบเทียบ versions
 
 ```bash
@@ -179,6 +192,7 @@ npm run prompt:compare questionFilter 2 4
 ```
 
 **ผลลัพธ์**:
+
 ```
 📊 Comparing questionFilter: v2 vs v4
 
@@ -199,6 +213,7 @@ npm run prompt:compare questionFilter 2 4
 ---
 
 #### `npm run prompt:backup <name>`
+
 **การใช้งาน**: สร้าง backup ของ version ปัจจุบัน
 
 ```bash
@@ -206,6 +221,7 @@ npm run prompt:backup questionFilter
 ```
 
 **ผลลัพธ์**:
+
 ```
 ✅ Created backup: questionFilter v5
 ```
@@ -213,6 +229,7 @@ npm run prompt:backup questionFilter
 ---
 
 #### `npm run prompt:restore <name> <version>`
+
 **การใช้งาน**: กู้คืนไปยัง version เฉพาะ
 
 ```bash
@@ -220,6 +237,7 @@ npm run prompt:restore questionFilter 3
 ```
 
 **ผลลัพธ์**:
+
 ```
 ✅ Activated prompt 'questionFilter' version 3
 ```
@@ -229,6 +247,7 @@ npm run prompt:restore questionFilter 3
 ### 🧪 การทดสอบ
 
 #### `npm run prompt:test "<question>" [--save] [--version <name:version>]`
+
 **การใช้งาน**: ทดสอบการทำนายทั้งหมด
 
 ```bash
@@ -243,6 +262,7 @@ npm run prompt:test "การงานเป็นอย่างไร" --vers
 ```
 
 **ผลลัพธ์**:
+
 ```
 🔮 Starting Tarot Reading Test...
 
@@ -269,6 +289,7 @@ npm run prompt:test "การงานเป็นอย่างไร" --vers
 ---
 
 #### `npm run prompt:test-filter "<question>"`
+
 **การใช้งาน**: ทดสอบเฉพาะ question filter
 
 ```bash
@@ -276,6 +297,7 @@ npm run prompt:test-filter "วันนี้ไพ่อยากบอกอ�
 ```
 
 **ผลลัพธ์**:
+
 ```
 🔍 Testing Question Filter Only...
 
@@ -291,6 +313,7 @@ npm run prompt:test-filter "วันนี้ไพ่อยากบอกอ�
 ---
 
 #### `npm run prompt:test-analysis "<question>"`
+
 **การใช้งาน**: ทดสอบเฉพาะ question analysis
 
 ```bash
@@ -298,6 +321,7 @@ npm run prompt:test-analysis "ความรักจะเป็นอย่�
 ```
 
 **ผลลัพธ์**:
+
 ```
 📊 Testing Question Analysis Only...
 
@@ -314,6 +338,7 @@ npm run prompt:test-analysis "ความรักจะเป็นอย่�
 ---
 
 #### `npm run prompt:debug "<question>"`
+
 **การใช้งาน**: Debug mode พร้อมรายละเอียดทุกขั้นตอน
 
 ```bash
@@ -321,6 +346,7 @@ npm run prompt:debug "วันนี้ไพ่อยากบอกอ่ะ�
 ```
 
 **ผลลัพธ์**:
+
 ```
 🔍 Debug Mode - Step by Step Analysis
 
@@ -358,6 +384,7 @@ Step 4: Reading Generation
 ### 📊 การวิเคราะห์
 
 #### `npm run prompt:analyze <name>`
+
 **การใช้งาน**: วิเคราะห์ประสิทธิภาพ prompt
 
 ```bash
@@ -365,6 +392,7 @@ npm run prompt:analyze questionFilter
 ```
 
 **ผลลัพธ์**:
+
 ```
 📊 Performance Analysis: questionFilter
 
@@ -399,6 +427,7 @@ npm run prompt:analyze questionFilter
 ### 🛠️ การจัดการระบบ
 
 #### `npm run prompt:deactivate <name>`
+
 **การใช้งาน**: ปิดการใช้งาน prompt (เก็บไว้เป็น reference)
 
 ```bash
@@ -406,6 +435,7 @@ npm run prompt:deactivate questionFilter
 ```
 
 **ผลลัพธ์**:
+
 ```
 ✅ Deactivated prompt 'questionFilter'
 ```
@@ -476,16 +506,19 @@ npm run prompt:test "คำถามที่มีปัญหา"
 ## ⚠️ ข้อควรระวัง
 
 ### 1. Security
+
 - **อย่าแชร์ PROMPT_ENCRYPTION_KEY** กับใคร
 - **Backup key** ไว้ในที่ปลอดภัย หากหาย key จะอ่าน prompts ไม่ได้
 - **ใช้ key ที่แข็งแรง** อย่างน้อย 32 ตัวอักษร
 
 ### 2. Version Management
+
 - **ระวังการ activate** version ใหม่ จะมีผลต่อ production ทันที
 - **ทดสอบก่อน activate** ให้ใช้ `--version` flag ในการทดสอบ
 - **เก็บ backup** ของ version ที่ทำงานดีไว้
 
 ### 3. Performance
+
 - **ใช้ --save** เมื่อต้องการเก็บข้อมูลเพื่อวิเคราะห์
 - **วิเคราะห์ผลลัพธ์** ด้วย `prompt:analyze` เป็นประจำ
 - **ทดสอบหลายคำถาม** เพื่อให้ได้ข้อมูลที่ครอบคลุม

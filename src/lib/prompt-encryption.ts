@@ -64,7 +64,7 @@ export class PromptEncryption {
       
       return combined.toString('base64');
     } catch (error) {
-      throw new Error(`Encryption failed: ${error.message}`);
+      throw new Error(`Encryption failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -100,7 +100,7 @@ export class PromptEncryption {
       
       return decrypted;
     } catch (error) {
-      throw new Error(`Decryption failed: ${error.message}`);
+      throw new Error(`Decryption failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

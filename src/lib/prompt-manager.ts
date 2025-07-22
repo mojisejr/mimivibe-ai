@@ -269,7 +269,7 @@ export class PromptManager {
         version: v.version,
         isActive: v.isActive,
         description: v.description || undefined,
-        performanceMetrics: v.performanceMetrics as PromptPerformanceMetrics || undefined,
+        performanceMetrics: (v.performanceMetrics as unknown as PromptPerformanceMetrics) || undefined,
         createdAt: v.createdAt
       }))
     }));
