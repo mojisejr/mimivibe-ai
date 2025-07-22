@@ -11,6 +11,7 @@ import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 import { ReferralSection } from "@/components/referral/ReferralSection";
 import { UserStats } from "@/components/profile/UserStats";
 import { PrestigeSystem } from "@/components/profile/PrestigeSystem";
+import { AchievementProgress } from "@/components/profile/AchievementProgress";
 import { SkeletonProfile } from "@/components/common/SkeletonLoader";
 
 export default function ProfilePage() {
@@ -164,6 +165,9 @@ export default function ProfilePage() {
 
             {/* Prestige System */}
             <PrestigeSystem />
+
+            {/* Achievement Progress */}
+            <AchievementProgress />
 
             {/* Referral Section */}
             <ReferralSection />

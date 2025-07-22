@@ -59,6 +59,15 @@ export async function POST() {
         return updatedUser
       })
 
+      // Check for achievements after level up
+      try {
+        const { AchievementService } = await import('@/lib/services/AchievementService');
+        await AchievementService.checkAndTriggerAchievements(userId, 'LEVEL_UP');
+      } catch (error) {
+        console.error('Achievement check failed (non-critical):', error);
+        // Don't fail the level up if achievement check fails
+      }
+
       return NextResponse.json({
         success: true,
         data: {

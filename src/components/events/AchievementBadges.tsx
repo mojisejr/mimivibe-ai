@@ -233,6 +233,8 @@ export function AchievementBadges() {
           const progressPercentage = getProgressPercentage(achievement);
           const isCompleted = achievement.progress.completed;
           const hasProgress = achievement.progress.current > 0;
+          const isEligible = achievement.progress.current >= achievement.progress.required;
+          const canClaim = isEligible && !isCompleted;
 
           return (
             <motion.div
@@ -323,13 +325,16 @@ export function AchievementBadges() {
                       )}
                     </div>
 
-                    {isCompleted && (
+                    {canClaim && (
                       <button
-                        className="btn btn-success btn-xs"
+                        className="btn btn-primary btn-xs"
                         onClick={() => handleClaimAchievement(achievement.id)}
                       >
                         รับรางวัล
                       </button>
+                    )}
+                    {isCompleted && (
+                      <span className="badge badge-success badge-xs">สำเร็จแล้ว</span>
                     )}
                   </div>
                 </div>
