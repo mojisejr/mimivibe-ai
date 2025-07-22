@@ -130,6 +130,7 @@ NEXT_PUBLIC_APP_URL="https://your-domain.com"
 - **[API Features](./docs/API-FEATURES.md)** - Backend API endpoints and features
 - **[UI Integration](./docs/UI-INTEGRATION.md)** - Frontend-backend integration patterns
 - **[Progress Tracking](./docs/PROGRESS.md)** - Development progress and milestones
+- **[Achievement Analysis](./docs/ACHIEVEMENT-ANALYSIS.md)** - ⚠️ Critical achievement system bugs and repair plan
 
 ---
 
@@ -188,6 +189,19 @@ npm run type-check   # Run TypeScript check
 - Resolved TypeScript compilation errors
 - Improved card detail modal z-index layering
 - Enhanced responsive breakpoint handling
+
+### 🚨 Known Issues (Pre-Production)
+**Achievement System Analysis Results**: Critical bugs discovered requiring systematic repair before production deployment.
+
+**Critical Issues**:
+- **Claim Button Logic Error**: Shows claim button for already-completed achievements (unusable)
+- **Missing Auto-Triggering**: No automatic achievement detection when conditions are met
+- **Incomplete Tracking**: Login streak and accuracy tracking return placeholder data
+- **Multi-Criteria Bug**: Complex achievements show misleading progress
+
+**Status**: Documented in [ACHIEVEMENT-ANALYSIS.md](./docs/ACHIEVEMENT-ANALYSIS.md) with systematic repair plan.  
+**Impact**: Achievement system provides poor user experience in current state.  
+**Recommendation**: Complete achievement fixes before production deployment.
 
 ---
 
