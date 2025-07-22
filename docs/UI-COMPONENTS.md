@@ -4,7 +4,10 @@
 
 สำหรับ Round 4: Chat UI & Reading Flow Components (LEGACY)  
 สำหรับ Round 7B: Article-Style UI Components (LEGACY)  
-สำหรับ Round 7C: Animated Article-Style UI Components (CURRENT)
+สำหรับ Round 7C: Animated Article-Style UI Components (LEGACY)
+สำหรับ Phase 2 Round 10: Enhanced UI & UX Polish (CURRENT)
+
+**Last Updated**: Phase 2 Round 10 - Enhanced UX with mobile optimization, loading states, and improved card displays
 
 ---
 
@@ -541,6 +544,167 @@ const desktopActions = `
     </div>
   </div>
 `
+```
+
+---
+
+## 🔥 Phase 2 Round 10: Enhanced UI & UX Polish (CURRENT)
+
+### Overview
+
+Comprehensive UI/UX enhancements focusing on card display improvements, mobile optimization, loading states, and cross-page consistency.
+
+### 🎴 Card Display System Improvements
+
+#### Enhanced Card Presentation
+- **Object Contain**: Changed from `object-cover` to `object-contain` with white backgrounds
+- **Title Case Names**: Transform card names from `the_fool` → `The Fool` 
+- **Clean Layout**: Removed card meanings for cleaner design
+- **Consistent Display**: Unified card appearance across /ask and /history pages
+
+```typescript
+// Card Name Transformation
+const displayName = card.displayName || 
+  (card.name || '')
+    .split('_')
+    .map((word: string) => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    )
+    .join(' ')
+
+// Enhanced Card Image
+<div className="w-full h-full object-contain bg-white">
+  <img 
+    src={card.imageUrl}
+    alt={displayName}
+    className="w-full h-full object-contain"
+  />
+</div>
+```
+
+#### 📱 Mobile-Optimized Card Experience
+
+```typescript
+// Desktop Cards (5 columns)
+<div className="hidden md:grid md:grid-cols-3 lg:grid-cols-5 gap-4">
+  {cards.map((card, index) => (
+    <div className="text-center cursor-pointer" onClick={() => openModal(card)}>
+      <CardDisplay card={card} />
+      <h3 className="font-semibold text-sm">{card.displayName}</h3>
+    </div>
+  ))}
+</div>
+
+// Mobile Cards (3 columns + Modal)
+<div className="md:hidden grid grid-cols-3 gap-3 max-w-sm mx-auto">
+  {cards.map((card, index) => (
+    <div className="text-center cursor-pointer" onClick={() => openModal(card)}>
+      <div className="w-full aspect-[2/3] rounded-lg shadow-sm">
+        <img className="w-full h-full object-contain bg-white" />
+      </div>
+      <h3 className="text-xs font-semibold">{card.displayName}</h3>
+    </div>
+  ))}
+</div>
+```
+
+#### 🔍 Mobile Card Detail Modal
+
+```typescript
+// Compact Mobile Modal
+<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div className="relative w-full max-w-xs bg-base-100 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+    {/* Close Button */}
+    <button className="absolute top-3 right-3 btn btn-circle btn-ghost btn-sm">
+      <X className="w-4 h-4" />
+    </button>
+    
+    {/* Compact Card Image */}
+    <div className="relative bg-white p-4">
+      <div className="w-32 h-48 mx-auto">
+        <img className="w-full h-full object-contain rounded-lg" />
+      </div>
+    </div>
+
+    {/* Essential Info Only */}
+    <div className="p-4 space-y-3">
+      <h3 className="text-lg font-bold text-center">{card.displayName}</h3>
+      <div>
+        <h4 className="font-semibold mb-2 text-sm">Keywords</h4>
+        <p className="text-sm">{card.keywords}</p>
+      </div>
+      <button className="btn btn-primary w-full btn-sm">ปิด</button>
+    </div>
+  </div>
+</div>
+```
+
+### 🔄 Enhanced Loading States
+
+#### Button Loading Indicators
+
+```typescript
+// Save Button with Loading
+<button
+  onClick={handleSave}
+  disabled={isSaved || isSaving}
+  className={`btn flex-1 ${
+    isSaved ? "btn-ghost text-success" : 
+    isSaving ? "btn-ghost text-neutral loading" : 
+    "btn btn-ghost text-primary"
+  }`}
+>
+  {isSaving ? (
+    <>
+      <span className="loading loading-spinner loading-sm"></span>
+      <span>กำลังบันทึก...</span>
+    </>
+  ) : (
+    <>
+      <span>{isSaved ? "✓" : "💾"}</span>
+      <span>{isSaved ? "บันทึกแล้ว" : "บันทึกการทำนาย"}</span>
+    </>
+  )}
+</button>
+
+// Delete Button with Loading
+<button
+  onClick={handleDelete}
+  disabled={isDeleting}
+  className={`btn flex-1 ${
+    isDeleting ? "btn-ghost text-neutral loading" : "btn-ghost text-error"
+  }`}
+>
+  {isDeleting ? (
+    <>
+      <span className="loading loading-spinner loading-sm"></span>
+      <span>กำลังลบ...</span>
+    </>
+  ) : (
+    <>
+      <span>🗑️</span>
+      <span>ลบการทำนาย</span>
+    </>
+  )}
+</button>
+```
+
+### 🌐 Cross-Page Consistency
+
+#### Unified History Page Experience
+- **Thai Localization**: Consistent with /payments page convention
+- **Card Display**: Same styling as /ask page 
+- **Modal Improvements**: Fixed z-index issues and improved accessibility
+
+```typescript
+// History Page Localization
+<h1 className="heading-1 mb-4">ประวัติการทำนาย</h1>
+<p className="body-large text-neutral-content">
+  ทบทวนการทำนายไพ่ทาโร่และข้อมูลเชิงลึกของคุณ
+</p>
+<p className="text-sm text-neutral-content">
+  จำนวนการทำนายทั้งหมด: {total} ครั้ง
+</p>
 ```
 
 #### Auto-Hide Navbar Behavior

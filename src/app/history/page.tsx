@@ -168,13 +168,13 @@ export default function HistoryPage() {
       {/* Main Content */}
       <main className="content-container flex-1 pb-20 md:pb-6 pt-20">
         <div className="text-center mb-8">
-          <h1 className="heading-1 mb-4">Reading History</h1>
+          <h1 className="heading-1 mb-4">ประวัติการทำนาย</h1>
           <p className="body-large text-neutral-content">
-            Review your past tarot readings and insights
+            ทบทวนการทำนายไพ่ทาโร่และข้อมูลเชิงลึกของคุณ
           </p>
           {historyData && typeof historyData.total === "number" && (
             <p className="text-sm text-neutral-content">
-              Total readings: {historyData.total}
+              จำนวนการทำนายทั้งหมด: {historyData.total} ครั้ง
             </p>
           )}
         </div>
@@ -271,16 +271,16 @@ export default function HistoryPage() {
                 </p>
                 <Link href="/ask" className="btn btn-primary">
                   <span className="mr-2">🔮</span>
-                  Ask the Cards Again
+                  ถามไพ่อีกครั้ง
                 </Link>
               </div>
             )}
           </>
         ) : (
           <EmptyState
-            title="ยังไม่มีประวัติการอ่าน"
+            title="ยังไม่มีประวัติการทำนาย"
             message="เริ่มต้นการเดินทางทางจิตวิญญาณของคุณด้วยการถามไพ่ทาโรต์"
-            actionText="Ask the Cards"
+            actionText="ถามไพ่"
             onAction={() => (window.location.href = "/ask")}
           />
         )}

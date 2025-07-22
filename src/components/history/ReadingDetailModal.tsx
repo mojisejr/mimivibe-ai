@@ -5,6 +5,7 @@ import { Logo } from "@/components/ui";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 import { ReviewModal, ReviewData } from "@/components/modals/ReviewModal";
 import { useToast } from "@/components/ui/ToastContainer";
+import { X } from "lucide-react";
 
 interface Card {
   id: number;
@@ -71,11 +72,11 @@ const EnhancedCardDisplay = ({
       title={card.nameTh || card.name}
     >
       {card.imageUrl && !imageError ? (
-        <div className="relative aspect-[2/3] rounded-lg overflow-hidden border border-base-300 bg-base-200 shadow-md hover:shadow-lg transition-shadow duration-200">
+        <div className="relative aspect-[2/3] rounded-lg overflow-hidden border border-base-300 bg-white shadow-md hover:shadow-lg transition-shadow duration-200">
           <img
             src={card.imageUrl}
             alt={card.nameTh || card.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             onError={() => setImageError(true)}
             loading="lazy"
           />
@@ -101,7 +102,7 @@ const CardDetailImage = ({ card }: { card: Card }) => {
         <img
           src={card.imageUrl}
           alt={card.nameTh || card.name}
-          className="w-full h-auto rounded-lg shadow-lg"
+          className="w-full h-auto object-contain bg-white rounded-lg shadow-lg"
           onError={() => setImageError(true)}
           loading="lazy"
         />
@@ -285,11 +286,25 @@ export const ReadingDetailModal = ({
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {reading.cards.map((card) => (
-                <EnhancedCardDisplay
-                  key={card.id}
-                  card={card}
-                  onClick={() => setSelectedCard(card)}
-                />
+                <div key={card.id} className="text-center">
+                  <div className="relative group mb-4">
+                    <EnhancedCardDisplay
+                      card={card}
+                      onClick={() => setSelectedCard(card)}
+                    />
+                  </div>
+                  <h3 className="font-semibold text-base-content text-sm mb-2">
+                    {card.nameTh ||
+                      (card.name || "")
+                        .split("_")
+                        .map(
+                          (word: string) =>
+                            word.charAt(0).toUpperCase() +
+                            word.slice(1).toLowerCase()
+                        )
+                        .join(" ")}
+                  </h3>
+                </div>
               ))}
             </div>
           </div>
@@ -475,30 +490,28 @@ export const ReadingDetailModal = ({
       {selectedCard && (
         <>
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
             onClick={() => setSelectedCard(null)}
           />
-          <div className="fixed inset-4 md:inset-16 bg-base-100 rounded-lg shadow-2xl z-70 overflow-y-auto">
+          <div className="fixed inset-4 md:inset-16 bg-base-100 rounded-lg shadow-2xl z-[70] overflow-y-auto max-h-[90vh]">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="heading-2">{selectedCard.nameTh}</h3>
+                <h3 className="heading-2">
+                  {selectedCard.nameTh ||
+                    (selectedCard.name || "")
+                      .split("_")
+                      .map(
+                        (word: string) =>
+                          word.charAt(0).toUpperCase() +
+                          word.slice(1).toLowerCase()
+                      )
+                      .join(" ")}
+                </h3>
                 <button
                   onClick={() => setSelectedCard(null)}
                   className="btn btn-sm btn-ghost btn-circle"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
@@ -510,20 +523,8 @@ export const ReadingDetailModal = ({
                   <div>
                     <h4 className="font-semibold mb-2">Keywords</h4>
                     <p className="text-neutral-content">
-                      {selectedCard.keywordsTh}
+                      {selectedCard.keywords || selectedCard.keywordsTh}
                     </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Meaning</h4>
-                    <p className="text-neutral-content leading-relaxed">
-                      {selectedCard.meaningTh}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Category</h4>
-                    <div className="badge badge-outline">
-                      {selectedCard.category}
-                    </div>
                   </div>
                 </div>
               </div>
