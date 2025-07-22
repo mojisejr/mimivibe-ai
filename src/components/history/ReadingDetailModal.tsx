@@ -285,7 +285,7 @@ export const ReadingDetailModal = ({
               ไพ่ที่หยิบได้
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {reading.cards.map((card, index) => (
+              {reading.cards.map((card) => (
                 <div key={card.id} className="text-center">
                   <div className="relative group mb-4">
                     <EnhancedCardDisplay
@@ -294,7 +294,15 @@ export const ReadingDetailModal = ({
                     />
                   </div>
                   <h3 className="font-semibold text-base-content text-sm mb-2">
-                    {card.nameTh || (card.name || '').split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                    {card.nameTh ||
+                      (card.name || "")
+                        .split("_")
+                        .map(
+                          (word: string) =>
+                            word.charAt(0).toUpperCase() +
+                            word.slice(1).toLowerCase()
+                        )
+                        .join(" ")}
                   </h3>
                 </div>
               ))}
@@ -489,7 +497,15 @@ export const ReadingDetailModal = ({
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="heading-2">
-                  {selectedCard.nameTh || (selectedCard.name || '').split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                  {selectedCard.nameTh ||
+                    (selectedCard.name || "")
+                      .split("_")
+                      .map(
+                        (word: string) =>
+                          word.charAt(0).toUpperCase() +
+                          word.slice(1).toLowerCase()
+                      )
+                      .join(" ")}
                 </h3>
                 <button
                   onClick={() => setSelectedCard(null)}
@@ -509,18 +525,6 @@ export const ReadingDetailModal = ({
                     <p className="text-neutral-content">
                       {selectedCard.keywords || selectedCard.keywordsTh}
                     </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Meaning</h4>
-                    <p className="text-neutral-content leading-relaxed">
-                      {selectedCard.meaningTh}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Category</h4>
-                    <div className="badge badge-outline">
-                      {selectedCard.category}
-                    </div>
                   </div>
                 </div>
               </div>
