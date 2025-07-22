@@ -28,10 +28,21 @@ export async function POST(request: NextRequest) {
       event = stripe.webhooks.constructEvent(body, signature, endpointSecret)
     } catch (err) {
       console.error('Webhook signature verification failed:', err)
+      console.error('Webhook signature:', signature)
+      console.error('Body length:', body.length)
+      console.error('Endpoint secret exists:', !!endpointSecret)
+      console.error('Endpoint secret prefix:', endpointSecret?.substring(0, 10))
+      
       return NextResponse.json(
         { 
           success: false,
           error: 'Webhook signature verification failed',
+          details: {
+            hasSignature: !!signature,
+            hasEndpointSecret: !!endpointSecret,
+            bodyLength: body.length,
+            errorMessage: err instanceof Error ? err.message : String(err)
+          },
           timestamp: new Date().toISOString(),
           path: '/api/payments/webhook'
         },
