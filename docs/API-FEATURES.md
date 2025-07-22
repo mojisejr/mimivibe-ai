@@ -3,6 +3,9 @@
 ## 🎮 Gamification & Advanced Features API
 
 สำหรับ Round 6: Gamification Features
+**Phase 2 Enhancements**: Dynamic URL detection, improved referral system
+
+**Last Updated**: Phase 2 Round 10 - Fixed referral links production deployment issue
 
 ---
 
@@ -164,9 +167,12 @@ Response: {
 #### Get User Referral Info
 ```typescript
 GET /api/referrals/status
+// Uses dynamic URL detection - works in development and production
+// Development: http://localhost:3000?ref=ABC12345
+// Production: https://your-domain.com?ref=ABC12345
 Response: {
   referralCode: string;
-  referralLink: string;
+  referralLink: string; // Dynamically generated based on environment
   stats: {
     totalReferred: number;
     successfulReferrals: number;
@@ -208,6 +214,95 @@ Response: {
   };
 }
 ```
+
+---
+
+## 🌐 Dynamic URL System (Phase 2 Enhancement)
+
+### Overview
+Fixed production deployment issue where referral links were hardcoded to `localhost:3000`. Now uses dynamic URL detection that works across all environments.
+
+### Implementation
+
+#### URL Utility Functions
+```typescript
+// src/lib/utils/url.ts
+export function getBaseUrl(): string {
+  // Browser (client-side)
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+
+  // Server-side environment detection
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+
+  // Vercel auto-detection
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  // NextAuth URL
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+
+  // Fallbacks
+  return process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:3000'
+    : 'https://your-domain.com';
+}
+
+export function buildUrl(path: string = ''): string {
+  const baseUrl = getBaseUrl();
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  const separator = cleanPath && !baseUrl.endsWith('/') ? '/' : '';
+  return `${baseUrl}${separator}${cleanPath}`;
+}
+```
+
+#### Updated Referral API
+```typescript
+// src/app/api/referrals/status/route.ts
+import { getBaseUrl } from '@/lib/utils/url'
+
+// Before: Hard-coded URL
+// const referralLink = `${process.env.NEXT_PUBLIC_APP_URL}?ref=${code}`
+
+// After: Dynamic URL detection
+const referralLink = `${getBaseUrl()}?ref=${referralCode.code}`
+```
+
+### Environment Support
+
+| Environment | URL Detection | Example |
+|-------------|---------------|----------|
+| **Development** | `localhost:3000` | `http://localhost:3000?ref=ABC12345` |
+| **Vercel** | `VERCEL_URL` | `https://app.vercel.app?ref=ABC12345` |
+| **Production** | `NEXT_PUBLIC_APP_URL` | `https://your-domain.com?ref=ABC12345` |
+| **Custom** | `NEXTAUTH_URL` | Custom domain support |
+
+### Production Deployment
+
+#### Environment Variables Setup
+```bash
+# .env.production
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+
+# For Vercel (auto-set)
+# VERCEL_URL=your-app.vercel.app
+
+# For other platforms
+# NEXTAUTH_URL=https://your-domain.com
+```
+
+#### Benefits
+- ✅ **No code changes** needed between environments
+- ✅ **Automatic detection** of deployment URL
+- ✅ **Works with all hosting platforms**
+- ✅ **Fallback support** for edge cases
+- ✅ **Development-friendly** with localhost detection
 
 ---
 
