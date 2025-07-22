@@ -68,12 +68,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if payment already processed
+    // Check if payment already processed by webhook or previous request
     const existingPayment = await prisma.paymentHistory.findUnique({
       where: { stripePaymentId: paymentIntent.id }
     })
 
     if (existingPayment) {
+      console.log('Payment already processed by webhook:', paymentIntent.id)
+      
       // Get current user credits
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -88,12 +90,15 @@ export async function POST(request: NextRequest) {
             id: existingPayment.id,
             amount: existingPayment.amount,
             creditsAdded: existingPayment.creditsAdded
-          }
+          },
+          message: 'Payment already processed'
         }
       })
     }
 
-    // Payment not yet processed, trigger webhook-like processing
+    console.log('Processing payment via confirm endpoint (webhook may not have fired yet):', paymentIntent.id)
+
+    // Payment not yet processed, process it now with duplicate protection
     const { packId, creditAmount } = paymentIntent.metadata
     
     if (!packId || !creditAmount) {
@@ -109,61 +114,104 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Process payment in transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Add credits to user
-      const updatedUser = await tx.user.update({
-        where: { id: userId },
-        data: {
-          stars: { increment: parseInt(creditAmount) }
-        },
-        select: { stars: true }
-      })
+    // Process payment in transaction with duplicate protection
+    try {
+      const result = await prisma.$transaction(async (tx) => {
+        // Double-check for existing payment within transaction to prevent race condition
+        const existingInTx = await tx.paymentHistory.findUnique({
+          where: { stripePaymentId: paymentIntent.id }
+        })
 
-      // Record payment history
-      const paymentHistory = await tx.paymentHistory.create({
-        data: {
-          userId,
-          stripePaymentId: paymentIntent.id,
-          packId: parseInt(packId),
-          amount: paymentIntent.amount,
-          currency: paymentIntent.currency,
-          status: 'succeeded',
-          creditsAdded: parseInt(creditAmount)
+        if (existingInTx) {
+          // Payment was processed by webhook during our transaction
+          throw new Error('PAYMENT_ALREADY_PROCESSED')
         }
-      })
 
-      // Record point transaction
-      await tx.pointTransaction.create({
-        data: {
-          id: `txn_${Date.now()}_${userId.slice(-8)}`,
-          userId,
-          eventType: 'STRIPE_TOPUP',
-          deltaPoint: parseInt(creditAmount),
-          deltaCoins: 0,
-          deltaExp: 0,
-          metadata: {
+        // Add credits to user
+        const updatedUser = await tx.user.update({
+          where: { id: userId },
+          data: {
+            stars: { increment: parseInt(creditAmount) }
+          },
+          select: { stars: true }
+        })
+
+        // Record payment history
+        const paymentHistory = await tx.paymentHistory.create({
+          data: {
+            userId,
             stripePaymentId: paymentIntent.id,
             packId: parseInt(packId),
-            amount: paymentIntent.amount
+            amount: paymentIntent.amount,
+            currency: paymentIntent.currency,
+            status: 'succeeded',
+            creditsAdded: parseInt(creditAmount)
+          }
+        })
+
+        // Record point transaction
+        await tx.pointTransaction.create({
+          data: {
+            id: `txn_${Date.now()}_${userId.slice(-8)}`,
+            userId,
+            eventType: 'STRIPE_TOPUP',
+            deltaPoint: parseInt(creditAmount),
+            deltaCoins: 0,
+            deltaExp: 0,
+            metadata: {
+              stripePaymentId: paymentIntent.id,
+              packId: parseInt(packId),
+              amount: paymentIntent.amount
+            }
+          }
+        })
+
+        return {
+          credits: updatedUser.stars,
+          transaction: {
+            id: paymentHistory.id,
+            amount: paymentHistory.amount,
+            creditsAdded: paymentHistory.creditsAdded
           }
         }
       })
 
-      return {
-        credits: updatedUser.stars,
-        transaction: {
-          id: paymentHistory.id,
-          amount: paymentHistory.amount,
-          creditsAdded: paymentHistory.creditsAdded
-        }
-      }
-    })
+      return NextResponse.json({
+        success: true,
+        data: result
+      })
 
-    return NextResponse.json({
-      success: true,
-      data: result
-    })
+    } catch (transactionError: any) {
+      if (transactionError.message === 'PAYMENT_ALREADY_PROCESSED') {
+        // Payment was processed by webhook, return success
+        console.log('Payment processed by webhook during confirmation:', paymentIntent.id)
+        
+        const existingPayment = await prisma.paymentHistory.findUnique({
+          where: { stripePaymentId: paymentIntent.id }
+        })
+        
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { stars: true }
+        })
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            credits: user?.stars || 0,
+            transaction: {
+              id: existingPayment?.id,
+              amount: existingPayment?.amount,
+              creditsAdded: existingPayment?.creditsAdded
+            },
+            message: 'Payment processed by webhook'
+          }
+        })
+      }
+      
+      // Re-throw other transaction errors
+      throw transactionError
+    }
 
   } catch (error) {
     console.error('Payment confirmation error:', error)
