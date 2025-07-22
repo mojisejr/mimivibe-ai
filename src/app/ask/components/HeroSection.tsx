@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { motion } from "framer-motion";
+import { AIModelIndicator } from "@/components/ui/AIModelIndicator";
 
 interface HeroSectionProps {
   onSubmit: (question: string) => void;
@@ -191,6 +192,16 @@ export function HeroSection({
                 </div>
               )}
             </motion.button>
+
+            {/* AI Model Indicator */}
+            <motion.div
+              className="mt-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+            >
+              <AIModelIndicator className="justify-center" />
+            </motion.div>
           </motion.form>
 
           {/* Insufficient Credits Warning with Glassmorphism */}

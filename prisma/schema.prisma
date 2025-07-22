@@ -276,3 +276,54 @@ enum UserRole {
   USER
   ADMIN
 }
+
+// Prompt Management System
+model PromptTemplate {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @unique @db.VarChar(100)
+  encryptedContent   String               @map("encrypted_content")
+  version            Int                  @default(1)
+  isActive           Boolean              @default(true) @map("is_active")
+  description        String?
+  performanceNotes   String?              @map("performance_notes")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @default(now()) @updatedAt @map("updated_at")
+  
+  versions           PromptVersion[]
+  testResults        PromptTestResult[]
+  
+  @@map("prompt_templates")
+}
+
+model PromptVersion {
+  id                 Int                  @id @default(autoincrement())
+  templateId         Int                  @map("template_id")
+  version            Int
+  encryptedContent   String               @map("encrypted_content")
+  isActive           Boolean              @default(false) @map("is_active")
+  description        String?
+  performanceMetrics Json?                @map("performance_metrics")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  
+  template           PromptTemplate       @relation(fields: [templateId], references: [id])
+  
+  @@unique([templateId, version])
+  @@map("prompt_versions")
+}
+
+model PromptTestResult {
+  id                 Int                  @id @default(autoincrement())
+  templateId         Int                  @map("template_id")
+  version            Int
+  testQuestion       String               @map("test_question")
+  resultData         Json                 @map("result_data")
+  executionTimeMs    Int?                 @map("execution_time_ms")
+  tokenUsage         Int?                 @map("token_usage")
+  aiProvider         String?              @db.VarChar(50) @map("ai_provider")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  
+  template           PromptTemplate       @relation(fields: [templateId], references: [id])
+  
+  @@index([templateId, createdAt])
+  @@map("prompt_test_results")
+}
