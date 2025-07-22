@@ -705,7 +705,7 @@ export function AnimatedArticleDisplay({
             }}
           >
             <motion.div
-              className="relative w-full max-w-sm bg-base-100 rounded-2xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-xs bg-base-100 rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -717,38 +717,34 @@ export function AnimatedArticleDisplay({
                   setShowCardModal(false);
                   setSelectedCard(null);
                 }}
-                className="absolute top-4 right-4 z-10 btn btn-circle btn-ghost btn-sm bg-white/80 hover:bg-white"
+                className="absolute top-3 right-3 z-10 btn btn-circle btn-ghost btn-sm bg-white/90 hover:bg-white shadow-md"
               >
                 <X className="w-4 h-4" />
               </button>
               
-              {/* Card Image */}
-              <div className="relative aspect-[2/3] bg-white">
-                <img 
-                  src={selectedCard.imageUrl}
-                  alt={selectedCard.displayName}
-                  className="w-full h-full object-contain"
-                />
+              {/* Card Image - Smaller */}
+              <div className="relative bg-white p-4">
+                <div className="w-32 h-48 mx-auto">
+                  <img 
+                    src={selectedCard.imageUrl}
+                    alt={selectedCard.displayName}
+                    className="w-full h-full object-contain rounded-lg"
+                  />
+                </div>
               </div>
 
-              {/* Card Info */}
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-base-content mb-2">
+              {/* Card Info - Compact */}
+              <div className="p-4 space-y-3">
+                <h3 className="text-lg font-bold text-base-content text-center">
                   {selectedCard.displayName || (selectedCard.name || '').split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                 </h3>
                 
-                {selectedCard.shortMeaning && (
-                  <p className="text-base-content/80 text-sm leading-relaxed mb-4">
-                    {selectedCard.shortMeaning}
-                  </p>
-                )}
-                
                 {selectedCard.keywords && (
-                  <div className="mb-4">
+                  <div>
                     <h4 className="font-semibold text-base-content mb-2 text-sm">
-                      คำสำคัญ
+                      Keywords
                     </h4>
-                    <p className="text-base-content/70 text-sm">
+                    <p className="text-base-content/70 text-sm leading-relaxed">
                       {selectedCard.keywords}
                     </p>
                   </div>
@@ -759,7 +755,7 @@ export function AnimatedArticleDisplay({
                     setShowCardModal(false);
                     setSelectedCard(null);
                   }}
-                  className="btn btn-primary w-full"
+                  className="btn btn-primary w-full btn-sm"
                 >
                   ปิด
                 </button>
