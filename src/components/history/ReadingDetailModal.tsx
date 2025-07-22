@@ -475,10 +475,10 @@ export const ReadingDetailModal = ({
       {selectedCard && (
         <>
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
             onClick={() => setSelectedCard(null)}
           />
-          <div className="fixed inset-4 md:inset-16 bg-base-100 rounded-lg shadow-2xl z-70 overflow-y-auto">
+          <div className="fixed inset-4 md:inset-16 bg-base-100 rounded-lg shadow-2xl z-[70] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="heading-2">{selectedCard.nameTh}</h3>

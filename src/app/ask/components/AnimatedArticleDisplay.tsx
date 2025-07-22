@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence, stagger, useAnimate } from "framer-motion";
 import { ReadingResponse } from "@/types/reading";
 import { CardFallback } from "@/components/cards/CardFallback";
+import { X } from "lucide-react";
 
 interface AnimatedCardImageProps {
   src: string;
@@ -83,7 +84,7 @@ function AnimatedCardImage({
         <img
           src={src}
           alt={alt}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain bg-white"
           onError={() => setHasError(true)}
           role="img"
           aria-describedby={`card-${position}-description`}
@@ -129,23 +130,36 @@ export function AnimatedArticleDisplay({
   const isSaved = readingData?.isSaved || false;
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedCard, setSelectedCard] = useState<any>(null);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSave = async () => {
+    if (isSaving || isSaved) return;
+    
+    setIsSaving(true);
     try {
       await onSave?.();
       // isSaved state is now managed by parent component through readingData
     } catch (error) {
       setErrorMessage("ไม่สามารถบันทึกการทำนายได้ กรุณาลองใหม่");
       setShowError(true);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
     try {
       await onDelete?.();
     } catch (error) {
       setErrorMessage("ไม่สามารถลบการทำนายได้ กรุณาลองใหม่");
       setShowError(true);
+      setIsDeleting(false); // Reset only on error, success will navigate away
     }
   };
 
@@ -284,10 +298,14 @@ export function AnimatedArticleDisplay({
           >
             ไพ่ที่หยิบได้
           </motion.h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 max-w-4xl mx-auto">
+          {/* Desktop Cards */}
+          <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 max-w-4xl mx-auto">
             {readingData.cards.map((card, index) => (
               <div key={card.id} className="text-center">
-                <div className="relative group mb-4">
+                <div className="relative group mb-4 cursor-pointer" onClick={() => {
+                  setSelectedCard(card);
+                  setShowCardModal(true);
+                }}>
                   <AnimatedCardImage
                     src={card.imageUrl}
                     alt={card.displayName}
@@ -302,17 +320,59 @@ export function AnimatedArticleDisplay({
                   animate={{ opacity: cardsRevealed ? 1 : 0 }}
                   transition={{ delay: 2.4 + index * 0.6, duration: 0.3 }}
                 >
-                  {card.displayName}
+                  {card.displayName || (card.name || '').split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                 </motion.h3>
-                <motion.p
-                  className="text-xs text-neutral-content leading-relaxed"
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile Cards - Smaller with Modal */}
+          <div className="md:hidden grid grid-cols-3 gap-3 max-w-sm mx-auto">
+            {readingData.cards.map((card, index) => (
+              <div key={card.id} className="text-center">
+                <div className="relative group mb-3 cursor-pointer" onClick={() => {
+                  setSelectedCard(card);
+                  setShowCardModal(true);
+                }}>
+                  <motion.div
+                    className="w-full aspect-[2/3] overflow-hidden rounded-lg shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02]"
+                    initial={{ scale: 0, rotateY: 180 }}
+                    animate={{ scale: cardsRevealed ? 1 : 0, rotateY: cardsRevealed ? 0 : 180 }}
+                    transition={{
+                      duration: 0.8,
+                      ease: "easeInOut",
+                      delay: 1.2 + index * 0.6,
+                    }}
+                  >
+                    <img
+                      src={card.imageUrl}
+                      alt={card.displayName}
+                      className="w-full h-full object-contain bg-white"
+                      onError={() => {}}
+                    />
+                  </motion.div>
+                  <motion.div
+                    className="absolute bottom-1 right-1 w-5 h-5 bg-primary/80 text-primary-content text-xs font-medium rounded-full flex items-center justify-center shadow-sm"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: cardsRevealed ? 1 : 0 }}
+                    transition={{
+                      delay: 1.6 + index * 0.6,
+                      duration: 0.3,
+                      type: "spring",
+                      stiffness: 300,
+                    }}
+                  >
+                    {index + 1}
+                  </motion.div>
+                </div>
+                <motion.h3
+                  className="font-semibold text-base-content text-xs mb-2 leading-tight"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: cardsRevealed ? 1 : 0 }}
-                  transition={{ delay: 2.6 + index * 0.6, duration: 0.3 }}
-                  id={`card-${index + 1}-description`}
+                  transition={{ delay: 2.4 + index * 0.6, duration: 0.3 }}
                 >
-                  {card.shortMeaning}
-                </motion.p>
+                  {card.displayName || (card.name || '').split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                </motion.h3>
               </div>
             ))}
           </div>
@@ -470,27 +530,52 @@ export function AnimatedArticleDisplay({
               <div className="flex gap-4">
                 <motion.button
                   onClick={handleSave}
-                  disabled={isSaved}
+                  disabled={isSaved || isSaving}
                   className={`btn flex-1 ${
                     isSaved
                       ? "btn-ghost text-success"
+                      : isSaving 
+                      ? "btn-ghost text-neutral loading"
                       : "btn btn-ghost text-primary"
                   }`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: isSaving ? 1 : 1.02 }}
+                  whileTap={{ scale: isSaving ? 1 : 0.98 }}
                 >
-                  <span>{isSaved ? "✓" : "💾"}</span>
-                  <span>{isSaved ? "บันทึกแล้ว" : "บันทึกการทำนาย"}</span>
+                  {isSaving ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      <span>กำลังบันทึก...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{isSaved ? "✓" : "💾"}</span>
+                      <span>{isSaved ? "บันทึกแล้ว" : "บันทึกการทำนาย"}</span>
+                    </>
+                  )}
                 </motion.button>
 
                 <motion.button
                   onClick={handleDelete}
-                  className="btn btn-ghost text-error flex-1"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  disabled={isDeleting}
+                  className={`btn flex-1 ${
+                    isDeleting 
+                    ? "btn-ghost text-neutral loading"
+                    : "btn-ghost text-error"
+                  }`}
+                  whileHover={{ scale: isDeleting ? 1 : 1.02 }}
+                  whileTap={{ scale: isDeleting ? 1 : 0.98 }}
                 >
-                  <span>🗑️</span>
-                  <span>ลบการทำนาย</span>
+                  {isDeleting ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      <span>กำลังลบ...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>🗑️</span>
+                      <span>ลบการทำนาย</span>
+                    </>
+                  )}
                 </motion.button>
 
                 <motion.button
@@ -524,29 +609,46 @@ export function AnimatedArticleDisplay({
               <div className="grid grid-cols-2 gap-3">
                 <motion.button
                   onClick={handleSave}
-                  disabled={isSaved}
+                  disabled={isSaved || isSaving}
                   className={`btn btn-sm ${
                     isSaved
                       ? "btn-ghost text-success"
+                      : isSaving
+                      ? "btn-ghost text-neutral loading"
                       : "btn btn-ghost text-primary"
                   }`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: isSaving ? 1 : 1.02 }}
+                  whileTap={{ scale: isSaving ? 1 : 0.98 }}
                 >
-                  <span className="text-xs">{isSaved ? "✓" : "💾"}</span>
+                  {isSaving ? (
+                    <span className="loading loading-spinner loading-xs"></span>
+                  ) : (
+                    <span className="text-xs">{isSaved ? "✓" : "💾"}</span>
+                  )}
                   <span className="text-xs">
-                    {isSaved ? "บันทึกแล้ว" : "บันทึก"}
+                    {isSaving ? "บันทึก..." : isSaved ? "บันทึกแล้ว" : "บันทึก"}
                   </span>
                 </motion.button>
 
                 <motion.button
                   onClick={handleDelete}
-                  className="btn btn-sm btn-ghost text-error"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  disabled={isDeleting}
+                  className={`btn btn-sm ${
+                    isDeleting 
+                    ? "btn-ghost text-neutral loading"
+                    : "btn-ghost text-error"
+                  }`}
+                  whileHover={{ scale: isDeleting ? 1 : 1.02 }}
+                  whileTap={{ scale: isDeleting ? 1 : 0.98 }}
                 >
-                  <span className="text-xs">🗑️</span>
-                  <span className="text-xs">ลบ</span>
+                  {isDeleting ? (
+                    <span className="loading loading-spinner loading-xs"></span>
+                  ) : (
+                    <span className="text-xs">🗑️</span>
+                  )}
+                  <span className="text-xs">
+                    {isDeleting ? "ลบ..." : "ลบ"}
+                  </span>
                 </motion.button>
               </div>
             </div>
@@ -582,6 +684,84 @@ export function AnimatedArticleDisplay({
                   className="btn btn-primary"
                 >
                   ตกลง
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Card Detail Modal for Mobile */}
+      <AnimatePresence>
+        {showCardModal && selectedCard && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => {
+              setShowCardModal(false);
+              setSelectedCard(null);
+            }}
+          >
+            <motion.div
+              className="relative w-full max-w-sm bg-base-100 rounded-2xl shadow-2xl overflow-hidden"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  setShowCardModal(false);
+                  setSelectedCard(null);
+                }}
+                className="absolute top-4 right-4 z-10 btn btn-circle btn-ghost btn-sm bg-white/80 hover:bg-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              
+              {/* Card Image */}
+              <div className="relative aspect-[2/3] bg-white">
+                <img 
+                  src={selectedCard.imageUrl}
+                  alt={selectedCard.displayName}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              {/* Card Info */}
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-base-content mb-2">
+                  {selectedCard.displayName || (selectedCard.name || '').split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                </h3>
+                
+                {selectedCard.shortMeaning && (
+                  <p className="text-base-content/80 text-sm leading-relaxed mb-4">
+                    {selectedCard.shortMeaning}
+                  </p>
+                )}
+                
+                {selectedCard.keywords && (
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-base-content mb-2 text-sm">
+                      คำสำคัญ
+                    </h4>
+                    <p className="text-base-content/70 text-sm">
+                      {selectedCard.keywords}
+                    </p>
+                  </div>
+                )}
+                
+                <button
+                  onClick={() => {
+                    setShowCardModal(false);
+                    setSelectedCard(null);
+                  }}
+                  className="btn btn-primary w-full"
+                >
+                  ปิด
                 </button>
               </div>
             </motion.div>
