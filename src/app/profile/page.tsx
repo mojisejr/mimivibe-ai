@@ -11,6 +11,7 @@ import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 import { ReferralSection } from "@/components/referral/ReferralSection";
 import { UserStats } from "@/components/profile/UserStats";
 import { PrestigeSystem } from "@/components/profile/PrestigeSystem";
+import { AchievementProgress } from "@/components/profile/AchievementProgress";
 import { SkeletonProfile } from "@/components/common/SkeletonLoader";
 
 export default function ProfilePage() {
@@ -18,10 +19,10 @@ export default function ProfilePage() {
   const { data, loading, error, refresh } = useProfile();
 
   // Debug authentication state
-  console.log('🔐 Authentication state:', {
+  console.log("🔐 Authentication state:", {
     isLoaded,
     userId: user?.id,
-    isSignedIn: !!user
+    isSignedIn: !!user,
   });
 
   // Don't render until auth is loaded
@@ -39,8 +40,12 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex items-center justify-center">
         <div className="text-center">
           <h1 className="heading-1 mb-4">Authentication Required</h1>
-          <p className="body-normal text-neutral-content mb-4">Please sign in to view your profile</p>
-          <Link href="/sign-in" className="btn btn-primary">Sign In</Link>
+          <p className="body-normal text-neutral-content mb-4">
+            Please sign in to view your profile
+          </p>
+          <Link href="/sign-in" className="btn btn-primary">
+            Sign In
+          </Link>
         </div>
       </div>
     );
@@ -54,9 +59,9 @@ export default function ProfilePage() {
       {/* Main Content */}
       <main className="content-container flex-1 pb-20 md:pb-6 pt-20">
         <div className="text-center mb-8">
-          <h1 className="heading-1 mb-4">Your Profile</h1>
+          <h1 className="heading-1 mb-4">โปรไฟล์ของคุณ</h1>
           <p className="body-large text-neutral-content">
-            Manage your spiritual journey and account settings
+            จัดการโชคชะตาและการตั้งค่า
           </p>
         </div>
 
@@ -160,6 +165,9 @@ export default function ProfilePage() {
 
             {/* Prestige System */}
             <PrestigeSystem />
+
+            {/* Achievement Progress */}
+            <AchievementProgress />
 
             {/* Referral Section */}
             <ReferralSection />

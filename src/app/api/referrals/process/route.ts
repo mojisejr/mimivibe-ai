@@ -92,6 +92,19 @@ export async function POST(request: NextRequest) {
       })
     })
 
+    // Check for achievements after referral processing
+    try {
+      const { AchievementService } = await import('@/lib/services/AchievementService');
+      // Check achievements for both referrer and new user
+      await Promise.allSettled([
+        AchievementService.checkAndTriggerAchievements(referral.userId, 'REFERRAL'),
+        AchievementService.checkAndTriggerAchievements(newUserId, 'REFERRAL')
+      ]);
+    } catch (error) {
+      console.error('Achievement check failed (non-critical):', error);
+      // Don't fail the referral processing if achievement check fails
+    }
+
     return NextResponse.json({
       success: true,
       data: {

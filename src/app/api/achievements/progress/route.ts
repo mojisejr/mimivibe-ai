@@ -56,12 +56,12 @@ export async function GET() {
     }).filter(Boolean)
 
     // Calculate progress for each achievement
-    const achievements = achievementConfigs.map(config => {
+    const achievements = await Promise.all(achievementConfigs.map(async (config) => {
       const criteria = config.criteria as any
       const rewards = config.rewards as any
       const isCompleted = claimedAchievementIds.includes(config.name)
       
-      const progress = calculateAchievementProgress(user, criteria)
+      const progress = await calculateAchievementProgress(user, criteria)
 
       return {
         id: config.name,
@@ -80,7 +80,7 @@ export async function GET() {
           stars: rewards.stars || 0
         }
       }
-    })
+    }))
 
     return NextResponse.json({
       success: true,
@@ -103,53 +103,105 @@ export async function GET() {
   }
 }
 
-function calculateAchievementProgress(user: any, criteria: any): { current: number, required: number } {
+async function calculateAchievementProgress(user: any, criteria: any): Promise<{ current: number, required: number, details?: any[] }> {
   // Handle multiple criteria (for achievements like ULTIMATE_MASTER)
   if (Object.keys(criteria).length > 1) {
-    // Calculate progress for each criterion and return the least completed one
-    const progressResults = []
+    // Calculate progress for each criterion
+    const criteriaResults = []
     
     if (criteria.readingCount) {
       const current = user.Reading.length
-      progressResults.push({ current, required: criteria.readingCount, percentage: current / criteria.readingCount })
+      criteriaResults.push({ 
+        name: 'readings', 
+        current, 
+        required: criteria.readingCount, 
+        met: current >= criteria.readingCount 
+      })
     }
     
     if (criteria.totalReadings) {
       const current = user.Reading.length
-      progressResults.push({ current, required: criteria.totalReadings, percentage: current / criteria.totalReadings })
+      criteriaResults.push({ 
+        name: 'readings', 
+        current, 
+        required: criteria.totalReadings, 
+        met: current >= criteria.totalReadings 
+      })
     }
     
     if (criteria.level) {
-      progressResults.push({ current: user.level, required: criteria.level, percentage: user.level / criteria.level })
+      criteriaResults.push({ 
+        name: 'level', 
+        current: user.level, 
+        required: criteria.level, 
+        met: user.level >= criteria.level 
+      })
     }
     
     if (criteria.reviewCount) {
       const current = user.Review.length
-      progressResults.push({ current, required: criteria.reviewCount, percentage: current / criteria.reviewCount })
+      criteriaResults.push({ 
+        name: 'reviews', 
+        current, 
+        required: criteria.reviewCount, 
+        met: current >= criteria.reviewCount 
+      })
     }
     
     if (criteria.referralCount) {
       const current = user.ReferralCode.filter((code: any) => code.isUsed).length
-      progressResults.push({ current, required: criteria.referralCount, percentage: current / criteria.referralCount })
+      criteriaResults.push({ 
+        name: 'referrals', 
+        current, 
+        required: criteria.referralCount, 
+        met: current >= criteria.referralCount 
+      })
     }
     
     if (criteria.totalCoinsEarned) {
       const current = user.PointTransaction
         .filter((t: any) => t.deltaCoins > 0)
         .reduce((total: number, t: any) => total + t.deltaCoins, 0)
-      progressResults.push({ current, required: criteria.totalCoinsEarned, percentage: current / criteria.totalCoinsEarned })
+      criteriaResults.push({ 
+        name: 'coins', 
+        current, 
+        required: criteria.totalCoinsEarned, 
+        met: current >= criteria.totalCoinsEarned 
+      })
     }
     
     if (criteria.prestigeLevel) {
-      progressResults.push({ current: user.prestigeLevel, required: criteria.prestigeLevel, percentage: user.prestigeLevel / criteria.prestigeLevel })
+      criteriaResults.push({ 
+        name: 'prestige', 
+        current: user.prestigeLevel, 
+        required: criteria.prestigeLevel, 
+        met: user.prestigeLevel >= criteria.prestigeLevel 
+      })
+    }
+
+    // Handle streak criteria
+    if (criteria.loginStreak || criteria.streakDays) {
+      const { StreakService } = await import("@/lib/services/StreakService");
+      const currentStreak = await StreakService.getCurrentStreakCount(user.id);
+      const required = criteria.loginStreak || criteria.streakDays;
+      criteriaResults.push({ 
+        name: 'streak', 
+        current: currentStreak, 
+        required, 
+        met: currentStreak >= required 
+      })
     }
     
-    // Return the criterion with the lowest completion percentage
-    const leastCompleted = progressResults.reduce((min, curr) => 
-      curr.percentage < min.percentage ? curr : min
-    )
+    // Calculate overall progress: percentage of criteria met
+    const totalCriteria = criteriaResults.length
+    const metCriteria = criteriaResults.filter(c => c.met).length
+    const overallProgress = metCriteria / totalCriteria * 100
     
-    return { current: leastCompleted.current, required: leastCompleted.required }
+    return { 
+      current: Math.round(overallProgress), 
+      required: 100,
+      details: criteriaResults 
+    }
   }
 
   // Single criterion achievements
@@ -190,10 +242,11 @@ function calculateAchievementProgress(user: any, criteria: any): { current: numb
     return { current, required: criteria.totalCoinsEarned }
   }
 
-  // Login streak (placeholder)
+  // Login streak tracking
   if (criteria.loginStreak || criteria.streakDays) {
-    // TODO: Implement proper streak tracking
-    return { current: 0, required: criteria.loginStreak || criteria.streakDays }
+    const { StreakService } = await import("@/lib/services/StreakService");
+    const currentStreak = await StreakService.getCurrentStreakCount(user.id);
+    return { current: currentStreak, required: criteria.loginStreak || criteria.streakDays }
   }
 
   // Average accuracy (placeholder)
