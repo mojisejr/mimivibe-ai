@@ -14,38 +14,41 @@ export const PaymentCard = ({ payment, onClick }: PaymentCardProps) => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'succeeded':
+      case "succeeded":
         return {
           className: "badge-success",
           label: "สำเร็จ",
-          emoji: "✅"
+          emoji: "✅",
         };
-      case 'failed':
+      case "failed":
         return {
-          className: "badge-error", 
+          className: "badge-error",
           label: "ล้มเหลว",
-          emoji: "❌"
+          emoji: "❌",
         };
-      case 'pending':
+      case "pending":
         return {
           className: "badge-warning",
-          label: "รอดำเนินการ", 
-          emoji: "⏳"
+          label: "รอดำเนินการ",
+          emoji: "⏳",
         };
       default:
         return {
           className: "badge-neutral",
           label: status,
-          emoji: "❓"
+          emoji: "❓",
         };
     }
   };
 
   const getPackageEmoji = (title: string) => {
     const lowerTitle = title.toLowerCase();
-    if (lowerTitle.includes('เริ่มต้น') || lowerTitle.includes('starter')) return "🌟";
-    if (lowerTitle.includes('คุ้มค่า') || lowerTitle.includes('value')) return "💎"; 
-    if (lowerTitle.includes('พรีเมียม') || lowerTitle.includes('premium')) return "👑";
+    if (lowerTitle.includes("เริ่มต้น") || lowerTitle.includes("starter"))
+      return "🌟";
+    if (lowerTitle.includes("คุ้มค่า") || lowerTitle.includes("value"))
+      return "💎";
+    if (lowerTitle.includes("พรีเมียม") || lowerTitle.includes("premium"))
+      return "👑";
     return "🎁";
   };
 
@@ -56,16 +59,17 @@ export const PaymentCard = ({ payment, onClick }: PaymentCardProps) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy payment ID:', error);
+      console.error("Failed to copy payment ID:", error);
     }
   };
-
 
   const statusBadge = getStatusBadge(payment.status);
 
   return (
     <div
-      className={`card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.02] h-full flex flex-col border border-base-300/50 hover:border-primary/30 ${onClick ? 'cursor-pointer' : ''}`}
+      className={`card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.02] h-full flex flex-col border border-base-300/50 hover:border-primary/30 ${
+        onClick ? "cursor-pointer" : ""
+      }`}
       onClick={onClick}
     >
       <div className="card-body flex-1 flex flex-col">
@@ -122,7 +126,7 @@ export const PaymentCard = ({ payment, onClick }: PaymentCardProps) => {
           </div>
           <div>
             <p className="text-xs text-neutral-content mb-1">Payment ID</p>
-            <div 
+            <div
               className="flex items-center justify-between cursor-pointer hover:bg-base-200 p-2 rounded transition-colors border border-base-300/30"
               onClick={copyPaymentId}
               title={copied ? "คัดลอกแล้ว!" : "คลิกเพื่อคัดลอก"}
@@ -135,17 +139,6 @@ export const PaymentCard = ({ payment, onClick }: PaymentCardProps) => {
               </span>
             </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-auto">
-          {onClick && (
-            <div className="flex gap-2 items-center justify-between">
-              <button className="btn btn-sm btn-primary flex-1 text-primary-content">
-                ดูรายละเอียด
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

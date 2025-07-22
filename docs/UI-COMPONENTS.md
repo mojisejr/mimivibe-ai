@@ -639,6 +639,127 @@ const displayName = card.displayName ||
 </div>
 ```
 
+### 📅 Daily Login Calendar Mobile Enhancement
+
+#### Mobile UI Issues Fixed
+- **Text Overlapping**: Resolved calendar day numbers and icons competing for space
+- **Touch Accessibility**: Implemented minimum 44px touch targets for mobile
+- **Responsive Spacing**: Adaptive gap spacing (1px mobile, 12px desktop)
+- **Dual Layout System**: Separate optimized layouts for mobile and desktop screens
+
+```typescript
+// Mobile-Optimized Calendar Grid
+<div className="grid grid-cols-7 gap-1 md:gap-3">
+  {Array.from({ length: campaign.progress.total }, (_, index) => {
+    const day = index + 1;
+    const status = getDayStatus(day);
+    
+    return (
+      <motion.div
+        className={`
+          relative rounded-lg md:rounded-xl border-2 cursor-pointer
+          min-h-[44px] md:min-h-[60px] aspect-square
+          transition-all duration-300
+          ${getStatusColor(status)}
+        `}
+      >
+        {/* Mobile Layout (< md screens) */}
+        <div className="md:hidden absolute inset-0 flex flex-col items-center justify-center p-1">
+          <div className="text-xs font-bold leading-tight">{day}</div>
+          <div className="text-sm leading-none mt-0.5">{getStatusIcon(status)}</div>
+          
+          {/* Compact reward indicator */}
+          {reward && status !== "claimed" && (
+            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-secondary rounded-full"></div>
+          )}
+        </div>
+
+        {/* Desktop Layout (md+ screens) */}
+        <div className="hidden md:flex absolute inset-0 flex-col items-center justify-center p-1">
+          <div className="text-lg font-bold">{day}</div>
+          <div className="text-xl">{getStatusIcon(status)}</div>
+          
+          {/* Full reward indicator */}
+          {reward && status !== "claimed" && (
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-secondary rounded-full flex items-center justify-center">
+              <span className="text-xs text-white font-bold">!</span>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
+  })}
+</div>
+```
+
+#### Mobile-First Header Design
+
+```typescript
+// Responsive Calendar Header
+<div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-4 md:p-6">
+  <div className="text-center space-y-2 md:space-y-3">
+    <h2 className="text-xl md:text-2xl font-bold">📅 {campaign.title}</h2>
+    <p className="text-sm md:text-base text-base-content/70">
+      เข้าสู่ระบบทุกวันเพื่อรับรางวัลพิเศษ
+    </p>
+    
+    {/* Mobile-optimized progress indicators */}
+    <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4">
+      <div className="px-3 py-1.5 md:px-4 md:py-2 bg-primary/10 rounded-full">
+        <span className="text-xs md:text-sm text-primary font-medium">
+          รับแล้ว: {campaign.progress.current}/{campaign.progress.total} วัน
+        </span>
+      </div>
+    </div>
+    
+    {/* Progress bar for mobile only */}
+    <div className="md:hidden w-full max-w-xs mx-auto mt-3">
+      <div className="flex justify-between text-xs text-base-content/60 mb-1">
+        <span>ความคืบหน้า</span>
+        <span>{Math.round((campaign.progress.current / campaign.progress.total) * 100)}%</span>
+      </div>
+      <div className="w-full bg-base-200 rounded-full h-2">
+        <div 
+          className="bg-gradient-to-r from-primary to-secondary h-2 rounded-full transition-all duration-500"
+          style={{ width: `${(campaign.progress.current / campaign.progress.total) * 100}%` }}
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+#### Enhanced Mobile Modal
+
+```typescript
+// Mobile-First Modal Design
+<motion.div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 md:p-4">
+  <motion.div className="bg-base-100 rounded-2xl p-4 md:p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto">
+    <div className="text-center space-y-3 md:space-y-4">
+      {/* Mobile close button */}
+      <div className="md:hidden flex justify-end">
+        <button className="btn btn-ghost btn-sm btn-circle">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="text-3xl md:text-4xl">{getStatusIcon(getDayStatus(selectedDay))}</div>
+      <h3 className="text-lg md:text-xl font-bold">วันที่ {selectedDay}</h3>
+      
+      {/* Mobile-first button layout */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
+        <button className="btn btn-ghost flex-1 order-2 sm:order-1">ปิด</button>
+        {status === "available" && (
+          <button className="btn btn-primary flex-1 order-1 sm:order-2">รับรางวัล</button>
+        )}
+      </div>
+    </div>
+  </motion.div>
+</motion.div>
+```
+
 ### 🔄 Enhanced Loading States
 
 #### Button Loading Indicators
