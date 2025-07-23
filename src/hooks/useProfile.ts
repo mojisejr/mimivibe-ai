@@ -90,7 +90,6 @@ export const useProfile = () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
-      console.log('🚀 Fetching profile data...');
       const [profileRes, statsRes, creditsRes] = await Promise.all([
         fetch("/api/user/profile"),
         fetch("/api/user/stats"),
@@ -101,15 +100,9 @@ export const useProfile = () => {
       try {
         await fetch("/api/user/level-check", { method: "POST" });
       } catch (levelCheckError) {
-        console.warn('Level check failed:', levelCheckError);
         // Continue with normal flow even if level check fails
       }
 
-      console.log('📊 API Response status:', {
-        profile: profileRes.status,
-        stats: statsRes.status,
-        credits: creditsRes.status
-      });
 
       if (!profileRes.ok || !statsRes.ok || !creditsRes.ok) {
         const errorDetails = {
@@ -117,7 +110,6 @@ export const useProfile = () => {
           stats: statsRes.status,
           credits: creditsRes.status
         };
-        console.error('❌ API Error:', errorDetails);
         throw new Error(`Failed to fetch profile data: ${JSON.stringify(errorDetails)}`);
       }
 
@@ -128,21 +120,11 @@ export const useProfile = () => {
       ]);
 
       // Extract data from API response wrappers
-      console.log('📊 Raw API Data:', {
-        profile: profileData,
-        stats: statsData,
-        credits: creditsData
-      });
 
       const profile = profileData.success ? profileData.data : profileData;
       const stats = statsData.success ? statsData.data : statsData;
       const credits = creditsData.success ? creditsData.data : creditsData;
 
-      console.log('📊 Extracted Data:', {
-        profile,
-        stats,
-        credits
-      });
 
       // Validate and sanitize profile data
       const validatedProfile = {

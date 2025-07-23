@@ -21,19 +21,15 @@ export class ReadingStreamController {
    */
   send(event: StreamEvent) {
     if (!this.controller) {
-      console.warn('⚠️ SSE Controller not available, cannot send event:', event.event)
       return
     }
 
     const sseData = this.formatSSE(event)
-    console.log('📡 SSE Sending:', event.event, 'Data:', event.data)
-    console.log('📡 SSE Formatted:', sseData)
     
     try {
       this.controller.enqueue(this.encoder.encode(sseData))
-      console.log('✅ SSE Event sent successfully')
     } catch (error) {
-      console.error('❌ SSE Send error:', error)
+      // Silent fail for production
     }
   }
 
@@ -109,7 +105,6 @@ export class ReadingStreamController {
     sse += `event: ${event.event}\n`
     sse += `data: ${JSON.stringify(event.data)}\n\n`
     
-    console.log('📡 SSE Format result:', JSON.stringify(sse))
     return sse
   }
 }
@@ -122,19 +117,14 @@ export function createReadingStream() {
 
   const stream = new ReadableStream({
     start(controller) {
-      console.log('📡 ReadableStream start called, creating controller...')
       streamController = new ReadingStreamController(controller)
-      console.log('📡 ReadingStreamController created:', !!streamController)
     },
     cancel() {
-      console.log('📡 ReadableStream cancel called')
       if (streamController) {
         streamController.close()
       }
     }
   })
-
-  console.log('📡 ReadableStream created, returning controller:', streamController !== undefined)
   return {
     stream,
     controller: streamController || null

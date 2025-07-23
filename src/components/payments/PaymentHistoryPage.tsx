@@ -37,12 +37,6 @@ export default function PaymentHistoryPage() {
     enabled: (paymentData?.payments.length || 0) > 0,
   });
 
-  // Debug authentication state
-  console.log("🔐 Authentication state (Payment History):", {
-    isLoaded,
-    userId: user?.id,
-    isSignedIn: !!user,
-  });
 
   // Don't render until auth is loaded
   if (!isLoaded) {
@@ -72,8 +66,6 @@ export default function PaymentHistoryPage() {
 
   const handlePaymentClick = (payment: PaymentHistoryItem) => {
     setSelectedPayment(payment);
-    // For now, just log the payment details
-    console.log("Payment details:", payment);
   };
 
   const handleFiltersChange = (newFilters: PaymentFiltersType) => {

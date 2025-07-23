@@ -44,7 +44,6 @@ export const ReadingState = Annotation.Root({
 // Node 1: Question Filter - Validates if the question is appropriate (using database prompts)
 async function questionFilterNode(state: typeof ReadingState.State) {
   try {
-    console.log("🔍 Question Filter Node - Processing:", state.question);
 
     // Get prompt from database
     const manager = getPromptManager();
@@ -76,7 +75,6 @@ async function questionFilterNode(state: typeof ReadingState.State) {
     }
 
     const result = parsed.data;
-    console.log("✅ Question Filter Result:", result);
 
     if (!result) {
       return {
@@ -90,7 +88,6 @@ async function questionFilterNode(state: typeof ReadingState.State) {
       validationReason: result.reason || "",
     };
   } catch (error) {
-    console.error("❌ Question Filter Node Error:", error);
     return {
       isValid: false,
       validationReason: "System error during validation",
@@ -102,24 +99,19 @@ async function questionFilterNode(state: typeof ReadingState.State) {
 // Node 2: Card Picker - Selects random cards for the reading
 async function cardPickerNode(state: typeof ReadingState.State) {
   try {
-    console.log("🃏 Card Picker Node - Selecting cards");
 
     if (!state.isValid) {
-      console.log("⚠️ Skipping card picking - question not valid");
       return { selectedCards: [] };
     }
 
     const cardResult = await pickRandomCards();
 
-    console.log(`✅ Selected ${cardResult.selectedCards.length} cards:`, 
-      cardResult.selectedCards.map(c => c.displayName));
 
     return { 
       selectedCards: cardResult.selectedCards,
       cardCount: cardResult.cardCount
     };
   } catch (error) {
-    console.error("❌ Card Picker Node Error:", error);
     return {
       selectedCards: [],
       error: `Card picker failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -130,10 +122,8 @@ async function cardPickerNode(state: typeof ReadingState.State) {
 // Node 3: Question Analyzer - Analyzes the question context (using database prompts)
 async function questionAnalyzerNode(state: typeof ReadingState.State) {
   try {
-    console.log("📊 Question Analyzer Node - Analyzing question context");
 
     if (!state.isValid || !state.selectedCards?.length) {
-      console.log("⚠️ Skipping analysis - invalid state");
       return { questionAnalysis: null };
     }
 
@@ -174,11 +164,9 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
     }
 
     const result = parsed.data;
-    console.log("✅ Question Analysis Result:", result);
 
     return { questionAnalysis: result };
   } catch (error) {
-    console.error("❌ Question Analyzer Node Error:", error);
     return {
       questionAnalysis: {
         mood: "อยากรู้",
@@ -193,14 +181,12 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
 // Node 4: Reading Agent - Generates the complete tarot reading (using database prompts)
 async function readingAgentNode(state: typeof ReadingState.State) {
   try {
-    console.log("🔮 Reading Agent Node - Generating reading");
 
     if (
       !state.isValid ||
       !state.selectedCards?.length ||
       !state.questionAnalysis
     ) {
-      console.log("⚠️ Skipping reading generation - invalid state");
       return { reading: null };
     }
 
@@ -229,7 +215,6 @@ Question Analysis:
 - Period: ${state.questionAnalysis.period}
 `;
 
-    console.log("🎯 Reading Context prepared, generating response...");
 
     const response = await readingAI.invoke([
       { role: "user", content: contextPrompt },
@@ -254,11 +239,9 @@ Question Analysis:
     }
 
     const reading = parsed.data;
-    console.log("✅ Reading Generated Successfully");
 
     return { reading };
   } catch (error) {
-    console.error("❌ Reading Agent Node Error:", error);
     return {
       reading: null,
       error: `Reading agent failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -269,22 +252,18 @@ Question Analysis:
 // Conditional routing function
 function shouldContinue(state: typeof ReadingState.State) {
   if (state.error) {
-    console.log("🛑 Workflow stopped due to error:", state.error);
     return "error";
   }
   
   if (!state.isValid) {
-    console.log("🛑 Workflow stopped - question not valid");
     return "invalid";
   }
   
   if (!state.selectedCards?.length) {
-    console.log("🛑 Workflow stopped - no cards selected");
     return "error";
   }
   
   if (!state.reading) {
-    console.log("🛑 Workflow stopped - no reading generated");
     return "error";
   }
   
@@ -311,8 +290,6 @@ export async function executeWorkflowWithDB(
   question: string,
   cardCount: number = 3
 ): Promise<ReadingStructure> {
-  console.log("🚀 Starting Tarot Reading Workflow (Database Prompts)");
-  console.log("📝 Question:", question);
 
   const startTime = Date.now();
 
@@ -334,17 +311,14 @@ export async function executeWorkflowWithDB(
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
 
-    console.log(`⏱️ Workflow completed in ${duration.toFixed(2)} seconds`);
 
     // Handle workflow result
     const result = shouldContinue(finalState);
     
     if (result === "success" && finalState.reading) {
-      console.log("✅ Reading generated successfully");
       return finalState.reading;
     } else {
       const errorMessage = finalState.error || "Unknown workflow error";
-      console.error("❌ Workflow failed:", errorMessage);
       throw new Error(errorMessage);
     }
 
@@ -352,7 +326,6 @@ export async function executeWorkflowWithDB(
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
     
-    console.error(`❌ Workflow failed after ${duration.toFixed(2)} seconds:`, error instanceof Error ? error.message : String(error));
     
     const errorMessage = error instanceof Error ? error.message : String(error);
     if (errorMessage.includes('timeout')) {

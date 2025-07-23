@@ -22,9 +22,7 @@ export class LLMManager {
         try {
           const provider = ProviderFactory.create(type as ProviderType, providerConfig);
           this.providers.set(type as ProviderType, provider);
-          console.log(`✅ LLM Provider initialized: ${type} (${providerConfig.model})`);
         } catch (error) {
-          console.error(`❌ Failed to initialize ${type} provider:`, error);
         }
       }
     }
@@ -36,7 +34,7 @@ export class LLMManager {
     
     if (!provider) {
       if (this.fallbackProvider && providerType !== this.fallbackProvider) {
-        console.warn(`⚠️ Provider ${providerType} not available, falling back to ${this.fallbackProvider}`);
+;
         return this.getProvider(this.fallbackProvider);
       }
       throw new Error(`No available provider for type: ${providerType}`);

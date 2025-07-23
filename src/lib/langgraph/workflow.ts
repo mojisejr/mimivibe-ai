@@ -32,7 +32,6 @@ export const ReadingState = Annotation.Root({
 // Node 1: Question Filter - Validates if the question is appropriate
 async function questionFilterNode(state: typeof ReadingState.State) {
   try {
-    console.log("🔍 Question Filter Node - Processing:", state.question);
 
     const filterAI = createProviderWithPrompt(SYSTEM_PROMPTS.questionFilter);
 
@@ -66,7 +65,6 @@ async function questionFilterNode(state: typeof ReadingState.State) {
       error: result.isValid ? "" : result.reason || "Question is invalid",
     };
   } catch (error) {
-    console.error("Question filter error:", error);
     return {
       isValid: false,
       validationReason: "Failed to validate question",
@@ -78,7 +76,6 @@ async function questionFilterNode(state: typeof ReadingState.State) {
 // Node 2: Card Picker - Randomly selects 3-5 cards
 async function cardPickerNode(state: typeof ReadingState.State) {
   try {
-    console.log("🎴 Card Picker Node - Selecting cards");
 
     if (!state.isValid) {
       return { error: "Cannot pick cards for invalid question" };
@@ -91,7 +88,6 @@ async function cardPickerNode(state: typeof ReadingState.State) {
       cardCount: cardResult.cardCount,
     };
   } catch (error) {
-    console.error("Card picker error:", error);
     return {
       error: "Failed to select cards",
     };
@@ -101,7 +97,6 @@ async function cardPickerNode(state: typeof ReadingState.State) {
 // Node 3: Question Analyzer - Analyzes mood, topic, and timeframe
 async function questionAnalyzerNode(state: typeof ReadingState.State) {
   try {
-    console.log("🔮 Question Analysis Node - Analyzing question");
 
     if (!state.isValid || !state.selectedCards) {
       return { error: "Cannot analyze invalid question or missing cards" };
@@ -140,7 +135,6 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
       },
     };
   } catch (error) {
-    console.error("Question analysis error:", error);
     return {
       error: "Failed to analyze question",
     };
@@ -150,7 +144,6 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
 // Node 4: Reading Agent - Generates the final tarot reading
 async function readingAgentNode(state: typeof ReadingState.State) {
   try {
-    console.log("✨ Reading Agent Node - Generating reading");
 
     if (!state.isValid || !state.selectedCards || !state.questionAnalysis) {
       return {
@@ -244,7 +237,6 @@ Return JSON with this structure:
         );
 
         // Try fallback provider
-        console.log("⚠️ Primary provider failed, trying fallback provider...");
         const fallbackAI = createProviderWithPrompt(
           SYSTEM_PROMPTS.readingAgent,
           "gemini"
@@ -280,10 +272,8 @@ Return JSON with this structure:
           };
         }
 
-        console.log("✅ Fallback provider succeeded");
       }
     } catch (error) {
-      console.error("Error in reading generation:", error);
       return { error: "Failed to generate reading" };
     }
 
@@ -306,7 +296,6 @@ Return JSON with this structure:
       },
     };
   } catch (error) {
-    console.error("Reading agent error:", error);
     return {
       error: "Failed to generate reading",
     };
@@ -346,7 +335,6 @@ export function createReadingWorkflow() {
 // Main function to run the complete reading workflow
 export async function generateTarotReading(question: string) {
   try {
-    console.log("🚀 Starting tarot reading workflow for question:", question);
 
     const workflow = createReadingWorkflow();
 
@@ -390,7 +378,6 @@ export async function generateTarotReading(question: string) {
       throw new Error(result.validationReason || "Invalid question");
     }
 
-    console.log("✅ Tarot reading workflow completed successfully");
 
     return {
       questionAnalysis: result.questionAnalysis,
@@ -399,7 +386,6 @@ export async function generateTarotReading(question: string) {
       reading: result.reading,
     };
   } catch (error) {
-    console.error("Workflow execution error:", error);
 
     // Handle timeout error with user-friendly message
     if (error instanceof Error && error.message === "TIMEOUT") {

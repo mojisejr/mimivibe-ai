@@ -22,7 +22,6 @@ export interface CardPickerResult {
  */
 export async function pickRandomCards(): Promise<CardPickerResult> {
   try {
-    console.log("🎴 Starting card selection process...");
 
     // Get all available card IDs from database
     const availableCards = await prisma.card.findMany({
@@ -34,11 +33,6 @@ export async function pickRandomCards(): Promise<CardPickerResult> {
       },
     });
 
-    console.log(
-      "🎴 Available card IDs:",
-      availableCards.map((c) => c.id)
-    );
-    console.log("🎴 Total cards in database:", availableCards.length);
 
     if (availableCards.length < 5) {
       throw new Error("Insufficient cards in database");
@@ -47,7 +41,6 @@ export async function pickRandomCards(): Promise<CardPickerResult> {
     // Randomly decide how many cards to select (3-5)
     // const cardCount = Math.floor(Math.random() * 3) + 3 // 3, 4, or 5 cards
     const cardCount = Math.random() < 0.5 ? 3 : 5;
-    console.log("🎴 Selected card count:", cardCount);
 
     // Shuffle available card IDs using Fisher-Yates algorithm (similar to n8n flow)
     const shuffledCardIds = [...availableCards.map((c) => c.id)];
@@ -61,7 +54,6 @@ export async function pickRandomCards(): Promise<CardPickerResult> {
 
     // Select first N cards from shuffled array
     const selectedIds = shuffledCardIds.slice(0, cardCount);
-    console.log("🎴 Selected card IDs:", selectedIds);
 
     // Fetch the selected cards
     const cards = await prisma.card.findMany({
@@ -81,11 +73,6 @@ export async function pickRandomCards(): Promise<CardPickerResult> {
       },
     });
 
-    console.log("🎴 Fetched cards from database:", cards.length, "cards");
-    console.log(
-      "🎴 Card details:",
-      cards.map((c) => ({ id: c.id, name: c.displayName }))
-    );
 
     // Add position numbers and maintain shuffle order
     const selectedCards: SelectedCard[] = cards.map((card, index) => ({
@@ -93,25 +80,14 @@ export async function pickRandomCards(): Promise<CardPickerResult> {
       position: index + 1,
     }));
 
-    console.log("🎴 Final selected cards:", selectedCards.length, "cards");
-    console.log(
-      "🎴 Final card details:",
-      selectedCards.map((c) => ({
-        id: c.id,
-        name: c.displayName,
-        position: c.position,
-      }))
-    );
 
     const result = {
       selectedCards,
       cardCount,
     };
 
-    console.log("🎴 Card selection completed successfully");
     return result;
   } catch (error) {
-    console.error("❌ Card picker error:", error);
     throw new Error("Failed to select cards");
   }
 }
