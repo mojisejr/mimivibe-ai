@@ -31,7 +31,7 @@ export const safeFormatDistanceToNow = (
       locale: th 
     });
   } catch (error) {
-    console.warn('Date formatting error:', error);
+    // Silent error handling for production
     return fallback;
   }
 };
@@ -75,7 +75,7 @@ export const safeFormatDate = <T>(
 
     return formatter(date);
   } catch (error) {
-    console.warn('Date formatting error:', error);
+    // Silent error handling for production
     return fallback;
   }
 };

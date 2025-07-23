@@ -68,21 +68,17 @@ export const usePaymentHistory = (initialLimit = 10) => {
         ...filterParams
       };
 
-      console.log('💳 Fetching payment history...', queryParams);
       
       const queryString = buildQueryString(queryParams);
       const response = await fetch(`/api/payments/history?${queryString}`);
 
-      console.log('💰 Payment History API Response:', response.status);
 
       if (!response.ok) {
-        console.error('❌ Payment History API Error:', response.status);
         throw new Error(`Failed to fetch payment history: ${response.status}`);
       }
 
       const result: PaymentHistoryResponse = await response.json();
 
-      console.log('💰 Raw Payment History Data:', result);
 
       if (!result.success || !result.data) {
         throw new Error("Invalid response format");

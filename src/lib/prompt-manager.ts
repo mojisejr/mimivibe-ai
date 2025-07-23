@@ -1,5 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { PromptEncryption } from './prompt-encryption';
+import chalk from 'chalk';
+import figlet from 'figlet';
+import boxen from 'boxen';
+import ora from 'ora';
 
 export interface PromptTestResult {
   templateId: number;
@@ -53,6 +57,9 @@ export class PromptManager {
    * Initialize prompts from existing prompts.ts file
    */
   public async initializePrompts(): Promise<void> {
+    console.log(chalk.cyan(figlet.textSync('Prompt Init', { horizontalLayout: 'fitted' })));
+    console.log(chalk.cyan('🚀 Initializing prompts from code...\n'));
+    
     // Import current prompts
     const currentPrompts = await import('./ai/prompts');
     
@@ -62,19 +69,26 @@ export class PromptManager {
       { name: 'readingAgent', content: currentPrompts.SYSTEM_PROMPTS.readingAgent }
     ];
 
+    let initialized = 0;
+    let skipped = 0;
+
     for (const { name, content } of promptEntries) {
       if (!content) {
-        console.log(`⚠️  Skipping ${name}: content is empty or undefined`);
+        console.log(chalk.yellow(`⚠️  Skipping ${name} (no content)`));
         continue;
       }
+
+      const spinner = ora(`Processing ${name}...`).start();
 
       const existing = await this.prisma.promptTemplate.findUnique({
         where: { name }
       });
 
       if (!existing) {
+        spinner.text = `Encrypting ${name}...`;
         const encryptedContent = await PromptEncryption.encrypt(content);
         
+        spinner.text = `Saving ${name} to database...`;
         await this.prisma.promptTemplate.create({
           data: {
             name,
@@ -93,11 +107,20 @@ export class PromptManager {
           }
         });
         
-        console.log(`✅ Initialized prompt: ${name}`);
+        spinner.succeed(chalk.green(`✅ Initialized ${name} (${content.length} chars)`));
+        initialized++;
       } else {
-        console.log(`⚠️  Prompt already exists: ${name}`);
+        spinner.succeed(chalk.yellow(`⏭️  Skipped ${name} (already exists)`));
+        skipped++;
       }
     }
+    
+    console.log('\n' + boxen(
+      chalk.green(`🎉 Initialization Complete!\n`) +
+      chalk.white(`✅ Initialized: ${initialized}\n`) +
+      chalk.gray(`⏭️  Skipped: ${skipped}`),
+      { padding: 1, borderColor: 'green', borderStyle: 'round' }
+    ));
   }
 
   /**
@@ -181,7 +204,6 @@ export class PromptManager {
       }
     });
 
-    console.log(`✅ Updated prompt '${name}' to version ${nextVersion}`);
     return nextVersion;
   }
 
@@ -226,7 +248,6 @@ export class PromptManager {
       }
     });
 
-    console.log(`✅ Activated prompt '${name}' version ${version}`);
   }
 
   /**
@@ -238,7 +259,6 @@ export class PromptManager {
       data: { isActive: false }
     });
 
-    console.log(`✅ Deactivated prompt '${name}'`);
   }
 
   /**

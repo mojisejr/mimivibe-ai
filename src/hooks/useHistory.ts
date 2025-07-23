@@ -87,21 +87,17 @@ export const useHistory = (initialLimit = 6) => {
         error: null 
       }));
 
-      console.log('📜 Fetching reading history...', { page, limit, append });
       const response = await fetch(
         `/api/readings/history?page=${page}&limit=${limit}`
       );
 
-      console.log('📊 History API Response:', response.status);
 
       if (!response.ok) {
-        console.error('❌ History API Error:', response.status);
         throw new Error(`Failed to fetch reading history: ${response.status}`);
       }
 
       const result = await response.json();
 
-      console.log('📊 Raw History Data:', result);
 
       // Validate response structure
       if (!result || typeof result !== 'object') {
@@ -112,7 +108,6 @@ export const useHistory = (initialLimit = 6) => {
       const apiData = result.success ? result.data : result;
       const pagination = apiData.pagination || {};
 
-      console.log('📊 Extracted History Data:', { apiData, pagination });
 
       // Ensure readings is always an array and map to expected structure
       const validatedResult = {

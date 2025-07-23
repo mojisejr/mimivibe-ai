@@ -37,7 +37,6 @@ export function PaymentConfirmation({
 
   const handleDownloadReceipt = () => {
     // This would generate and download a PDF receipt
-    console.log("Downloading receipt for transaction:", data?.transactionId);
     // Implementation would use a PDF generation library
   };
 
@@ -221,7 +220,6 @@ export function PaymentConfirmation({
                   className="btn btn-ghost btn-sm"
                   onClick={() => {
                     // This would open a help/contact modal
-                    console.log("Opening help center");
                   }}
                 >
                   Contact Support
