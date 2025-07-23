@@ -328,7 +328,7 @@ export const ReadingDetailModal = ({
           </div>
 
           {/* Suggestions */}
-          {reading.answer.suggestions &&
+          {/* {reading.answer.suggestions &&
             reading.answer.suggestions.length > 0 && (
               <div className="border-l-4 border-info/50 pl-6 py-4 mb-8">
                 <h3 className="heading-3 mb-4 text-base-content">คำแนะนำ</h3>
@@ -345,7 +345,7 @@ export const ReadingDetailModal = ({
                   ))}
                 </div>
               </div>
-            )}
+            )} */}
 
           {/* Final Thoughts */}
           {reading.answer.final && (
@@ -383,7 +383,7 @@ export const ReadingDetailModal = ({
           )}
 
           {/* Next Questions */}
-          {reading.answer.next_questions &&
+          {/* {reading.answer.next_questions &&
             reading.answer.next_questions.length > 0 && (
               <div className="border-l-4 border-accent/50 pl-6 py-4 mb-8">
                 <h3 className="heading-3 mb-4 text-base-content">คำถามแนะนำ</h3>
@@ -400,7 +400,7 @@ export const ReadingDetailModal = ({
                   ))}
                 </div>
               </div>
-            )}
+            )} */}
 
           {/* Review Status Display */}
           {hasReviewed && (

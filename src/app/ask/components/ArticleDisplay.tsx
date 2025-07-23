@@ -148,7 +148,7 @@ export function ArticleDisplay({
           </motion.section>
 
           {/* Suggestions */}
-          {readingData.reading.suggestions &&
+          {/* {readingData.reading.suggestions &&
             readingData.reading.suggestions.length > 0 && (
               <motion.section
                 className="mb-12 border-l-4 border-info/50 pl-8 py-6"
@@ -171,7 +171,7 @@ export function ArticleDisplay({
                   ))}
                 </ul>
               </motion.section>
-            )}
+            )} */}
 
           {/* Final Message */}
           {readingData.reading.final && (

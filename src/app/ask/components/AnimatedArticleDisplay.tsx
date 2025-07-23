@@ -137,7 +137,7 @@ export function AnimatedArticleDisplay({
 
   const handleSave = async () => {
     if (isSaving || isSaved) return;
-    
+
     setIsSaving(true);
     try {
       await onSave?.();
@@ -152,7 +152,7 @@ export function AnimatedArticleDisplay({
 
   const handleDelete = async () => {
     if (isDeleting) return;
-    
+
     setIsDeleting(true);
     try {
       await onDelete?.();
@@ -302,10 +302,13 @@ export function AnimatedArticleDisplay({
           <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 max-w-4xl mx-auto">
             {readingData.cards.map((card, index) => (
               <div key={card.id} className="text-center">
-                <div className="relative group mb-4 cursor-pointer" onClick={() => {
-                  setSelectedCard(card);
-                  setShowCardModal(true);
-                }}>
+                <div
+                  className="relative group mb-4 cursor-pointer"
+                  onClick={() => {
+                    setSelectedCard(card);
+                    setShowCardModal(true);
+                  }}
+                >
                   <AnimatedCardImage
                     src={card.imageUrl}
                     alt={card.displayName}
@@ -320,7 +323,15 @@ export function AnimatedArticleDisplay({
                   animate={{ opacity: cardsRevealed ? 1 : 0 }}
                   transition={{ delay: 2.4 + index * 0.6, duration: 0.3 }}
                 >
-                  {card.displayName || (card.name || '').split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                  {card.displayName ||
+                    (card.name || "")
+                      .split("_")
+                      .map(
+                        (word: string) =>
+                          word.charAt(0).toUpperCase() +
+                          word.slice(1).toLowerCase()
+                      )
+                      .join(" ")}
                 </motion.h3>
               </div>
             ))}
@@ -330,14 +341,20 @@ export function AnimatedArticleDisplay({
           <div className="md:hidden grid grid-cols-3 gap-3 max-w-sm mx-auto">
             {readingData.cards.map((card, index) => (
               <div key={card.id} className="text-center">
-                <div className="relative group mb-3 cursor-pointer" onClick={() => {
-                  setSelectedCard(card);
-                  setShowCardModal(true);
-                }}>
+                <div
+                  className="relative group mb-3 cursor-pointer"
+                  onClick={() => {
+                    setSelectedCard(card);
+                    setShowCardModal(true);
+                  }}
+                >
                   <motion.div
                     className="w-full aspect-[2/3] overflow-hidden rounded-lg shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02]"
                     initial={{ scale: 0, rotateY: 180 }}
-                    animate={{ scale: cardsRevealed ? 1 : 0, rotateY: cardsRevealed ? 0 : 180 }}
+                    animate={{
+                      scale: cardsRevealed ? 1 : 0,
+                      rotateY: cardsRevealed ? 0 : 180,
+                    }}
                     transition={{
                       duration: 0.8,
                       ease: "easeInOut",
@@ -371,7 +388,15 @@ export function AnimatedArticleDisplay({
                   animate={{ opacity: cardsRevealed ? 1 : 0 }}
                   transition={{ delay: 2.4 + index * 0.6, duration: 0.3 }}
                 >
-                  {card.displayName || (card.name || '').split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                  {card.displayName ||
+                    (card.name || "")
+                      .split("_")
+                      .map(
+                        (word: string) =>
+                          word.charAt(0).toUpperCase() +
+                          word.slice(1).toLowerCase()
+                      )
+                      .join(" ")}
                 </motion.h3>
               </div>
             ))}
@@ -392,7 +417,7 @@ export function AnimatedArticleDisplay({
           </motion.section>
 
           {/* Suggestions */}
-          {readingData.reading.suggestions &&
+          {/* {readingData.reading.suggestions &&
             readingData.reading.suggestions.length > 0 && (
               <motion.section
                 className="mb-12 border-l-4 border-info/50 pl-8 py-6 reading-section"
@@ -412,7 +437,7 @@ export function AnimatedArticleDisplay({
                   ))}
                 </ul>
               </motion.section>
-            )}
+            )} */}
 
           {/* Final Message */}
           {readingData.reading.final && (
@@ -534,7 +559,7 @@ export function AnimatedArticleDisplay({
                   className={`btn flex-1 ${
                     isSaved
                       ? "btn-ghost text-success"
-                      : isSaving 
+                      : isSaving
                       ? "btn-ghost text-neutral loading"
                       : "btn btn-ghost text-primary"
                   }`}
@@ -558,9 +583,9 @@ export function AnimatedArticleDisplay({
                   onClick={handleDelete}
                   disabled={isDeleting}
                   className={`btn flex-1 ${
-                    isDeleting 
-                    ? "btn-ghost text-neutral loading"
-                    : "btn-ghost text-error"
+                    isDeleting
+                      ? "btn-ghost text-neutral loading"
+                      : "btn-ghost text-error"
                   }`}
                   whileHover={{ scale: isDeleting ? 1 : 1.02 }}
                   whileTap={{ scale: isDeleting ? 1 : 0.98 }}
@@ -634,9 +659,9 @@ export function AnimatedArticleDisplay({
                   onClick={handleDelete}
                   disabled={isDeleting}
                   className={`btn btn-sm ${
-                    isDeleting 
-                    ? "btn-ghost text-neutral loading"
-                    : "btn-ghost text-error"
+                    isDeleting
+                      ? "btn-ghost text-neutral loading"
+                      : "btn-ghost text-error"
                   }`}
                   whileHover={{ scale: isDeleting ? 1 : 1.02 }}
                   whileTap={{ scale: isDeleting ? 1 : 0.98 }}
@@ -646,9 +671,7 @@ export function AnimatedArticleDisplay({
                   ) : (
                     <span className="text-xs">🗑️</span>
                   )}
-                  <span className="text-xs">
-                    {isDeleting ? "ลบ..." : "ลบ"}
-                  </span>
+                  <span className="text-xs">{isDeleting ? "ลบ..." : "ลบ"}</span>
                 </motion.button>
               </div>
             </div>
@@ -721,11 +744,11 @@ export function AnimatedArticleDisplay({
               >
                 <X className="w-4 h-4" />
               </button>
-              
+
               {/* Card Image - Smaller */}
               <div className="relative bg-white p-4">
                 <div className="w-32 h-48 mx-auto">
-                  <img 
+                  <img
                     src={selectedCard.imageUrl}
                     alt={selectedCard.displayName}
                     className="w-full h-full object-contain rounded-lg"
@@ -736,9 +759,17 @@ export function AnimatedArticleDisplay({
               {/* Card Info - Compact */}
               <div className="p-4 space-y-3">
                 <h3 className="text-lg font-bold text-base-content text-center">
-                  {selectedCard.displayName || (selectedCard.name || '').split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                  {selectedCard.displayName ||
+                    (selectedCard.name || "")
+                      .split("_")
+                      .map(
+                        (word: string) =>
+                          word.charAt(0).toUpperCase() +
+                          word.slice(1).toLowerCase()
+                      )
+                      .join(" ")}
                 </h3>
-                
+
                 {selectedCard.keywords && (
                   <div>
                     <h4 className="font-semibold text-base-content mb-2 text-sm">
@@ -749,7 +780,7 @@ export function AnimatedArticleDisplay({
                     </p>
                   </div>
                 )}
-                
+
                 <button
                   onClick={() => {
                     setShowCardModal(false);
