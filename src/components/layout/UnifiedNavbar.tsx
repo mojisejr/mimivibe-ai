@@ -52,7 +52,7 @@ export function UnifiedNavbar({
     { href: '/ask', label: 'ถามไพ่', icon: '🔮' },
     { href: '/history', label: 'ประวัติ', icon: '📜' },
     { href: '/payments', label: 'การชำระ', icon: '💳' },
-    { href: '/events', label: 'กิจกรรม', icon: '🎉', badge: achievementsData?.count },
+    { href: '/events', label: 'กิจกรรม', icon: '🎉', badge: achievementsData?.count && achievementsData.count > 0 ? achievementsData.count : undefined },
     { href: '/exchange', label: 'แลกเปลี่ยน', icon: '🪙' },
     { href: '/profile', label: 'โปรไฟล์', icon: '👤' },
     { href: '/packages', label: 'แพ็คเกจ', icon: '💎' }
