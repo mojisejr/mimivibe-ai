@@ -33,10 +33,10 @@ export function UnifiedNavbar({
 
   // Auto-hide functionality
   useMotionValueEvent(scrollY, "change", (latest) => {
-    if (!autoHide) return
+    if (!autoHide || typeof window === 'undefined') return
     
     const previous = scrollY.getPrevious()
-    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
+    const isDesktop = window.innerWidth >= 1024
     if (!isDesktop && previous !== undefined && latest > previous && latest > 150) {
       setHidden(true)
     } else {

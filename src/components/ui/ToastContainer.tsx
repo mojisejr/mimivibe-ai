@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react'
 import { Toast, ToastProps } from './Toast'
 
 interface ToastContextType {
@@ -24,6 +24,11 @@ interface ToastProviderProps {
 
 export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<(ToastProps & { id: string })[]>([])
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const addToast = useCallback((toast: Omit<ToastProps, 'id' | 'onClose'>) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
@@ -37,7 +42,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
   return (
     <ToastContext.Provider value={{ addToast, removeToast }}>
       {children}
-      <ToastContainer toasts={toasts} />
+      {isMounted && <ToastContainer toasts={toasts} />}
     </ToastContext.Provider>
   )
 }
