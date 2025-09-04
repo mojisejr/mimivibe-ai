@@ -45,35 +45,41 @@ export async function POST(request: NextRequest) {
           id: permanentReadingId,
           userId,
           question: question.trim(),
-          answer: answer as any, // Store as JSON object
-          type: 'tarot'
+          answer: answer, // Store as JSON object (Prisma handles JSON type)
+          type: 'tarot',
+          isDeleted: false,
+          isReviewed: false
         }
       })
 
       // Create reading-card relationships
-      await tx.readingCard.createMany({
-        data: selectedCards.map((card: any) => ({
-          readingId: reading.id,
-          cardId: card.id,
-          position: card.position
-        }))
-      })
+      if (selectedCards && selectedCards.length > 0) {
+        await tx.readingCard.createMany({
+          data: selectedCards.map((card: any) => ({
+            readingId: reading.id,
+            cardId: card.id,
+            position: card.position
+          }))
+        })
+      }
 
       // Update the transaction record to include the permanent reading ID
       const existingTransaction = await tx.pointTransaction.findUnique({ 
         where: { id: transactionId } 
       });
       
-      await tx.pointTransaction.update({
-        where: { id: transactionId },
-        data: {
-          metadata: {
-            ...(existingTransaction?.metadata as any || {}),
-            readingId: reading.id,
-            permanentReadingId: reading.id
+      if (existingTransaction) {
+        await tx.pointTransaction.update({
+          where: { id: transactionId },
+          data: {
+            metadata: {
+              ...(existingTransaction?.metadata as any || {}),
+              readingId: reading.id,
+              permanentReadingId: reading.id
+            }
           }
-        }
-      })
+        })
+      }
 
       return {
         readingId: reading.id,

@@ -41,7 +41,10 @@ export async function POST(
     // For now, we'll just mark it as reviewed
     await prisma.reading.update({
       where: { id: readingId },
-      data: { isReviewed: true }
+      data: { 
+        isReviewed: true,
+        updatedAt: new Date()
+      }
     })
 
     return NextResponse.json({

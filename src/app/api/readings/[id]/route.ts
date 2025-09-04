@@ -51,16 +51,21 @@ export async function GET(
         id: reading.id,
         question: reading.question,
         answer: reading.answer,
+        type: reading.type,
         cards: reading.cards.map(rc => ({
           id: rc.Card.id,
           name: rc.Card.name,
           displayName: rc.Card.displayName,
           imageUrl: rc.Card.imageUrl,
           position: rc.position,
-          shortMeaning: rc.Card.shortMeaning
+          shortMeaning: rc.Card.shortMeaning,
+          arcana: rc.Card.arcana,
+          keywords: rc.Card.keywords
         })),
         createdAt: reading.createdAt.toISOString(),
-        isReviewed: reading.isReviewed
+        updatedAt: reading.updatedAt.toISOString(),
+        isReviewed: reading.isReviewed,
+        isDeleted: reading.isDeleted
       }
     })
 
@@ -108,7 +113,10 @@ export async function DELETE(
     // Soft delete the reading
     await prisma.reading.update({
       where: { id: readingId },
-      data: { isDeleted: true }
+      data: { 
+        isDeleted: true,
+        updatedAt: new Date()
+      }
     })
 
     return NextResponse.json({

@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
         where: { userId, isDeleted: false }
       })
       
-      if (userReadingCount === 1) {
+      if (userReadingCount === 0) { // Changed from === 1 to === 0 since we haven't saved the reading yet
         // This is first reading, try to claim referral reward
         const referralCode = await prisma.referralCode.findFirst({
           where: { 

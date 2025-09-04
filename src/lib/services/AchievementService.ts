@@ -67,7 +67,6 @@ export class AchievementService {
           Review: true,
           ReferralCode: true,
           PointTransaction: true,
-          loginStreak: true,
         }
       });
 
@@ -246,8 +245,8 @@ export class AchievementService {
       }
 
       if (criteria.loginStreak || criteria.streakDays) {
-        const { StreakService } = await import("@/lib/services/StreakService");
-        const currentStreak = await StreakService.getCurrentStreakCount(user.id);
+        // Streak functionality removed - using default value
+        const currentStreak = 0;
         const required = criteria.loginStreak || criteria.streakDays;
         criteriaResults.push({ 
           current: currentStreak, 
@@ -288,8 +287,8 @@ export class AchievementService {
     }
     
     if (criteria.loginStreak || criteria.streakDays) {
-      const { StreakService } = await import("@/lib/services/StreakService");
-      const currentStreak = await StreakService.getCurrentStreakCount(user.id);
+      // Streak functionality removed - using default value
+        const currentStreak = 0;
       const required = criteria.loginStreak || criteria.streakDays;
       return { current: currentStreak, required };
     }
