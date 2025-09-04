@@ -190,13 +190,20 @@ This project uses a Two-Issue Pattern to separate work context from actionable p
 
 ### Shortcut Commands
 
-These commands are standard across all projects and streamline our communication.
+These commands are standard across all projects and streamline our communication with **AUTOMATED WORKFLOW INTEGRATION**.
 
 - **`=fcs > [message]`**: Updates the `current-focus.md` file on the local machine and creates a **GitHub Context Issue** with the specified `[message]` as the title. **WARNING**: This command will only work if there are no open GitHub issues. If there are, the agent will alert you to clear the backlog before you can save a new context. To bypass this check, use the command `=fcs -f > [message]`.
 
 - **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. The agent will use all the information from the `current-focus.md` file and previous conversations to create this Issue. If an open Task Issue already exists, the agent will **update** that Issue with the latest information instead of creating a new one.
 
-- **`=impl > [message]`**: Instructs the agent to execute the plan contained in the latest **GitHub Task Issue**. If you include a `[message]`, the agent will consider it as an addition to the original plan and process it before beginning the implementation.
+- **`=impl > [message]`**: **ENHANCED WITH AUTOMATED WORKFLOW** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
+
+  1. **Auto-Branch Creation**: Creates feature branch with proper naming (`feature/[issue-number]-[description]`)
+  2. **Implementation**: Executes the planned work
+  3. **Auto-Commit & Push**: Commits changes with descriptive messages and pushes to remote
+  4. **Auto-PR Creation**: Creates Pull Request with proper description and issue references
+  5. **Issue Updates**: Updates the plan issue with PR link and completion status
+  6. **User Notification**: Provides PR link for review and approval
 
 - **`=rrr > [message]`**: Creates a daily Retrospective file in the `docs/retrospective/` folder and creates a GitHub Issue containing a summary of the work, an AI Diary, and Honest Feedback, allowing you and the team to review the session accurately.
 
@@ -210,36 +217,85 @@ These commands are standard across all projects and streamline our communication
 - **Never create new issues**: For ongoing multi-phase work, always update the existing plan issue (#20 for current system refactor)
 - **Retrospective issues**: Only create retrospective issues for session summaries, not for plan updates
 
-### 🌿 Branch Management & Pull Request Workflow
+### 🌿 Automated Workflow Implementation
 
-**MANDATORY WORKFLOW**: Every feature implementation must follow this exact process:
+**ENHANCED AUTOMATION**: All development workflows now include full automation to ensure consistent adherence to project guidelines.
 
-1. **Checkout New Branch**: Always create a new branch for each feature/phase implementation
+#### Enhanced Command Behavior
 
-   ```bash
-   git checkout -b feature/phase-X-implementation
-   ```
+The following commands now include **FULL WORKFLOW AUTOMATION**:
 
-2. **Implementation**: Complete the planned work in the new branch
+##### `=impl` Command Enhancement
 
-3. **Commit & Push**: After completing implementation, commit and push changes
+**Automated Execution Flow:**
 
-   ```bash
-   git add .
-   git commit -m "feat: implement phase X - [description]"
-   git push origin feature/phase-X-implementation
-   ```
+```
+1. Parse GitHub Task Issue → Extract requirements and scope
+2. Auto-Branch Creation → feature/[issue-number]-[sanitized-description]
+3. Implementation Phase → Execute planned work with progress tracking
+4. Auto-Commit & Push → Descriptive commits with proper formatting
+5. Auto-PR Creation → Comprehensive PR with issue linking
+6. Issue Updates → Update plan issue with PR link and completion status
+7. User Notification → Provide PR URL for review and approval
+```
 
-4. **Create Pull Request**: Create a PR for review, **NEVER merge automatically**
+##### Branch Naming Convention
 
-   - Provide clear description of changes
-   - Reference the plan issue number
-   - Wait for user approval before merging
+- **Format**: `feature/[issue-number]-[sanitized-description]`
+- **Example**: `feature/27-deployment-production-implementation`
+- **Auto-sanitization**: Removes special characters, converts to kebab-case
 
-5. **Update Plan Issue**: After creating PR, update the plan issue with:
-   - Link to the created PR
-   - Mark completed phases as ✅ COMPLETED
-   - Update next steps and current status
+##### Commit Message Standards
+
+- **Format**: `[type]: [description] (#[issue-number])`
+- **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- **Example**: `feat: implement user authentication system (#25)`
+
+##### Pull Request Automation
+
+- **Title**: Auto-generated from issue title with proper formatting
+- **Description**: Includes implementation summary, changes made, and testing notes
+- **Issue Linking**: Automatic `Closes #[issue-number]` for proper tracking
+- **Labels**: Auto-applied based on implementation type and scope
+
+#### Workflow Safety Measures
+
+- **Branch Protection**: Prevents direct commits to main/master
+- **PR Validation**: Ensures all changes go through review process
+- **Issue Tracking**: Maintains complete audit trail of work
+- **Status Updates**: Real-time progress tracking and notifications
+
+**CRITICAL**: **NEVER** work directly on main/master branch. **ALWAYS** create PRs for review.
+
+### Implementation Guidelines for Automated Workflow
+
+#### Pre-Implementation Checks
+
+- ✅ Verify GitHub Task Issue exists and is properly formatted
+- ✅ Ensure no conflicting branches exist
+- ✅ Confirm GitHub CLI is authenticated and functional
+- ✅ Validate repository permissions for branch creation and PR management
+
+#### Error Handling and Fallbacks
+
+- **Branch Creation Failure**: Falls back to manual branch creation with user guidance
+- **Push Failure**: Provides manual push commands and troubleshooting steps
+- **PR Creation Failure**: Falls back to manual PR creation with pre-filled templates
+- **Issue Update Failure**: Logs error and provides manual update instructions
+
+#### Quality Assurance
+
+- **Code Review**: All PRs require manual review and approval
+- **Testing**: Automated tests run on PR creation (if configured)
+- **Documentation**: Auto-generated PR descriptions include implementation details
+- **Rollback**: Clear instructions for reverting changes if needed
+
+#### Monitoring and Feedback
+
+- **Progress Tracking**: Real-time updates during implementation phases
+- **Success Metrics**: PR creation success rate and review completion time
+- **User Feedback**: Continuous improvement based on workflow effectiveness
+- **Audit Trail**: Complete history of automated actions for debugging
 
 ---
 

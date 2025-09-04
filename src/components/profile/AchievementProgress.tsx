@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useReadyAchievements } from "@/hooks/useReadyAchievements";
+
 import { useProfile } from "@/hooks/useProfile";
 import { useState, useEffect } from "react";
 
@@ -13,7 +12,8 @@ interface AchievementStats {
 }
 
 export function AchievementProgress() {
-  const { data: achievementsData, loading } = useReadyAchievements();
+
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AchievementStats>({ 
     completed: 0, 
     ready: 0, 
@@ -40,10 +40,12 @@ export function AchievementProgress() {
             const total = achievements.length;
 
             setStats({ completed, ready, inProgress, total });
+            setLoading(false);
           }
         }
       } catch (error) {
         console.error('Failed to fetch achievement stats:', error);
+        setLoading(false);
       }
     };
 
@@ -117,12 +119,7 @@ export function AchievementProgress() {
           </div>
         )}
 
-        <div className="card-actions justify-end">
-          <Link href="/events" className="btn btn-primary w-full">
-            <span className="mr-2">🏆</span>
-            ดูความสำเร็จทั้งหมด
-          </Link>
-        </div>
+
       </div>
     </div>
   );

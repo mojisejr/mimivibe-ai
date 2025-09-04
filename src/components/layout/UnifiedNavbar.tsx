@@ -5,7 +5,6 @@ import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-
 import { useRouter, usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import { useProfile } from '@/hooks/useProfile'
-import { useReadyAchievements } from '@/hooks/useReadyAchievements'
 
 interface UnifiedNavbarProps {
   autoHide?: boolean
@@ -26,7 +25,7 @@ export function UnifiedNavbar({
   const router = useRouter()
   const pathname = usePathname()
   const { data: profileData, loading } = useProfile()
-  const { data: achievementsData } = useReadyAchievements()
+
 
   // State-based visibility (only for /ask page)
   const shouldShowBasedOnState = !showInStates || !currentState || showInStates.includes(currentState)
@@ -52,7 +51,6 @@ export function UnifiedNavbar({
     { href: '/ask', label: 'ถามไพ่', icon: '🔮' },
     { href: '/history', label: 'ประวัติ', icon: '📜' },
     { href: '/payments', label: 'การชำระ', icon: '💳' },
-    { href: '/events', label: 'กิจกรรม', icon: '🎉', badge: achievementsData?.count && achievementsData.count > 0 ? achievementsData.count : undefined },
     { href: '/exchange', label: 'แลกเปลี่ยน', icon: '🪙' },
     { href: '/profile', label: 'โปรไฟล์', icon: '👤' },
     { href: '/packages', label: 'แพ็คเกจ', icon: '💎' }
@@ -90,11 +88,7 @@ export function UnifiedNavbar({
         <div className="hidden md:flex items-center space-x-6">
           {navigationLinks.map((link) => (
             <div key={link.href} className="relative">
-              {link.badge && link.badge > 0 && (
-                <div className="absolute -top-2 -right-2 bg-primary text-primary-content text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold z-10">
-                  {link.badge}
-                </div>
-              )}
+
               <button
                 onClick={() => router.push(link.href)}
                 className={`btn btn-ghost btn-sm transition-colors duration-200 ${
@@ -138,21 +132,7 @@ export function UnifiedNavbar({
             ) : null}
           </div>
 
-          {/* Achievement Notification Badge */}
-          {achievementsData && achievementsData.count > 0 && (
-            <div className="indicator">
-              <span className="indicator-item badge badge-primary badge-sm">
-                {achievementsData.count}
-              </span>
-              <button
-                onClick={() => router.push('/events')}
-                className="btn btn-ghost btn-circle btn-sm"
-                title={`${achievementsData.count} ความสำเร็จพร้อมรับ`}
-              >
-                <div className="text-xl">🏆</div>
-              </button>
-            </div>
-          )}
+
 
           {/* Desktop: User Button */}
           <div className="hidden md:block">
@@ -278,9 +258,7 @@ export function UnifiedNavbar({
                         <span className="text-xl">{link.icon}</span>
                         <span className="font-medium text-sm">{link.label}</span>
                         <div className="ml-auto flex items-center space-x-2">
-                          {link.badge && link.badge > 0 && (
-                            <span className="badge badge-primary badge-sm">{link.badge}</span>
-                          )}
+
                           {isCurrentPage(link.href) && (
                             <motion.div
                               layoutId="mobileActiveIndicator"

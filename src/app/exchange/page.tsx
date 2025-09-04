@@ -103,7 +103,7 @@ export default function ExchangePage() {
       <div className="min-h-screen bg-base-100">
         <UnifiedNavbar />
         <div className="pt-20 px-4 pb-8">
-          <SkeletonLoader type="events" />
+          <SkeletonLoader type="stats" />
         </div>
       </div>
     );
