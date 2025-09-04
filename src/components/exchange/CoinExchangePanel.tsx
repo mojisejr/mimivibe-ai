@@ -33,7 +33,7 @@ export function CoinExchangePanel({
   const [exchanging, setExchanging] = useState(false);
   const { addToast } = useToast();
 
-  const currentCoins = profileData?.stats.totalCoins || 0;
+  const currentCoins = profileData?.stats.coins || 0;
 
   const calculateReceived = (type: "star" | "credit", coins: number): number => {
     if (type === "star") {

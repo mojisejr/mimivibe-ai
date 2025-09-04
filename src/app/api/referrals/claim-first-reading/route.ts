@@ -1,77 +1,78 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs'
-import { prisma } from '@/lib/prisma'
-import { GAMIFICATION_CONFIG } from '@/lib/gamification/levels'
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs";
+import { prisma } from "@/lib/prisma";
+// Gamification config removed during refactor
 
 // Force dynamic rendering for authentication
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = auth()
-    
+    const { userId } = auth();
+
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json()
-    const { readingId } = body
+    const body = await request.json();
+    const { readingId } = body;
 
     if (!readingId) {
       return NextResponse.json(
-        { error: 'Reading ID is required' },
+        { error: "Reading ID is required" },
         { status: 400 }
-      )
+      );
     }
 
     // Check if this is the user's first reading
     const userReadings = await prisma.reading.count({
-      where: { userId, isDeleted: false }
-    })
+      where: { userId, isDeleted: false },
+    });
 
     if (userReadings !== 1) {
       return NextResponse.json(
-        { error: 'This is not the first reading' },
+        { error: "This is not the first reading" },
         { status: 400 }
-      )
+      );
     }
 
     // Check if user was referred
     const referralCode = await prisma.referralCode.findFirst({
-      where: { 
-        userId, 
+      where: {
+        userId,
         referredBy: { not: null },
-        isUsed: true 
-      }
-    })
+        isUsed: true,
+      },
+    });
 
     if (!referralCode || !referralCode.referredBy) {
       return NextResponse.json(
-        { error: 'User was not referred' },
+        { error: "User was not referred" },
         { status: 400 }
-      )
+      );
     }
 
     // Check if referrer reward has already been given
     const existingReward = await prisma.pointTransaction.findFirst({
       where: {
         userId: referralCode.referredBy,
-        eventType: 'REFERRAL_FIRST_READING',
+        eventType: "REFERRAL_FIRST_READING",
         metadata: {
-          path: ['referredUserId'],
-          equals: userId
-        }
-      }
-    })
+          path: ["referredUserId"],
+          equals: userId,
+        },
+      },
+    });
 
     if (existingReward) {
       return NextResponse.json(
-        { error: 'Referrer reward already given' },
+        { error: "Referrer reward already given" },
         { status: 409 }
-      )
+      );
     }
 
-    const { referrerReward } = GAMIFICATION_CONFIG.referral
+    // Referral rewards removed during gamification refactor
+    const referrerReward = { exp: 25, coins: 0, stars: 1 };
 
     // Give referrer reward for first reading completion
     await prisma.$transaction(async (tx) => {
@@ -81,41 +82,40 @@ export async function POST(request: NextRequest) {
         data: {
           exp: { increment: referrerReward.exp },
           coins: { increment: referrerReward.coins },
-          stars: { increment: referrerReward.stars }
-        }
-      })
+          stars: { increment: referrerReward.stars },
+        },
+      });
 
       // Record the transaction
       await tx.pointTransaction.create({
         data: {
           id: `referral_first_reading_${referralCode.referredBy!}_${Date.now()}`,
           userId: referralCode.referredBy!,
-          eventType: 'REFERRAL_FIRST_READING',
+          eventType: "REFERRAL_FIRST_READING",
           deltaPoint: referrerReward.stars,
           deltaCoins: referrerReward.coins,
           deltaExp: referrerReward.exp,
-          metadata: { 
+          metadata: {
             referredUserId: userId,
             readingId,
-            rewardType: 'first_reading_completion'
-          }
-        }
-      })
-    })
+            rewardType: "first_reading_completion",
+          },
+        },
+      });
+    });
 
     return NextResponse.json({
       success: true,
       data: {
         referrerReward,
-        referrerId: referralCode.referredBy!
-      }
-    })
-
+        referrerId: referralCode.referredBy!,
+      },
+    });
   } catch (error) {
-    console.error('Claim first reading referral error:', error)
+    console.error("Claim first reading referral error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
-    )
+    );
   }
 }

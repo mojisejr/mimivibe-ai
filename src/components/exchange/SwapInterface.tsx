@@ -21,7 +21,7 @@ export function SwapInterface({
   const [isSwapping, setIsSwapping] = useState(false);
   const { addToast } = useToast();
 
-  const currentCoins = profileData?.stats.totalCoins || 0;
+  const currentCoins = profileData?.stats.coins || 0;
   const currentFreePoints = profileData?.credits.freePoint || 0;
 
   const calculateFreePoints = (coins: number): number => {

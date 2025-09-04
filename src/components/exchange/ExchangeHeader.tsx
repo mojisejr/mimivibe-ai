@@ -38,7 +38,7 @@ export function ExchangeHeader() {
               {loading ? (
                 <div className="skeleton h-8 w-24 mx-auto rounded"></div>
               ) : (
-                `${(profileData?.stats.totalCoins || 0).toLocaleString()}`
+                `${(profileData?.stats.coins || 0).toLocaleString()}`
               )}
             </div>
             <div className="text-sm text-base-content/70 font-medium">COIN</div>
