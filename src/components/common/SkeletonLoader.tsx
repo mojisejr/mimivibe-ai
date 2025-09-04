@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 interface SkeletonLoaderProps {
-  type: "profile" | "history" | "stats" | "events";
+  type: "profile" | "history" | "stats";
   animate?: boolean;
 }
 
@@ -15,8 +15,7 @@ export function SkeletonLoader({ type, animate = true }: SkeletonLoaderProps) {
       return <SkeletonGrid count={6} columns={2} animate={animate} />;
     case "stats":
       return <SkeletonStats animate={animate} />;
-    case "events":
-      return <SkeletonEvents animate={animate} />;
+
     default:
       return <SkeletonProfile animate={animate} />;
   }
@@ -269,112 +268,6 @@ export function SkeletonSearchFilters({ animate = true }: { animate?: boolean })
         <div className="flex items-center justify-between">
           <Skeleton className="h-4 w-32" animate={animate} />
           <Skeleton className="h-4 w-20" animate={animate} />
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-export function SkeletonEvents({ animate = true }: { animate?: boolean }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="max-w-4xl mx-auto space-y-8"
-    >
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <Skeleton className="h-10 w-64 mx-auto" animate={animate} />
-        <Skeleton className="h-6 w-96 mx-auto" animate={animate} />
-        
-        {/* Status Display */}
-        <div className="bg-base-200 rounded-2xl p-6">
-          <div className="flex items-center justify-center space-x-8 mb-4">
-            <div className="text-center">
-              <Skeleton className="h-8 w-12 mx-auto mb-2" animate={animate} />
-              <Skeleton className="h-4 w-16 mx-auto" animate={animate} />
-            </div>
-            <div className="text-center">
-              <Skeleton className="h-8 w-16 mx-auto mb-2" animate={animate} />
-              <Skeleton className="h-4 w-16 mx-auto" animate={animate} />
-            </div>
-            <div className="text-center">
-              <Skeleton className="h-8 w-20 mx-auto mb-2" animate={animate} />
-              <Skeleton className="h-4 w-16 mx-auto" animate={animate} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <Skeleton className="h-4 w-20" animate={animate} />
-              <Skeleton className="h-4 w-24" animate={animate} />
-            </div>
-            <Skeleton className="h-2 w-full rounded-full" animate={animate} />
-          </div>
-        </div>
-      </div>
-
-      {/* Calendar */}
-      <div className="space-y-6">
-        <div className="bg-base-200 rounded-2xl p-6">
-          <div className="text-center space-y-2 mb-6">
-            <Skeleton className="h-8 w-48 mx-auto" animate={animate} />
-            <Skeleton className="h-5 w-64 mx-auto" animate={animate} />
-            <div className="flex justify-center items-center space-x-4 mt-4">
-              <Skeleton className="h-8 w-32 rounded-full" animate={animate} />
-              <Skeleton className="h-8 w-32 rounded-full" animate={animate} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-base-100 rounded-2xl p-6 border border-base-300">
-          <div className="grid grid-cols-7 gap-3 mb-4">
-            {Array.from({ length: 7 }).map((_, index) => (
-              <Skeleton key={index} className="h-8 w-8 mx-auto" animate={animate} />
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-3">
-            {Array.from({ length: 31 }).map((_, index) => (
-              <Skeleton key={index} className="aspect-square rounded-xl" animate={animate} />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Achievements */}
-      <div className="space-y-6">
-        <div className="text-center">
-          <Skeleton className="h-8 w-40 mx-auto mb-2" animate={animate} />
-          <Skeleton className="h-5 w-64 mx-auto" animate={animate} />
-        </div>
-
-        <div className="bg-base-200 rounded-2xl p-6">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index}>
-                <Skeleton className="h-8 w-8 mx-auto mb-2" animate={animate} />
-                <Skeleton className="h-4 w-16 mx-auto" animate={animate} />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="bg-base-100 rounded-xl p-4 border border-base-300">
-              <div className="flex items-start space-x-4">
-                <Skeleton className="w-12 h-12 rounded-full" animate={animate} />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-3/4" animate={animate} />
-                  <Skeleton className="h-3 w-1/2" animate={animate} />
-                  <Skeleton className="h-2 w-full" animate={animate} />
-                  <div className="flex items-center space-x-2">
-                    <Skeleton className="h-5 w-16 rounded-full" animate={animate} />
-                    <Skeleton className="h-5 w-16 rounded-full" animate={animate} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </motion.div>
