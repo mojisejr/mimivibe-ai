@@ -16,6 +16,54 @@
 
 ---
 
+## 🌏 Timezone & Date Configuration
+
+### Thailand Timezone Settings
+
+**Primary Timezone**: Asia/Bangkok (UTC+7)
+**Date Format**: Christian Era (ค.ศ.) - YYYY-MM-DD
+**Time Format**: 24-hour format (HH:MM)
+**Locale**: th-TH with Christian Era calendar
+
+### Development Guidelines
+
+#### Date/Time Handling
+```javascript
+// Use this utility for consistent timezone handling
+const getThailandDateTime = () => {
+  return new Date().toLocaleString('th-TH', {
+    timeZone: 'Asia/Bangkok',
+    year: 'numeric',
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    calendar: 'gregory' // Christian Era
+  });
+};
+
+// For file naming (retrospectives, logs)
+const getThailandDateForFilename = () => {
+  const now = new Date();
+  return now.toLocaleDateString('en-CA', {
+    timeZone: 'Asia/Bangkok'
+  }); // Returns YYYY-MM-DD format
+};
+```
+
+#### File Naming Conventions
+- **Retrospective Files**: `session-YYYY-MM-DD-[description].md`
+- **Log Files**: `YYYY-MM-DD-[type].log`
+- **Backup Files**: `backup-YYYY-MM-DD-HHMM.sql`
+
+#### Important Notes
+- **ALL timestamps** in documentation, logs, and file names must use Thailand timezone
+- **Year format** must always be Christian Era (ค.ศ.) not Buddhist Era (พ.ศ.)
+- **Development sessions** should reference Thailand local time
+- **Retrospective files** must use correct Thailand date in filename
+
+---
+
 ## Architecture Overview
 
 ### Core Structure
@@ -333,9 +381,9 @@ When you use the `=rrr` command, the agent will create a file and an Issue with 
 
 ### Session Retrospective
 
-**Session Date**: [Date]
-**Start Time**: [Start Time]
-**End Time**: [End Time]
+**Session Date**: [Date in YYYY-MM-DD format, Thailand timezone]
+**Start Time**: [HH:MM Thailand time]
+**End Time**: [HH:MM Thailand time]
 **Duration**: ~X minutes
 **Primary Focus**: [Main Focus]
 **Current Issue**: #XXX
@@ -347,10 +395,17 @@ When you use the `=rrr` command, the agent will create a file and an Issue with 
 
 ### Timeline
 
-- HH:MM - Start, review issue #XXX
-- HH:MM - [Event]
-- HH:MM - [Event]
-- HH:MM - Work completed
+- HH:MM - Start, review issue #XXX (Thailand time)
+- HH:MM - [Event] (Thailand time)
+- HH:MM - [Event] (Thailand time)
+- HH:MM - Work completed (Thailand time)
+
+### Timezone Guidelines for Retrospectives
+
+- **File Naming**: Use `session-YYYY-MM-DD-[description].md` format with Thailand date
+- **All Times**: Must be in Thailand timezone (Asia/Bangkok, UTC+7)
+- **Date Format**: Christian Era (ค.ศ.) in YYYY-MM-DD format
+- **Example**: `session-2025-01-25-thailand-timezone-implementation.md`
 
 ### 📝 AI Diary (REQUIRED - DO NOT SKIP)
 
