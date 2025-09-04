@@ -123,7 +123,8 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
       await tx.user.update({
         where: { id: userId },
         data: {
-          stars: { increment: parseInt(creditAmount) }
+          stars: { increment: parseInt(creditAmount) },
+          updatedAt: new Date()
         }
       })
 

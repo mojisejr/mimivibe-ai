@@ -35,7 +35,7 @@ export function CreditsWidget({
 
   if (isNavbar) {
     return (
-      <div className={`flex items-center space-x-3 ${className}`}>
+      <div className={`flex items-center space-x-2 ${className}`}>
         <div className="badge badge-warning gap-1">
           <span>⭐</span>
           <span className="text-sm font-medium">
@@ -48,13 +48,19 @@ export function CreditsWidget({
             {profileData.credits.freePoint}
           </span>
         </div>
+        <div className="badge badge-accent gap-1">
+          <span>🪙</span>
+          <span className="text-sm font-medium">
+            {profileData.stats?.totalCoins || 0}
+          </span>
+        </div>
       </div>
     );
   }
 
   // Hero variant
   return (
-    <div className={`flex items-center justify-center space-x-4 ${className}`}>
+    <div className={`flex items-center justify-center space-x-3 ${className}`}>
       <motion.div 
         className="flex items-center space-x-2 bg-base-100/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-xl border border-primary/20 hover:shadow-2xl transition-all duration-300"
         whileHover={{ scale: 1.02 }}
@@ -71,6 +77,15 @@ export function CreditsWidget({
         <span className="text-secondary text-xl">🎁</span>
         <span className="font-semibold text-base-content">
           {profileData.credits.freePoint}
+        </span>
+      </motion.div>
+      <motion.div 
+        className="flex items-center space-x-2 bg-base-100/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-xl border border-accent/20 hover:shadow-2xl transition-all duration-300"
+        whileHover={{ scale: 1.02 }}
+      >
+        <span className="text-accent text-xl">🪙</span>
+        <span className="font-semibold text-base-content">
+          {profileData.stats?.totalCoins || 0}
         </span>
       </motion.div>
     </div>

@@ -120,7 +120,7 @@ export const ReferralSection = () => {
           <h3 className="heading-3 mb-4 text-error">⚠️ เกิดข้อผิดพลาด</h3>
           <p className="body-normal text-error mb-4">{error}</p>
           <button 
-            onClick={() => window.location.reload()}
+            onClick={() => typeof window !== 'undefined' && window.location.reload()}
             className="btn btn-outline btn-error btn-sm"
           >
             ลองใหม่อีกครั้ง

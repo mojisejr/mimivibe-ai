@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-09-03T15-59-01-224Z",
+  "backupFiles": [
+    "cards-backup-2025-09-03T15-59-01-224Z.json",
+    "prompt-templates-backup-2025-09-03T15-59-01-224Z.json",
+    "prompt-versions-backup-2025-09-03T15-59-01-224Z.json",
+    "prompt-test-results-backup-2025-09-03T15-59-01-224Z.json"
+  ],
+  "counts": {
+    "cards": 78,
+    "promptTemplates": 3,
+    "promptVersions": 8,
+    "promptTestResults": 0
+  }
+}

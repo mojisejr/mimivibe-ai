@@ -105,7 +105,8 @@ export async function POST(request: NextRequest) {
 
       // Update user balances
       const userUpdateData: any = {
-        coins: { decrement: actualCoinsUsed }
+        coins: { decrement: actualCoinsUsed },
+        updatedAt: new Date()
       }
 
       if (exchangeType === 'COIN_TO_STAR') {

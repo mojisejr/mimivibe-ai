@@ -32,7 +32,9 @@ export default function HomePage() {
           const data = await response.json();
           if (data.success) {
             // Store referral code for later processing
-            localStorage.setItem("pendingReferral", code);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem("pendingReferral", code);
+            }
             setReferralCode(code);
             addToast({
               type: "success",
@@ -82,10 +84,14 @@ export default function HomePage() {
               title: "🎁 Welcome!",
               message: "You received referral bonus rewards!",
             });
-            localStorage.removeItem("pendingReferral");
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem("pendingReferral");
+            }
           } else {
             console.error("Referral processing failed:", data.error);
-            localStorage.removeItem("pendingReferral");
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem("pendingReferral");
+            }
           }
         } else {
           console.error("Referral processing failed");
@@ -292,10 +298,14 @@ export default function HomePage() {
               title: "🎁 Welcome!",
               message: "You received referral bonus rewards!",
             });
-            localStorage.removeItem("pendingReferral");
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem("pendingReferral");
+            }
           } else {
             console.error("Referral processing failed:", data.error);
-            localStorage.removeItem("pendingReferral");
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem("pendingReferral");
+            }
           }
         } else {
           console.error("Referral processing failed");

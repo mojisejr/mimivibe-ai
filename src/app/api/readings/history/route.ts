@@ -43,8 +43,10 @@ export async function GET(request: NextRequest) {
           question: true,
           answer: true,
           type: true,
-          isReviewed: true, // Add review status
+          isReviewed: true,
+          isDeleted: true,
           createdAt: true,
+          updatedAt: true,
           cards: {
             select: {
               position: true,
@@ -229,7 +231,10 @@ export async function POST(request: NextRequest) {
         question: true,
         answer: true,
         type: true,
+        isReviewed: true,
+        isDeleted: true,
         createdAt: true,
+        updatedAt: true,
         cards: {
           select: {
             position: true,
@@ -278,7 +283,9 @@ export async function POST(request: NextRequest) {
         position: rc.position
       })),
       createdAt: reading.createdAt.toISOString(),
-      isReviewed: false // Add for compatibility
+      updatedAt: reading.updatedAt.toISOString(),
+      isReviewed: reading.isReviewed,
+      isDeleted: reading.isDeleted
     }
 
     return NextResponse.json({

@@ -181,8 +181,8 @@ async function calculateAchievementProgress(user: any, criteria: any): Promise<{
 
     // Handle streak criteria
     if (criteria.loginStreak || criteria.streakDays) {
-      const { StreakService } = await import("@/lib/services/StreakService");
-      const currentStreak = await StreakService.getCurrentStreakCount(user.id);
+      // Streak functionality removed - using default value
+      const currentStreak = 0;
       const required = criteria.loginStreak || criteria.streakDays;
       criteriaResults.push({ 
         name: 'streak', 
@@ -244,8 +244,8 @@ async function calculateAchievementProgress(user: any, criteria: any): Promise<{
 
   // Login streak tracking
   if (criteria.loginStreak || criteria.streakDays) {
-    const { StreakService } = await import("@/lib/services/StreakService");
-    const currentStreak = await StreakService.getCurrentStreakCount(user.id);
+    // Streak functionality removed - using default value
+    const currentStreak = 0;
     return { current: currentStreak, required: criteria.loginStreak || criteria.streakDays }
   }
 

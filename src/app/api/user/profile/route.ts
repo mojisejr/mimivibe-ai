@@ -36,6 +36,8 @@ export async function GET() {
         level: true,
         freePoint: true,
         role: true,
+        prestigeLevel: true,
+        prestigePoints: true,
         createdAt: true,
         updatedAt: true
       }
@@ -52,6 +54,8 @@ export async function GET() {
           level: 1,
           freePoint: 5,
           role: 'USER',
+          prestigeLevel: 0,
+          prestigePoints: 0,
           updatedAt: new Date()
         },
         select: {
@@ -66,6 +70,8 @@ export async function GET() {
           level: true,
           freePoint: true,
           role: true,
+          prestigeLevel: true,
+          prestigePoints: true,
           createdAt: true,
           updatedAt: true
         }
@@ -81,7 +87,9 @@ export async function GET() {
           coins: user.coins,
           exp: user.exp,
           level: user.level,
-          freePoint: user.freePoint
+          freePoint: user.freePoint,
+          prestigeLevel: user.prestigeLevel,
+          prestigePoints: user.prestigePoints
         }
       }
     })
@@ -153,6 +161,8 @@ export async function PUT(request: NextRequest) {
         level: 1,
         freePoint: 5,
         role: 'USER',
+        prestigeLevel: 0,
+        prestigePoints: 0,
         updatedAt: new Date()
       },
       select: {
@@ -167,6 +177,8 @@ export async function PUT(request: NextRequest) {
         level: true,
         freePoint: true,
         role: true,
+        prestigeLevel: true,
+        prestigePoints: true,
         createdAt: true,
         updatedAt: true
       }
@@ -181,7 +193,9 @@ export async function PUT(request: NextRequest) {
           coins: updatedUser.coins,
           exp: updatedUser.exp,
           level: updatedUser.level,
-          freePoint: updatedUser.freePoint
+          freePoint: updatedUser.freePoint,
+          prestigeLevel: updatedUser.prestigeLevel,
+          prestigePoints: updatedUser.prestigePoints
         }
       }
     })

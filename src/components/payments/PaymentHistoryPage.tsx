@@ -186,7 +186,7 @@ export default function PaymentHistoryPage() {
             title="ยังไม่มีประวัติการชำระเงิน"
             message="เริ่มต้นซื้อดาวเพื่อใช้ในการทำนายไพ่ทาโรต์"
             actionText="ซื้อดาว"
-            onAction={() => (window.location.href = "/packages")}
+            onAction={() => typeof window !== 'undefined' && (window.location.href = "/packages")}
           />
         )}
       </main>

@@ -91,7 +91,8 @@ export async function POST(request: NextRequest) {
         where: { id: userId },
         data: {
           coins: { decrement: coinsToSpend },
-          stars: { increment: starsToReceive }
+          stars: { increment: starsToReceive },
+          updatedAt: new Date()
         }
       })
 
