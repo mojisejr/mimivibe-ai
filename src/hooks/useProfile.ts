@@ -15,16 +15,8 @@ interface UserProfile {
 }
 
 interface UserStats {
-  level: number;
-  currentExp: number;
-  nextLevelExp: number;
-  expToNextLevel: number;
   totalReadings: number;
-  totalExp: number;
-  totalCoins: number;
-  currentStreak: number;
-  longestStreak: number;
-  daysActive: number;
+  coins: number;
 }
 
 interface UserCredits {
@@ -50,33 +42,7 @@ interface ProfileState {
   error: string | null;
 }
 
-function calculateLevelProgression(currentExp: number, currentLevel: number, prestigeLevel: number = 0) {
-  // Base EXP formula: level^2 * 100 
-  // With prestige: base formula * (1 + prestigeLevel * 0.2) for scaling
-  const prestigeMultiplier = 1 + (prestigeLevel * 0.2)
-  
-  // Calculate EXP requirement for next level
-  const expForNextLevel = currentLevel < 100 
-    ? Math.floor((currentLevel * currentLevel * 100) * prestigeMultiplier)
-    : Math.floor((99 * 99 * 100) * prestigeMultiplier) // Cap at level 99 requirements
-    
-  // Calculate EXP accumulated for current level
-  let expUsedForPreviousLevels = 0
-  for (let level = 1; level < currentLevel; level++) {
-    expUsedForPreviousLevels += Math.floor((level * level * 100) * prestigeMultiplier)
-  }
-  
-  const expInCurrentLevel = currentExp - expUsedForPreviousLevels
-  const expToNextLevel = Math.max(0, expForNextLevel - expInCurrentLevel)
-  
-  return {
-    expForNextLevel,
-    expToNextLevel,
-    expInCurrentLevel,
-    totalExpUsed: expUsedForPreviousLevels,
-    prestigeMultiplier
-  }
-}
+// Removed calculateLevelProgression function - no longer needed
 
 export const useProfile = () => {
   const { user, isLoaded } = useUser();
@@ -90,39 +56,27 @@ export const useProfile = () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
-      const [profileRes, statsRes, creditsRes] = await Promise.all([
+      const [profileRes, creditsRes] = await Promise.all([
         fetch("/api/user/profile"),
-        fetch("/api/user/stats"),
         fetch("/api/user/credits"),
       ]);
 
-      // Check for level progression after fetching stats
-      try {
-        await fetch("/api/user/level-check", { method: "POST" });
-      } catch (levelCheckError) {
-        // Continue with normal flow even if level check fails
-      }
-
-
-      if (!profileRes.ok || !statsRes.ok || !creditsRes.ok) {
+      if (!profileRes.ok || !creditsRes.ok) {
         const errorDetails = {
           profile: profileRes.status,
-          stats: statsRes.status,
           credits: creditsRes.status
         };
         throw new Error(`Failed to fetch profile data: ${JSON.stringify(errorDetails)}`);
       }
 
-      const [profileData, statsData, creditsData] = await Promise.all([
+      const [profileData, creditsData] = await Promise.all([
         profileRes.json(),
-        statsRes.json(),
         creditsRes.json(),
       ]);
 
       // Extract data from API response wrappers
 
       const profile = profileData.success ? profileData.data : profileData;
-      const stats = statsData.success ? statsData.data : statsData;
       const credits = creditsData.success ? creditsData.data : creditsData;
 
 
@@ -138,27 +92,10 @@ export const useProfile = () => {
         updatedAt: profile?.updatedAt || new Date().toISOString(),
       };
 
-      // Calculate level progression with current EXP
-      const currentLevel = typeof stats?.level === 'number' ? stats.level : 1;
-      const currentExp = typeof stats?.exp === 'number' ? stats.exp : 0;
-      const prestigeLevel = typeof stats?.prestigeLevel === 'number' ? stats.prestigeLevel : 0;
-      
-      // Calculate proper level progression
-      const levelProgression = calculateLevelProgression(currentExp, currentLevel, prestigeLevel);
-
-      // Validate stats data with correct level progression calculation
+      // Simplified stats - only track reading count
       const validatedStats = {
-        level: currentLevel,
-        currentExp: currentExp,
-        nextLevelExp: levelProgression.expForNextLevel,
-        expToNextLevel: levelProgression.expToNextLevel,
-        totalReadings: typeof stats?.totalReadings === 'number' ? stats.totalReadings : 0,
-        totalExp: currentExp, // Use exp as totalExp
-        totalCoins: typeof stats?.coins === 'number' ? stats.coins : 0, // API uses 'coins'
-        currentStreak: typeof stats?.loginStreak === 'number' ? stats.loginStreak : 0, // API uses 'loginStreak'
-        longestStreak: typeof stats?.loginStreak === 'number' ? stats.loginStreak : 0, // Use same for now
-        daysActive: typeof stats?.totalReadings === 'number' ? stats.totalReadings : 0, // Approximate
-        prestigeLevel: prestigeLevel
+        totalReadings: 0, // Will be calculated from reading history if needed
+        coins: typeof credits?.coins === 'number' ? credits.coins : 0,
       };
 
       // Validate credits data (API has different structure)

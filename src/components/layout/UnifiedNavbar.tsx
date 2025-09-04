@@ -1,67 +1,77 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
-import { useRouter, usePathname } from 'next/navigation'
-import { UserButton } from '@clerk/nextjs'
-import { useProfile } from '@/hooks/useProfile'
+import { useState } from "react";
+import {
+  motion,
+  useScroll,
+  useMotionValueEvent,
+  AnimatePresence,
+} from "framer-motion";
+import { useRouter, usePathname } from "next/navigation";
+import { UserButton } from "@clerk/nextjs";
+import { useProfile } from "@/hooks/useProfile";
 
 interface UnifiedNavbarProps {
-  autoHide?: boolean
-  showInStates?: ('initial' | 'loading' | 'result')[]
-  currentState?: 'initial' | 'loading' | 'result'
-  className?: string
+  autoHide?: boolean;
+  showInStates?: ("initial" | "loading" | "result")[];
+  currentState?: "initial" | "loading" | "result";
+  className?: string;
 }
 
-export function UnifiedNavbar({ 
+export function UnifiedNavbar({
   autoHide = false,
   showInStates,
   currentState,
-  className = ""
+  className = "",
 }: UnifiedNavbarProps) {
-  const [hidden, setHidden] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { scrollY } = useScroll()
-  const router = useRouter()
-  const pathname = usePathname()
-  const { data: profileData, loading } = useProfile()
-
+  const [hidden, setHidden] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { scrollY } = useScroll();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { data: profileData, loading } = useProfile();
 
   // State-based visibility (only for /ask page)
-  const shouldShowBasedOnState = !showInStates || !currentState || showInStates.includes(currentState)
+  const shouldShowBasedOnState =
+    !showInStates || !currentState || showInStates.includes(currentState);
 
   // Auto-hide functionality
   useMotionValueEvent(scrollY, "change", (latest) => {
-    if (!autoHide || typeof window === 'undefined') return
-    
-    const previous = scrollY.getPrevious()
-    const isDesktop = window.innerWidth >= 1024
-    if (!isDesktop && previous !== undefined && latest > previous && latest > 150) {
-      setHidden(true)
+    if (!autoHide || typeof window === "undefined") return;
+
+    const previous = scrollY.getPrevious();
+    const isDesktop = window.innerWidth >= 1024;
+    if (
+      !isDesktop &&
+      previous !== undefined &&
+      latest > previous &&
+      latest > 150
+    ) {
+      setHidden(true);
     } else {
-      setHidden(false)
+      setHidden(false);
     }
-  })
+  });
 
   if (!shouldShowBasedOnState) {
-    return null
+    return null;
   }
 
   const navigationLinks = [
-    { href: '/ask', label: 'ถามไพ่', icon: '🔮' },
-    { href: '/history', label: 'ประวัติ', icon: '📜' },
-    { href: '/payments', label: 'การชำระ', icon: '💳' },
-    { href: '/exchange', label: 'แลกเปลี่ยน', icon: '🪙' },
-    { href: '/profile', label: 'โปรไฟล์', icon: '👤' },
-    { href: '/packages', label: 'แพ็คเกจ', icon: '💎' }
-  ]
+    { href: "/ask", label: "ถามไพ่", icon: "🔮" },
+    { href: "/history", label: "ประวัติ", icon: "📜" },
+    { href: "/payments", label: "การชำระ", icon: "💳" },
+    { href: "/exchange", label: "แลกเปลี่ยน", icon: "🪙" },
+    { href: "/profile", label: "โปรไฟล์", icon: "👤" },
+    { href: "/packages", label: "แพ็คเกจ", icon: "💎" },
+  ];
 
-  const isCurrentPage = (href: string) => pathname === href
+  const isCurrentPage = (href: string) => pathname === href;
 
   const handleMobileNavigation = (href: string) => {
-    router.push(href)
-    setMobileMenuOpen(false)
-  }
+    router.push(href);
+    setMobileMenuOpen(false);
+  };
 
   const navbarContent = (
     <div className={`max-w-6xl mx-auto px-4 py-3 ${className}`}>
@@ -69,16 +79,16 @@ export function UnifiedNavbar({
         {/* Left: Logo */}
         <div className="flex items-center">
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push("/")}
             className="block hover:opacity-80 transition-opacity duration-200"
           >
             <img
               src="/images/logo.png"
               alt="MiMi Vibes - หมอดูไพ่ทาโรต์ AI"
               className="h-8 w-auto sm:h-10 lg:h-12 object-contain"
-              style={{ 
-                maxWidth: '120px',
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+              style={{
+                maxWidth: "120px",
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
               }}
             />
           </button>
@@ -88,13 +98,12 @@ export function UnifiedNavbar({
         <div className="hidden md:flex items-center space-x-6">
           {navigationLinks.map((link) => (
             <div key={link.href} className="relative">
-
               <button
                 onClick={() => router.push(link.href)}
                 className={`btn btn-ghost btn-sm transition-colors duration-200 ${
                   isCurrentPage(link.href)
-                    ? 'text-primary bg-primary/10'
-                    : 'text-base-content hover:bg-base-200'
+                    ? "text-primary bg-primary/10"
+                    : "text-base-content hover:bg-base-200"
                 }`}
               >
                 {link.label}
@@ -132,8 +141,6 @@ export function UnifiedNavbar({
             ) : null}
           </div>
 
-
-
           {/* Desktop: User Button */}
           <div className="hidden md:block">
             <UserButton afterSignOutUrl="/" />
@@ -154,7 +161,7 @@ export function UnifiedNavbar({
                 <motion.span
                   variants={{
                     closed: { rotate: 0, y: 0 },
-                    open: { rotate: 45, y: 6 }
+                    open: { rotate: 45, y: 6 },
                   }}
                   transition={{ duration: 0.3 }}
                   className="w-6 h-0.5 bg-current block transition-all"
@@ -162,7 +169,7 @@ export function UnifiedNavbar({
                 <motion.span
                   variants={{
                     closed: { opacity: 1 },
-                    open: { opacity: 0 }
+                    open: { opacity: 0 },
                   }}
                   transition={{ duration: 0.3 }}
                   className="w-6 h-0.5 bg-current block mt-1.5 transition-all"
@@ -170,7 +177,7 @@ export function UnifiedNavbar({
                 <motion.span
                   variants={{
                     closed: { rotate: 0, y: 0 },
-                    open: { rotate: -45, y: -6 }
+                    open: { rotate: -45, y: -6 },
                   }}
                   transition={{ duration: 0.3 }}
                   className="w-6 h-0.5 bg-current block mt-1.5 transition-all"
@@ -181,7 +188,7 @@ export function UnifiedNavbar({
         </div>
       </div>
     </div>
-  )
+  );
 
   // All pages use the same layout as /ask page
   return (
@@ -213,7 +220,7 @@ export function UnifiedNavbar({
               className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
               onClick={() => setMobileMenuOpen(false)}
             />
-            
+
             {/* Menu Panel */}
             <motion.div
               initial={{ x: "100%" }}
@@ -226,14 +233,26 @@ export function UnifiedNavbar({
                 {/* Header */}
                 <div className="p-4 border-b border-base-300 flex-shrink-0">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-base-content">เมนู</h2>
+                    <h2 className="text-lg font-bold text-base-content">
+                      เมนู
+                    </h2>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setMobileMenuOpen(false)}
                       className="btn btn-ghost btn-circle btn-sm"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </motion.button>
                   </div>
@@ -251,14 +270,15 @@ export function UnifiedNavbar({
                         onClick={() => handleMobileNavigation(link.href)}
                         className={`w-full flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 text-left relative ${
                           isCurrentPage(link.href)
-                            ? 'bg-primary/10 text-primary border border-primary/20'
-                            : 'hover:bg-base-200 text-base-content'
+                            ? "bg-primary/10 text-primary border border-primary/20"
+                            : "hover:bg-base-200 text-base-content"
                         }`}
                       >
                         <span className="text-xl">{link.icon}</span>
-                        <span className="font-medium text-sm">{link.label}</span>
+                        <span className="font-medium text-sm">
+                          {link.label}
+                        </span>
                         <div className="ml-auto flex items-center space-x-2">
-
                           {isCurrentPage(link.href) && (
                             <motion.div
                               layoutId="mobileActiveIndicator"
@@ -284,7 +304,9 @@ export function UnifiedNavbar({
                     </div>
                   </motion.div>
                   <div className="text-center mt-2">
-                    <p className="text-xs text-base-content/70">แตะเพื่อจัดการบัญชี</p>
+                    <p className="text-xs text-base-content/70">
+                      แตะเพื่อจัดการบัญชี
+                    </p>
                   </div>
                 </div>
               </div>
@@ -293,5 +315,5 @@ export function UnifiedNavbar({
         )}
       </AnimatePresence>
     </>
-  )
+  );
 }

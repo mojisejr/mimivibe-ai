@@ -29,16 +29,16 @@ interface SkeletonProps {
 export function Skeleton({ className = "", animate = true }: SkeletonProps) {
   const baseClasses = "bg-base-300 rounded";
   const animationClasses = animate ? "animate-pulse" : "";
-  
+
   return <div className={`${baseClasses} ${animationClasses} ${className}`} />;
 }
 
-export function SkeletonText({ 
-  lines = 1, 
-  className = "", 
-  animate = true 
-}: { 
-  lines?: number; 
+export function SkeletonText({
+  lines = 1,
+  className = "",
+  animate = true,
+}: {
+  lines?: number;
   className?: string;
   animate?: boolean;
 }) {
@@ -70,11 +70,11 @@ export function SkeletonCard({ animate = true }: { animate?: boolean }) {
           <Skeleton className="h-6 w-32" animate={animate} />
           <Skeleton className="h-4 w-16" animate={animate} />
         </div>
-        
+
         {/* Content */}
         <div className="space-y-3">
           <SkeletonText lines={2} animate={animate} />
-          
+
           {/* Cards grid */}
           <div className="grid grid-cols-3 gap-2">
             {Array.from({ length: 3 }).map((_, index) => (
@@ -85,10 +85,10 @@ export function SkeletonCard({ animate = true }: { animate?: boolean }) {
               />
             ))}
           </div>
-          
+
           <SkeletonText lines={1} animate={animate} />
         </div>
-        
+
         {/* Footer */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -102,21 +102,22 @@ export function SkeletonCard({ animate = true }: { animate?: boolean }) {
   );
 }
 
-export function SkeletonGrid({ 
-  count = 6, 
+export function SkeletonGrid({
+  count = 6,
   columns = 3,
-  animate = true 
-}: { 
-  count?: number; 
+  animate = true,
+}: {
+  count?: number;
   columns?: number;
   animate?: boolean;
 }) {
-  const gridClasses = {
-    1: "grid-cols-1",
-    2: "grid-cols-1 md:grid-cols-2",
-    3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-    4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4",
-  }[columns] || "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+  const gridClasses =
+    {
+      1: "grid-cols-1",
+      2: "grid-cols-1 md:grid-cols-2",
+      3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+      4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4",
+    }[columns] || "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
 
   return (
     <div className={`grid ${gridClasses} gap-4 md:gap-6`}>
@@ -145,7 +146,7 @@ export function SkeletonStats({ animate = true }: { animate?: boolean }) {
             </div>
             <Skeleton className="h-6 w-32 mx-auto" animate={animate} />
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex justify-between">
               <Skeleton className="h-4 w-24" animate={animate} />
@@ -250,7 +251,11 @@ export function SkeletonProfile({ animate = true }: { animate?: boolean }) {
   );
 }
 
-export function SkeletonSearchFilters({ animate = true }: { animate?: boolean }) {
+export function SkeletonSearchFilters({
+  animate = true,
+}: {
+  animate?: boolean;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
