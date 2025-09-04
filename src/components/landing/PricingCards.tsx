@@ -167,7 +167,7 @@ export function PricingCards() {
                   pkg.popular || false
                 )} mb-4`}
               >
-                {pkg.price}฿
+                {(pkg.price / 100).toLocaleString('th-TH')}฿
               </div>
 
               <ul className="text-left space-y-3 mb-8">
