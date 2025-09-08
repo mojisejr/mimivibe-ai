@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateReferralCode } from '@/lib/utils/referrals'
-// Gamification config removed during refactor
+import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
 
 // Force dynamic rendering for database access
 export const dynamic = 'force-dynamic'
@@ -50,9 +50,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Referral rewards removed during gamification refactor
-    const referrerReward = { exp: 25, coins: 0, stars: 1 }
-    const referredReward = { exp: 0, coins: 5, stars: 1 }
+    // Fetch dynamic referral rewards from RewardConfiguration
+    const rewardConfig = await getReferralRewards()
+    const referrerReward = toLegacyRewardFormat(rewardConfig.inviter)
+    const referredReward = toLegacyRewardFormat(rewardConfig.invited)
 
     // Process referral
     await prisma.$transaction(async (tx) => {

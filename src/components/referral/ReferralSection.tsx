@@ -1,87 +1,126 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useUser } from '@clerk/nextjs'
-import { ReferralCopyButton } from './ReferralCopyButton'
-import { useToast } from '@/components/ui/ToastContainer'
+import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { ReferralCopyButton } from "./ReferralCopyButton";
+import { useToast } from "@/components/ui/ToastContainer";
+
+interface ReferralReward {
+  name: string;
+  type: string;
+  icon: string;
+  title: string;
+  description: string;
+  criteria: any;
+  rewards: {
+    stars?: number;
+    coins?: number;
+    freePoint?: number;
+  };
+  displayText: string;
+}
+
+interface ReferralRewardsData {
+  inviter: ReferralReward | null;
+  invited: ReferralReward | null;
+}
 
 interface ReferralData {
-  referralCode: string
-  referralLink: string
+  referralCode: string;
+  referralLink: string;
   stats: {
-    totalReferred: number
-    successfulReferrals: number
+    totalReferred: number;
+    successfulReferrals: number;
     totalRewards: {
-      exp: number
-      coins: number
-      stars: number
-    }
-  }
+      exp: number;
+      coins: number;
+      stars: number;
+    };
+  };
   recentReferrals: Array<{
-    id: string
-    referredAt: string
-    rewarded: boolean
+    id: string;
+    referredAt: string;
+    rewarded: boolean;
     rewardAmount: {
-      exp: number
-      coins: number
-    }
-  }>
+      exp: number;
+      coins: number;
+    };
+  }>;
 }
 
 export const ReferralSection = () => {
-  const { user, isLoaded } = useUser()
-  const [referralData, setReferralData] = useState<ReferralData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { addToast } = useToast()
+  const { user, isLoaded } = useUser();
+  const [referralData, setReferralData] = useState<ReferralData | null>(null);
+  const [rewardsData, setRewardsData] = useState<ReferralRewardsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { addToast } = useToast();
 
   useEffect(() => {
-    if (!isLoaded || !user) return
+    if (!isLoaded || !user) return;
 
     const fetchReferralData = async () => {
       try {
-        setLoading(true)
-        setError(null)
-        
-        const response = await fetch('/api/referrals/status')
-        if (!response.ok) {
-          throw new Error('Failed to fetch referral data')
+        setLoading(true);
+        setError(null);
+
+        // Fetch both referral status and reward configuration
+        const [statusResponse, rewardsResponse] = await Promise.all([
+          fetch("/api/referrals/status"),
+          fetch("/api/referrals/rewards")
+        ]);
+
+        if (!statusResponse.ok) {
+          throw new Error("Failed to fetch referral data");
         }
         
-        const result = await response.json()
-        if (result.success) {
-          setReferralData(result.data)
+        if (!rewardsResponse.ok) {
+          throw new Error("Failed to fetch rewards data");
+        }
+
+        const [statusResult, rewardsResult] = await Promise.all([
+          statusResponse.json(),
+          rewardsResponse.json()
+        ]);
+
+        if (statusResult.success && rewardsResult.success) {
+          setReferralData(statusResult.data);
+          setRewardsData(rewardsResult.data);
         } else {
-          throw new Error(result.error || 'Failed to load referral data')
+          throw new Error(
+            statusResult.error || rewardsResult.error || "Failed to load referral data"
+          );
         }
       } catch (err) {
-        console.error('Referral fetch error:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load referral data')
+        console.error("Referral fetch error:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load referral data"
+        );
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchReferralData()
-  }, [isLoaded, user])
+    fetchReferralData();
+  }, [isLoaded, user]);
 
   const handleCopySuccess = () => {
     addToast({
-      type: 'success',
-      title: 'คัดลอกสำเร็จ!',
-      message: 'ลิงก์เชิญเพื่อนถูกคัดลอกไปยังคลิปบอร์ดแล้ว',
+      type: "success",
+      title: "คัดลอกสำเร็จ!",
+      message: "ลิงก์เชิญเพื่อนถูกคัดลอกไปยังคลิปบอร์ดแล้ว",
       duration: 3000,
-    })
-  }
+    });
+  };
 
   const handleCopyError = () => {
     addToast({
-      type: 'error',
-      title: 'เกิดข้อผิดพลาด',
-      message: 'ไม่สามารถคัดลอกลิงก์ได้ กรุณาลองใหม่อีกครั้ง',
+      type: "error",
+      title: "เกิดข้อผิดพลาด",
+      message: "ไม่สามารถคัดลอกลิงก์ได้ กรุณาลองใหม่อีกครั้ง",
       duration: 3000,
-    })
-  }
+    });
+  };
 
   if (!isLoaded || !user) {
     return (
@@ -94,7 +133,7 @@ export const ReferralSection = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (loading) {
@@ -110,7 +149,7 @@ export const ReferralSection = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -119,46 +158,58 @@ export const ReferralSection = () => {
         <div className="card-body">
           <h3 className="heading-3 mb-4 text-error">⚠️ เกิดข้อผิดพลาด</h3>
           <p className="body-normal text-error mb-4">{error}</p>
-          <button 
-            onClick={() => typeof window !== 'undefined' && window.location.reload()}
+          <button
+            onClick={() =>
+              typeof window !== "undefined" && window.location.reload()
+            }
             className="btn btn-outline btn-error btn-sm"
           >
             ลองใหม่อีกครั้ง
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   if (!referralData) {
-    return null
+    return null;
   }
 
   return (
     <div className="card card-mystical">
       <div className="card-body">
         <h3 className="heading-3 mb-4">🎁 เชิญเพื่อนรับรางวัล</h3>
-        
+
         <div className="mb-6">
           <p className="body-normal mb-4">
             เชิญเพื่อนมาใช้ MiMi Vibes และรับรางวัลพิเศษ!
           </p>
-          
+
           <div className="space-y-3 mb-6">
             <div className="bg-info/10 rounded-lg p-3">
-              <div className="text-sm text-info font-medium mb-1">📝 เพื่อนใหม่ได้รับ (ทันทีตอนสมัคร):</div>
-              <div className="text-xs text-info">• +1 ดาว + 5 เหรียญ</div>
+              <div className="text-sm text-info font-medium mb-1">
+                {rewardsData?.invited?.icon || '📝'} เพื่อนใหม่ได้รับ (ทันทีตอนสมัคร):
+              </div>
+              <div className="text-xs text-info">
+                {rewardsData?.invited?.displayText || '• +3 free points'}
+              </div>
             </div>
             <div className="bg-success/10 rounded-lg p-3">
-              <div className="text-sm text-success font-medium mb-1">🎉 คุณได้รับ (เมื่อเพื่อนทำนายครั้งแรก):</div>
-              <div className="text-xs text-success">• +1 ดาว + 25 EXP</div>
+              <div className="text-sm text-success font-medium mb-1">
+                {rewardsData?.inviter?.icon || '🎉'} คุณได้รับ (เมื่อเพื่อนทำนายครั้งแรก):
+              </div>
+              <div className="text-xs text-success">
+                {rewardsData?.inviter?.displayText || '• +50 coins'}
+              </div>
             </div>
           </div>
         </div>
 
         <div className="mb-6">
           <label className="label">
-            <span className="label-text font-semibold">รหัสเชิญเพื่อนของคุณ</span>
+            <span className="label-text font-semibold">
+              รหัสเชิญเพื่อนของคุณ
+            </span>
           </label>
           <div className="flex gap-2">
             <input
@@ -174,7 +225,9 @@ export const ReferralSection = () => {
             />
           </div>
           <div className="label">
-            <span className="label-text-alt">แชร์รหัสนี้ให้เพื่อนเพื่อรับรางวัล</span>
+            <span className="label-text-alt">
+              แชร์รหัสนี้ให้เพื่อนเพื่อรับรางวัล
+            </span>
           </div>
         </div>
 
@@ -186,25 +239,31 @@ export const ReferralSection = () => {
               <span className="text-2xl">👥</span>
             </div>
             <div className="stat-title">เชิญทั้งหมด</div>
-            <div className="stat-value text-primary">{referralData.stats.totalReferred}</div>
+            <div className="stat-value text-primary">
+              {referralData.stats.totalReferred}
+            </div>
             <div className="stat-desc">คน</div>
           </div>
-          
+
           <div className="stat">
             <div className="stat-figure text-success">
               <span className="text-2xl">✅</span>
             </div>
             <div className="stat-title">ได้รับรางวัล</div>
-            <div className="stat-value text-success">{referralData.stats.successfulReferrals}</div>
+            <div className="stat-value text-success">
+              {referralData.stats.successfulReferrals}
+            </div>
             <div className="stat-desc">คน</div>
           </div>
-          
+
           <div className="stat">
             <div className="stat-figure text-warning">
               <span className="text-2xl">🏆</span>
             </div>
             <div className="stat-title">รางวัลรวม</div>
-            <div className="stat-value text-warning">{referralData.stats.totalRewards.stars}</div>
+            <div className="stat-value text-warning">
+              {referralData.stats.totalRewards.stars}
+            </div>
             <div className="stat-desc">ดาว</div>
           </div>
         </div>
@@ -216,21 +275,33 @@ export const ReferralSection = () => {
               <h4 className="font-semibold mb-3">🕐 เพื่อนที่เชิญล่าสุด</h4>
               <div className="space-y-2">
                 {referralData.recentReferrals.slice(0, 5).map((referral) => (
-                  <div key={referral.id} className="flex items-center justify-between p-2 bg-base-200 rounded">
+                  <div
+                    key={referral.id}
+                    className="flex items-center justify-between p-2 bg-base-200 rounded"
+                  >
                     <div className="flex items-center space-x-2">
-                      <span className={`text-sm ${referral.rewarded ? 'text-success' : 'text-warning'}`}>
-                        {referral.rewarded ? '✅' : '⏳'}
+                      <span
+                        className={`text-sm ${
+                          referral.rewarded ? "text-success" : "text-warning"
+                        }`}
+                      >
+                        {referral.rewarded ? "✅" : "⏳"}
                       </span>
                       <span className="text-sm">
-                        {new Date(referral.referredAt).toLocaleDateString('th-TH', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
+                        {new Date(referral.referredAt).toLocaleDateString(
+                          "th-TH",
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )}
                       </span>
                     </div>
                     <div className="text-sm text-neutral-content">
-                      {referral.rewarded ? 'ได้รับรางวัลแล้ว' : 'รอทำนายครั้งแรก'}
+                      {referral.rewarded
+                        ? "ได้รับรางวัลแล้ว"
+                        : "รอทำนายครั้งแรก"}
                     </div>
                   </div>
                 ))}
@@ -240,5 +311,5 @@ export const ReferralSection = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};

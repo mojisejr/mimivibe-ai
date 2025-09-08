@@ -1,52 +1,42 @@
 # Current Focus
 
-*Last updated: 2025-09-08 13:59:41*
+*Last updated: 2025-09-08 15:08:08*
 
 ## Session Status
 
-**Current Issue**: Temporarily Remove EXP Feature System
-**Status**: 🔄 IN PROGRESS - Planning comprehensive removal of EXP features while preserving code structure for future reactivation
+**Current Issue**: Update referral data in ReferralSection.tsx to reflect real reward data
+**Status**: 🔄 IN PROGRESS - Investigating RewardConfiguration and updating referral system to use accurate reward data
 
 ## Context Overview
 
-Need to temporarily disable the entire EXP (experience points) feature system:
+from RewardConfiguration about referral reward, I wanted to update the referral data in the @src/components/referral/ReferralSection.tsx to reflect to real reward data, and wanted to make sure that the referral system is working properly
 
-### Scope of EXP Feature Removal
+### Current Analysis
 
-**UI Components to Hide/Disable**:
-- EXP progress bars and displays
-- Level indicators and progression UI
-- EXP gain notifications and animations
-- Achievement XP rewards display
-- Profile page EXP statistics
+**Component in Focus**:
+- `src/components/referral/ReferralSection.tsx` - Main referral component with hardcoded reward values
 
-**Backend Logic to Disable**:
-- EXP calculation and awarding
-- Level progression logic
-- EXP-based achievement triggers
-- Automatic level-up processes
-- EXP gain from readings, reviews, achievements
+**Current Hardcoded Values**:
+- New friend gets: "+1 star + 5 coins" (line 156)  
+- User gets: "+2 stars + 5 coins" (line 162)
 
-**Preservation Strategy**:
-- Keep all database schema intact
-- Maintain EXP-related API endpoints (return static/zero values)
-- Preserve code structure with feature flags/comments
-- Document all changes for easy reactivation
-- Keep achievement system functional (without EXP components)
+**Investigation Needed**:
+- Find RewardConfiguration location and structure
+- Understand actual reward data format
+- Identify referral reward API endpoints
+- Verify referral system functionality
 
-### Implementation Approach
+### Implementation Plan
 
-The goal is to make EXP invisible to users while maintaining system stability and ensuring easy future reactivation through:
-
-1. **Frontend**: Hide EXP UI elements with conditional rendering
-2. **Backend**: Disable EXP calculations while keeping API structure
-3. **Database**: Preserve all EXP data and schema
-4. **Documentation**: Clear reversal path documentation
+1. **Locate RewardConfiguration**: Find the source of truth for reward data
+2. **Analyze Current API**: Check `/api/referrals/status` and related endpoints  
+3. **Update Component**: Replace hardcoded values with dynamic reward data
+4. **Test Integration**: Ensure referral system works with real data
+5. **Validate Functionality**: Confirm referral rewards are calculated correctly
 
 ## Requirements
 
-- **No UI EXP elements visible to users**
-- **No EXP updating/calculation in backend**  
-- **Code ready for future reactivation**
-- **System stability maintained**
-- **Achievement system continues working (non-EXP parts)**
+- **Dynamic reward display** from RewardConfiguration
+- **Accurate referral reward values**
+- **Proper integration with referral API**
+- **Maintain existing UI/UX**
