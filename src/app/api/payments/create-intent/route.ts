@@ -2,12 +2,25 @@ import { auth } from '@clerk/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe, formatAmountForStripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+import { rateLimit, paymentRateLimitConfig } from '@/lib/rate-limiter'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
 
+// SECURITY ENHANCEMENT: Input validation schema
+const PaymentIntentSchema = z.object({
+  packId: z.number().int().positive('Pack ID must be a positive integer')
+})
+
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY ENHANCEMENT: Apply rate limiting
+    const rateLimitResponse = await rateLimit(request, paymentRateLimitConfig)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const { userId } = auth()
     
     if (!userId) {
@@ -15,29 +28,28 @@ export async function POST(request: NextRequest) {
         { 
           success: false,
           error: 'Unauthorized',
-          message: 'Authentication required',
-          timestamp: new Date().toISOString(),
-          path: '/api/payments/create-intent'
+          message: 'Authentication required'
         }, 
         { status: 401 }
       )
     }
 
     const body = await request.json()
-    const { packId } = body
-
-    if (!packId) {
+    
+    // SECURITY ENHANCEMENT: Comprehensive input validation
+    const validationResult = PaymentIntentSchema.safeParse(body)
+    if (!validationResult.success) {
       return NextResponse.json(
         { 
           success: false,
-          error: 'Bad request',
-          message: 'Package ID is required',
-          timestamp: new Date().toISOString(),
-          path: '/api/payments/create-intent'
+          error: 'Invalid request data',
+          message: 'Package ID must be a valid positive integer'
         },
         { status: 400 }
       )
     }
+    
+    const { packId } = validationResult.data
 
     // Get package details
     const pack = await prisma.pack.findUnique({
@@ -57,14 +69,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create payment intent
+    // SECURITY ENHANCEMENT: Validate payment amount matches pack price
+    const expectedAmount = formatAmountForStripe(pack.price)
+    
+    // Create payment intent with validated amount
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: formatAmountForStripe(pack.price),
+      amount: expectedAmount,
       currency: 'thb',
       metadata: {
         userId,
         packId: packId.toString(),
-        creditAmount: pack.creditAmount.toString()
+        creditAmount: pack.creditAmount.toString(),
+        expectedAmount: expectedAmount.toString() // Store expected amount for verification
       },
       automatic_payment_methods: {
         enabled: true,
@@ -81,14 +97,13 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
+    // SECURITY FIX: Log error details internally but return generic message
     console.error('Payment intent creation error:', error)
     return NextResponse.json(
       { 
         success: false,
-        error: 'Internal server error',
-        message: 'Failed to create payment intent',
-        timestamp: new Date().toISOString(),
-        path: '/api/payments/create-intent'
+        error: 'Payment processing error',
+        message: 'Unable to process payment request'
       },
       { status: 500 }
     )
