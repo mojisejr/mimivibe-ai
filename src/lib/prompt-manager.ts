@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { PromptEncryption } from './prompt-encryption';
+import { promptSecurityMonitor } from './security/prompt-security-monitor';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import boxen from 'boxen';
@@ -60,13 +61,15 @@ export class PromptManager {
     console.log(chalk.cyan(figlet.textSync('Prompt Init', { horizontalLayout: 'fitted' })));
     console.log(chalk.cyan('🚀 Initializing prompts from code...\n'));
     
-    // Import current prompts
-    const currentPrompts = await import('./ai/prompts');
+    // Note: Hardcoded prompts have been archived for security
+    // This init function is now primarily for reference - prompts are already encrypted in database
+    console.log(chalk.yellow('⚠️  Hardcoded prompts have been archived for security.'));
+    console.log(chalk.yellow('⚠️  Encrypted prompts are already active in production.'));
+    console.log(chalk.green('✅ Current system uses encrypted database prompts.'));
     
-    const promptEntries = [
-      { name: 'questionFilter', content: currentPrompts.SYSTEM_PROMPTS.questionFilter },
-      { name: 'questionAnalysis', content: currentPrompts.SYSTEM_PROMPTS.questionAnalysis },
-      { name: 'readingAgent', content: currentPrompts.SYSTEM_PROMPTS.readingAgent }
+    const promptEntries: Array<{ name: string; content: string }> = [
+      // Prompts are now loaded from encrypted database storage
+      // This initialization is no longer needed for security reasons
     ];
 
     let initialized = 0;
@@ -126,16 +129,49 @@ export class PromptManager {
   /**
    * Get active prompt by name
    */
-  public async getPrompt(name: string): Promise<string> {
-    const template = await this.prisma.promptTemplate.findUnique({
-      where: { name, isActive: true }
-    });
+  public async getPrompt(name: string, userId?: string): Promise<string> {
+    const startTime = Date.now();
+    let success = false;
+    let errorMessage: string | undefined;
 
-    if (!template) {
-      throw new Error(`Active prompt template '${name}' not found`);
+    try {
+      const template = await this.prisma.promptTemplate.findUnique({
+        where: { name, isActive: true }
+      });
+
+      if (!template) {
+        errorMessage = `Active prompt template '${name}' not found`;
+        throw new Error(errorMessage);
+      }
+
+      const decryptedContent = await PromptEncryption.decrypt(template.encryptedContent);
+      success = true;
+
+      // Log successful prompt access
+      await promptSecurityMonitor.logPromptAccess({
+        promptName: name,
+        accessType: 'READ',
+        userId,
+        success: true,
+        executionTimeMs: Date.now() - startTime,
+      });
+
+      return decryptedContent;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Log failed prompt access
+      await promptSecurityMonitor.logPromptAccess({
+        promptName: name,
+        accessType: 'READ',
+        userId,
+        success: false,
+        executionTimeMs: Date.now() - startTime,
+        errorMessage: errorMsg,
+      });
+
+      throw error;
     }
-
-    return await PromptEncryption.decrypt(template.encryptedContent);
   }
 
   /**

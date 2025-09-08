@@ -2,7 +2,7 @@
 import { auth } from '@clerk/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { generateTarotReading } from '@/lib/langgraph/workflow'
+import { generateTarotReading } from '@/lib/langgraph/workflow-with-db'
 import type { ReadingResponse, ReadingError } from '@/types/reading'
 import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
 
@@ -85,7 +85,17 @@ export async function POST(request: NextRequest) {
     // Generate reading using LangGraph workflow
     let workflowResult
     try {
-      workflowResult = await generateTarotReading(question)
+      workflowResult = await generateTarotReading(question, userId)
+      
+      // Check if workflow returned an error
+      if (workflowResult.error) {
+        throw new Error(workflowResult.error)
+      }
+      
+      // Validate that we have the required reading data
+      if (!workflowResult.reading) {
+        throw new Error('Failed to generate reading - no reading data returned')
+      }
     } catch (error) {
       // Handle timeout error - don't deduct credits
       if (error instanceof Error && error.message.includes('Reading timeout')) {

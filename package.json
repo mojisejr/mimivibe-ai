@@ -25,7 +25,8 @@
     "prompt:test-analysis": "tsx scripts/prompt-manager.ts test-analysis",
     "prompt:debug": "tsx scripts/prompt-manager.ts debug",
     "prompt:analyze": "tsx scripts/prompt-manager.ts analyze",
-    "prompt:batch-test": "tsx scripts/prompt-manager.ts batch-test"
+    "prompt:batch-test": "tsx scripts/prompt-manager.ts batch-test",
+    "security:deploy": "tsx scripts/deploy-security-features.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^4.29.1",
