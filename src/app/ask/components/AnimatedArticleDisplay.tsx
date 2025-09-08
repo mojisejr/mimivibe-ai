@@ -267,10 +267,10 @@ export function AnimatedArticleDisplay({
             </div>
             {readingData.rewards && (
               <>
-                <div className="px-4 py-2 rounded-full border border-warning/20 bg-warning/5 text-warning text-sm font-medium">
+                {/* <div className="px-4 py-2 rounded-full border border-warning/20 bg-warning/5 text-warning text-sm font-medium">
                   <span className="mr-2">⭐</span>
                   <span>+{readingData.rewards.exp} EXP</span>
-                </div>
+                </div> */}
                 <div className="px-4 py-2 rounded-full border border-accent/20 bg-accent/5 text-accent text-sm font-medium">
                   <span className="mr-2">🪙</span>
                   <span>+{readingData.rewards.coins} เหรียญ</span>
@@ -524,7 +524,6 @@ export function AnimatedArticleDisplay({
               </p>
             </motion.section>
           )}
-
         </article>
 
         {/* Action Buttons - Improved Mobile UX */}

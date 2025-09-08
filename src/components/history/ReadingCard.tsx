@@ -92,7 +92,6 @@ export const ReadingCard = ({
   onClick,
   onDelete,
 }: ReadingCardProps) => {
-
   const getTopicEmoji = (topic: string | undefined) => {
     const topicEmojis: { [key: string]: string } = {
       love: "💕",
@@ -178,12 +177,12 @@ export const ReadingCard = ({
         <div className="mt-auto">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3 text-xs md:text-sm">
-              <div className="flex items-center space-x-1">
+              {/* <div className="flex items-center space-x-1">
                 <span className="text-primary">⭐</span>
                 <span className="text-neutral-content">
                   +{reading.expEarned}
                 </span>
-              </div>
+              </div> */}
               <div className="flex items-center space-x-1">
                 <span className="text-warning">🪙</span>
                 <span className="text-neutral-content">
@@ -207,7 +206,9 @@ export const ReadingCard = ({
                     ? "😊"
                     : "🤩"}
                 </span>
-                <span className="font-semibold">รีวิวแล้ว {reading.reviewAccuracy}%</span>
+                <span className="font-semibold">
+                  รีวิวแล้ว {reading.reviewAccuracy}%
+                </span>
               </div>
             </div>
           )}
