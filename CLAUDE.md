@@ -16,47 +16,26 @@
 
 ---
 
-## 🌏 Timezone & Date Configuration
-
-### Thailand Timezone Settings
-
-**Primary Timezone**: Asia/Bangkok (UTC+7)
-**Date Format**: Christian Era (ค.ศ.) - YYYY-MM-DD
-**Time Format**: 24-hour format (HH:MM)
-**Locale**: th-TH with Christian Era calendar
-
 ### Development Guidelines
 
-#### Date/Time Handling
-```javascript
-// Use this utility for consistent timezone handling
-const getThailandDateTime = () => {
-  return new Date().toLocaleString('th-TH', {
-    timeZone: 'Asia/Bangkok',
-    year: 'numeric',
-    month: '2-digit', 
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    calendar: 'gregory' // Christian Era
-  });
-};
+**⚠️ CRITICAL: Synchronize Time Before Any File Operations**
 
-// For file naming (retrospectives, logs)
-const getThailandDateForFilename = () => {
-  const now = new Date();
-  return now.toLocaleDateString('en-CA', {
-    timeZone: 'Asia/Bangkok'
-  }); // Returns YYYY-MM-DD format
-};
+Before creating a new file or saving any timestamps, you **MUST** use the following command to retrieve the current date and time from the system:
+
+```bash
+date +"%Y-%m-%d %H:%M:%S"
 ```
 
+This ensures accurate timestamp synchronization with the system clock and prevents time-related inconsistencies.
+
 #### File Naming Conventions
+
 - **Retrospective Files**: `session-YYYY-MM-DD-[description].md`
 - **Log Files**: `YYYY-MM-DD-[type].log`
 - **Backup Files**: `backup-YYYY-MM-DD-HHMM.sql`
 
 #### Important Notes
+
 - **ALL timestamps** in documentation, logs, and file names must use Thailand timezone
 - **Year format** must always be Christian Era (ค.ศ.) not Buddhist Era (พ.ศ.)
 - **Development sessions** should reference Thailand local time
@@ -89,22 +68,26 @@ const getThailandDateForFilename = () => {
 ### Backend API Routes
 
 - **Reading System** (`/api/readings/`): Core tarot reading functionality
+
   - `ask.ts`: Generate new tarot readings with AI workflow
   - `save.ts`: Save completed readings to user history
   - `history.ts`: Retrieve user's reading history with pagination
 
 - **User Management** (`/api/user/`): User profile and progression
+
   - `stats.ts`: User statistics, level, and experience tracking
   - `credits.ts`: Credit balance management (stars, coins, free points)
   - `level-check.ts`: Level progression and prestige system
   - `prestige.ts`: Prestige system for level 100+ users
 
 - **Payment System** (`/api/payments/`): Stripe integration
+
   - `create-payment-intent.ts`: Stripe payment processing
   - `webhook.ts`: Stripe webhook for payment confirmations
   - `history.ts`: Payment transaction history
 
 - **Gamification** (`/api/achievements/`, `/api/credits/`): Achievement and reward system
+
   - `progress.ts`: Track user achievement progress
   - `claim.ts`: Claim earned achievements
   - `spend.ts`: Process credit spending transactions
@@ -150,11 +133,13 @@ const getThailandDateForFilename = () => {
 ## 💳 Payment & Credit System
 
 ### Credit Types
+
 - **Stars (⭐)**: เครดิตหลักที่ซื้อด้วยเงินจริง (1 star = 1 reading)
 - **Free Points (🎁)**: เครดิตฟรีจากกิจกรรมและ achievements
 - **Coins (🪙)**: สกุลเงินเกมสำหรับแลกเปลี่ยน (15 coins = 1 free point)
 
 ### Stripe Integration
+
 - **Currency**: Thai Baht (THB)
 - **Packages**: Starter (99 THB/10 credits), Popular (199 THB/25 credits), Premium (399 THB/60 credits)
 - **Webhook**: Real-time payment status updates
@@ -165,18 +150,21 @@ const getThailandDateForFilename = () => {
 ## 🎮 Gamification System
 
 ### Level & Experience System
-- **Level Progression**: level * 100 EXP required per level
+
+- **Level Progression**: level \* 100 EXP required per level
 - **Max Level**: 100 (Prestige system available)
 - **EXP Sources**: Readings (+10), Reviews (+5), Achievements (variable)
 - **Prestige**: Reset to level 1 with permanent bonuses at level 100
 
 ### Achievement System (20 Achievements)
+
 - **Reading Milestones**: FIRST_READING, READING_MASTER, ULTIMATE_MASTER
 - **Engagement**: REVIEWER, SOCIAL_BUTTERFLY, REFERRAL_MASTER
 - **Progression**: LEVEL_ACHIEVER, PRESTIGE_PIONEER
 - **Special**: EARLY_BIRD, WEEKEND_WARRIOR, NIGHT_OWL
 
 ### Exchange System
+
 - **Uniswap-style Interface**: Modern crypto-inspired design
 - **Exchange Rate**: 15 coins = 1 free point
 - **Transaction History**: Complete exchange tracking
@@ -200,6 +188,7 @@ You are **FORBIDDEN** from deleting or moving critical files and directories in 
 You must **NEVER** include sensitive information such as API keys, passwords, or user data in any commit messages, Pull Request descriptions, or public logs. Always use environment variables for sensitive data. If you detect sensitive data, you must alert the user and **REFUSE** to proceed until the information is properly handled.
 
 **Critical Environment Variables**:
+
 - `DATABASE_URL`, `CLERK_SECRET_KEY`, `STRIPE_SECRET_KEY`
 - `OPENAI_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`
 - `PROMPT_ENCRYPTION_KEY`, `STRIPE_WEBHOOK_SECRET`
@@ -235,6 +224,7 @@ These commands are standard across all projects and streamline our communication
 - **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. The agent will use all the information from the `current-focus.md` file and previous conversations to create this Issue. If an open Task Issue already exists, the agent will **update** that Issue with the latest information instead of creating a new one.
 
 - **`=impl > [message]`**: **ENHANCED WITH AUTOMATED WORKFLOW** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
+
   1. **Auto-Branch Creation**: Creates feature branch with proper naming (`feature/[issue-number]-[description]`)
   2. **Implementation**: Executes the planned work
   3. **Auto-Commit & Push**: Commits changes with descriptive messages and pushes to remote
@@ -263,7 +253,9 @@ These commands are standard across all projects and streamline our communication
 The following commands now include **FULL WORKFLOW AUTOMATION**:
 
 ##### `=impl` Command Enhancement
+
 **Automated Execution Flow:**
+
 ```
 1. Parse GitHub Task Issue → Extract requirements and scope
 2. Auto-Branch Creation → feature/[issue-number]-[sanitized-description]
@@ -275,22 +267,26 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 ```
 
 ##### Branch Naming Convention
+
 - **Format**: `feature/[issue-number]-[sanitized-description]`
 - **Example**: `feature/27-deployment-production-implementation`
 - **Auto-sanitization**: Removes special characters, converts to kebab-case
 
 ##### Commit Message Standards
+
 - **Format**: `[type]: [description] (#[issue-number])`
 - **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 - **Example**: `feat: implement user authentication system (#25)`
 
 ##### Pull Request Automation
+
 - **Title**: Auto-generated from issue title with proper formatting
 - **Description**: Includes implementation summary, changes made, and testing notes
 - **Issue Linking**: Automatic `Closes #[issue-number]` for proper tracking
 - **Labels**: Auto-applied based on implementation type and scope
 
 #### Workflow Safety Measures
+
 - **Branch Protection**: Prevents direct commits to main/master
 - **PR Validation**: Ensures all changes go through review process
 - **Issue Tracking**: Maintains complete audit trail of work
@@ -301,24 +297,28 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 ### Implementation Guidelines for Automated Workflow
 
 #### Pre-Implementation Checks
+
 - ✅ Verify GitHub Task Issue exists and is properly formatted
 - ✅ Ensure no conflicting branches exist
 - ✅ Confirm GitHub CLI is authenticated and functional
 - ✅ Validate repository permissions for branch creation and PR management
 
 #### Error Handling and Fallbacks
+
 - **Branch Creation Failure**: Falls back to manual branch creation with user guidance
 - **Push Failure**: Provides manual push commands and troubleshooting steps
 - **PR Creation Failure**: Falls back to manual PR creation with pre-filled templates
 - **Issue Update Failure**: Logs error and provides manual update instructions
 
 #### Quality Assurance
+
 - **Code Review**: All PRs require manual review and approval
 - **Testing**: Automated tests run on PR creation (if configured)
 - **Documentation**: Auto-generated PR descriptions include implementation details
 - **Rollback**: Clear instructions for reverting changes if needed
 
 #### Monitoring and Feedback
+
 - **Progress Tracking**: Real-time updates during implementation phases
 - **Success Metrics**: PR creation success rate and review completion time
 - **User Feedback**: Continuous improvement based on workflow effectiveness
@@ -329,6 +329,7 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 ## 🛠️ Development Commands
 
 ### Core Development
+
 ```bash
 # Development server
 npm run dev
@@ -344,6 +345,7 @@ npm run type-check
 ```
 
 ### Database Management
+
 ```bash
 # Generate Prisma client
 npx prisma generate
@@ -359,6 +361,7 @@ npx prisma db seed
 ```
 
 ### AI Prompt Management
+
 ```bash
 # List all prompts
 npm run prompt:list
@@ -443,6 +446,7 @@ When you use the `=rrr` command, the agent will create a file and an Issue with 
 ### Common Issues
 
 #### Build Failures
+
 ```bash
 # Check for type errors or syntax issues
 npm run build 2>&1 | grep -A 5 "error"
@@ -456,6 +460,7 @@ npx prisma generate
 ```
 
 #### Database Issues
+
 ```bash
 # Reset database connection
 npx prisma db push --force-reset
@@ -468,6 +473,7 @@ npx prisma generate
 ```
 
 #### AI System Issues
+
 ```bash
 # Test AI providers
 npm run prompt:test
@@ -481,6 +487,7 @@ npm run prompt:list
 ```
 
 #### Port Conflicts
+
 ```bash
 # Find the process using port 3000
 lsof -i :3000
@@ -493,6 +500,7 @@ npm run dev -- -p 3001
 ```
 
 #### Payment System Issues
+
 ```bash
 # Test Stripe webhook
 stripe listen --forward-to localhost:3000/api/payments/webhook

@@ -1,9 +1,7 @@
 # Current Focus
 
-ในหน้า /package ผมลอง manual test แล้วเจอว่า มีปัญหาเรื่อง ราคาไม่ตรงครับ คือ ราคา จริงๆ มันถูกกว่านั้น เช่น starter pack จาก 9900 บาท จริงๆ มันคือ
---starter pack = 99 บาท
---popular pack = 199 บาท
---premium pack = 399 บาท
---super pack = 599 บาท
-ผมต้องการ refactor ให้ถูกต้อง คุณอาจจะต้องเชค stripe workflow ด้วยหรือเปล่า และแก้ไขให้ถูกต้อง
-**IMPORTANT! คุณจะวางแผนและแก้ในส่วนของ stripe ที่กระทบกับการตั้งราคา ให้ถูกต้องเท่านั้น และ UI ส่วนที่เกี่ยวข้องเท่านั้น รักษา scope การทำงานให้ดี อย่าให้กระทบส่วนอื่น**
+from /ask page in the ArticleDisplay component  I wanted to remove the reward card "รางวัลที่ได้รับ", 
+  and move the reward section to be with the "Reading Meta Info - Chip Style -"
+
+**Updated**: 2025-01-25
+**Status**: Active Context
