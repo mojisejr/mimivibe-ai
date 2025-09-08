@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
+import { rateLimit, webhookRateLimitConfig } from '@/lib/rate-limiter'
 
 // Force dynamic rendering for headers() usage
 export const dynamic = 'force-dynamic'
@@ -11,6 +12,12 @@ const DEBUG_MODE = process.env.NODE_ENV === 'development'
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY ENHANCEMENT: Apply rate limiting for webhooks
+    const rateLimitResponse = await rateLimit(request, webhookRateLimitConfig)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = await request.text()
     const signature = request.headers.get('stripe-signature')!
     
@@ -27,24 +34,29 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, endpointSecret)
     } catch (err) {
-      console.error('Webhook signature verification failed:', err)
-      console.error('Webhook signature:', signature)
-      console.error('Body length:', body.length)
-      console.error('Endpoint secret exists:', !!endpointSecret)
-      console.error('Endpoint secret prefix:', endpointSecret?.substring(0, 10))
+      // SECURITY FIX: Remove sensitive information from logs
+      console.error('Webhook signature verification failed')
       
       return NextResponse.json(
         { 
           success: false,
-          error: 'Webhook signature verification failed',
-          details: {
-            hasSignature: !!signature,
-            hasEndpointSecret: !!endpointSecret,
-            bodyLength: body.length,
-            errorMessage: err instanceof Error ? err.message : String(err)
-          },
-          timestamp: new Date().toISOString(),
-          path: '/api/payments/webhook'
+          error: 'Webhook signature verification failed'
+        },
+        { status: 400 }
+      )
+    }
+
+    // SECURITY ENHANCEMENT: Webhook replay attack prevention
+    const eventTimestamp = event.created * 1000 // Convert to milliseconds
+    const currentTime = Date.now()
+    const fiveMinutesInMs = 5 * 60 * 1000
+    
+    if (currentTime - eventTimestamp > fiveMinutesInMs) {
+      console.warn('Webhook event too old, potential replay attack')
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Webhook event expired'
         },
         { status: 400 }
       )

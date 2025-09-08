@@ -1,12 +1,19 @@
 import { auth } from '@clerk/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { rateLimit, historyRateLimitConfig } from '@/lib/rate-limiter'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY ENHANCEMENT: Apply rate limiting
+    const rateLimitResponse = await rateLimit(request, historyRateLimitConfig)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const { userId } = auth()
     
     if (!userId) {
@@ -14,17 +21,19 @@ export async function GET(request: NextRequest) {
         { 
           success: false,
           error: 'Unauthorized',
-          message: 'Authentication required',
-          timestamp: new Date().toISOString(),
-          path: '/api/payments/history'
+          message: 'Authentication required'
         }, 
         { status: 401 }
       )
     }
 
     const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50) // Max 50 per page
+    // SECURITY ENHANCEMENT: Validate and sanitize pagination parameters
+    const pageParam = searchParams.get('page') || '1'
+    const limitParam = searchParams.get('limit') || '10'
+    
+    const page = Math.max(1, parseInt(pageParam) || 1) // Ensure positive page number
+    const limit = Math.min(Math.max(1, parseInt(limitParam) || 10), 50) // Max 50 per page, min 1
     const offset = (page - 1) * limit
     
     // Filter parameters
@@ -60,11 +69,15 @@ export async function GET(request: NextRequest) {
       where.status = status
     }
 
-    // Search by Stripe Payment ID
+    // SECURITY ENHANCEMENT: Sanitize search input for Stripe Payment ID
     if (search) {
-      where.stripePaymentId = {
-        contains: search,
-        mode: 'insensitive'
+      // Only allow alphanumeric characters, hyphens, and underscores
+      const sanitizedSearch = search.replace(/[^a-zA-Z0-9\-_]/g, '')
+      if (sanitizedSearch.length > 0) {
+        where.stripePaymentId = {
+          contains: sanitizedSearch,
+          mode: 'insensitive'
+        }
       }
     }
 
