@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateTarotReading } from '@/lib/langgraph/workflow'
 import type { ReadingResponse, ReadingError } from '@/types/reading'
+import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -150,8 +151,9 @@ export async function POST(request: NextRequest) {
       })
 
       // Update user credits and stats
-      const newExp = currentUser.exp + 25
-      const newLevel = Math.floor(newExp / 100) + 1
+      // TEMP_DISABLED: EXP system disabled via feature flags
+      const newExp = getSafeExpValue(currentUser.exp + 25)
+      const newLevel = getSafeLevelValue(Math.floor(newExp / 100) + 1)
 
       await tx.user.update({
         where: { id: userId },
@@ -159,8 +161,8 @@ export async function POST(request: NextRequest) {
           freePoint: currentUser.freePoint + deltaFreePoint,
           stars: currentUser.stars + deltaStars,
           coins: currentUser.coins + 5, // Reward coins
-          exp: newExp,
-          level: Math.max(currentUser.level, newLevel)
+          exp: newExp, // Will be 0 when EXP system disabled
+          level: Math.max(currentUser.level, newLevel) // Will remain current level when disabled
         }
       })
 

@@ -165,7 +165,7 @@ export default function ProfilePage() {
             <ReferralSection />
 
             {/* Preferences Card */}
-            <div className="card card-mystical">
+            {/* <div className="card card-mystical">
               <div className="card-body">
                 <h2 className="heading-3 mb-4">Preferences</h2>
                 <div className="space-y-4">
@@ -208,7 +208,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         ) : null}
       </main>

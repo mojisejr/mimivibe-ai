@@ -93,7 +93,7 @@ export function ReviewModal({
               ขอบคุณสำหรับรีวิว!
             </h2>
             <p className="text-white/80 text-sm">
-              คุณได้รับรางวัล +10 EXP และ +2 เหรียญ
+              คุณได้รับรางวัล +2 เหรียญ
             </p>
           </div>
         </div>

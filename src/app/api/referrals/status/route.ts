@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateReferralCode } from '@/lib/utils/referrals'
 import { getBaseUrl } from '@/lib/utils/url'
+import { getSafeExpValue } from '@/lib/feature-flags'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -49,8 +50,9 @@ export async function GET() {
       }
     })
 
+    // TEMP_DISABLED: EXP system disabled via feature flags
     const totalRewards = referralTransactions.reduce((acc, tx) => ({
-      exp: acc.exp + tx.deltaExp,
+      exp: getSafeExpValue(acc.exp + tx.deltaExp),
       coins: acc.coins + tx.deltaCoins,
       stars: acc.stars + tx.deltaPoint
     }), { exp: 0, coins: 0, stars: 0 })
