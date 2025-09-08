@@ -177,7 +177,7 @@ export const ReadingDetailModal = ({
         type: "success",
         title: "รีวิวสำเร็จ!",
         message:
-          "ขอบคุณสำหรับรีวิวของคุณ คุณได้รับรางวัล +10 EXP และ +2 เหรียญแล้ว",
+          "ขอบคุณสำหรับรีวิวของคุณ คุณได้รับรางวัล +2 เหรียญแล้ว",
         duration: 4000,
       });
     } catch (error) {

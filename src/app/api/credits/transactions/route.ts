@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
 
 // Force dynamic rendering for authentication and request.url
 export const dynamic = 'force-dynamic'
@@ -167,16 +168,17 @@ export async function POST(request: NextRequest) {
       })
 
       // Update user credits
-      const newExp = user.exp + deltaExp
-      const newLevel = Math.floor(newExp / 100) + 1 // Simple leveling: every 100 exp = 1 level
+      // TEMP_DISABLED: EXP system disabled via feature flags
+      const newExp = getSafeExpValue(user.exp + deltaExp)
+      const newLevel = getSafeLevelValue(Math.floor(newExp / 100) + 1) // Simple leveling: every 100 exp = 1 level
 
       const updatedUser = await tx.user.update({
         where: { id: userId },
         data: {
           stars: user.stars + deltaPoint,
           coins: user.coins + deltaCoins,
-          exp: newExp,
-          level: Math.max(user.level, newLevel) // Never decrease level
+          exp: newExp, // Will be 0 when EXP system disabled
+          level: Math.max(user.level, newLevel) // Will remain current level when disabled
         }
       })
 
