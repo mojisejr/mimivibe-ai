@@ -265,6 +265,18 @@ export function AnimatedArticleDisplay({
               <span className="mr-2">🃏</span>
               <span>{readingData.cards.length} ใบ</span>
             </div>
+            {readingData.rewards && (
+              <>
+                <div className="px-4 py-2 rounded-full border border-warning/20 bg-warning/5 text-warning text-sm font-medium">
+                  <span className="mr-2">⭐</span>
+                  <span>+{readingData.rewards.exp} EXP</span>
+                </div>
+                <div className="px-4 py-2 rounded-full border border-accent/20 bg-accent/5 text-accent text-sm font-medium">
+                  <span className="mr-2">🪙</span>
+                  <span>+{readingData.rewards.coins} เหรียญ</span>
+                </div>
+              </>
+            )}
           </motion.div>
         </header>
 
@@ -513,35 +525,6 @@ export function AnimatedArticleDisplay({
             </motion.section>
           )}
 
-          {/* Rewards */}
-          {readingData.rewards && (
-            <motion.section
-              className="mb-12 border-l-4 border-success/50 pl-8 py-6 reading-section"
-              initial={{ opacity: 0, y: 15 }}
-            >
-              <h3 className="heading-3 mb-6 text-center text-base-content">
-                รางวัลที่ได้รับ
-              </h3>
-              <div className="flex justify-center space-x-8">
-                <div className="text-center">
-                  <div className="w-14 h-14 bg-warning rounded-full flex items-center justify-center mb-3 mx-auto shadow-sm">
-                    <span className="text-warning-content text-xl">⭐</span>
-                  </div>
-                  <div className="body-small text-base-content font-medium">
-                    +{readingData.rewards.exp} EXP
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="w-14 h-14 bg-accent rounded-full flex items-center justify-center mb-3 mx-auto shadow-sm">
-                    <span className="text-accent-content text-xl">🪙</span>
-                  </div>
-                  <div className="body-small text-base-content font-medium">
-                    +{readingData.rewards.coins} เหรียญ
-                  </div>
-                </div>
-              </div>
-            </motion.section>
-          )}
         </article>
 
         {/* Action Buttons - Improved Mobile UX */}
