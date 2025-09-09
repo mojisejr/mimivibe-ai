@@ -167,7 +167,7 @@ export function PricingCards() {
                   pkg.popular || false
                 )} mb-4`}
               >
-                {(pkg.price / 100).toLocaleString('th-TH')}฿
+                {(pkg.price / 100).toLocaleString("th-TH")}฿
               </div>
 
               <ul className="text-left space-y-3 mb-8">
@@ -187,7 +187,11 @@ export function PricingCards() {
                   <span className="text-success mr-2">✓</span>
                   <span>🔮 คำแนะนำจาก AI</span>
                 </li>
-                {index > 0 && (
+                <li className="flex items-center">
+                  <span className="text-success mr-2">✓</span>
+                  <span>📋 บันทึกผลการทำนาย</span>
+                </li>
+                {/* {index > 0 && (
                   <li className="flex items-center">
                     <span className="text-success mr-2">✓</span>
                     <span>📋 บันทึกผลการทำนาย</span>
@@ -198,7 +202,7 @@ export function PricingCards() {
                     <span className="text-success mr-2">✓</span>
                     <span>🔔 การแจ้งเตือนพิเศษ</span>
                   </li>
-                )}
+                )} */}
               </ul>
 
               <Link href="/packages">
