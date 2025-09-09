@@ -153,3 +153,15 @@ export const historyRateLimitConfig: RateLimitConfig = {
   maxRequests: 30, // Max 30 history requests per minute
   keyGenerator: (req) => getClientIdentifier(req)
 }
+
+export const apiRateLimitConfig: RateLimitConfig = {
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 60, // Max 60 API requests per minute
+  keyGenerator: (req) => getClientIdentifier(req)
+}
+
+export const adminRateLimitConfig: RateLimitConfig = {
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 10, // Max 10 admin requests per minute
+  keyGenerator: (req) => getClientIdentifier(req)
+}

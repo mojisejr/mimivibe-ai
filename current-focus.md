@@ -1,21 +1,26 @@
 # Current Focus
 
-**Last Updated**: 2025-09-09 07:54:58 (Thailand Time)
+**Last Updated**: 2025-09-09 09:04:32 (Thailand Time)
 
 ## Current Session Context
 
-Refactor Clerk webhook route @src/app/api/webhooks/clerk/route.ts DEFAULT_USER_VALUES inconsistency - analyze free trial credit system and refactor to use RewardConfiguration for consistency with user profile route, ensuring default fallback values are 0 stars and 3 freePoints
+I want to implement the package feature campaign, I wanted the first payment campaign, so the new account that make the fisrt payment will recive the 70% discount on every package, so I want the system to be as following:
+1. has the best UI to show to new user at the /packages page the campaign properly and after they has paid for their first package, UI will be right back to normal
+2. add this campaign to homepage UI on the pricing section to let's new vistor to know about this campaign
+3. check on the database schema if we can use some existing table to set the config of this campaign and also active and deactive the campaign and make it production ready
+4. make sure you analyze the relevant codebase before implement anything to make sure that you don't miss any important part
 
 ## Key Areas of Investigation
 
-- DEFAULT_USER_VALUES hardcoded configuration in Clerk webhook
-- Inconsistency between webhook (stars: 0, freePoint: 3) vs profile route dynamic values
-- Free trial credit system analysis across user creation flows
-- Consolidate reward configuration to use RewardConfiguration table
-- Ensure consistent fallback values: 0 stars and 3 freePoints
+- Package page UI implementation for campaign display and normal state transitions
+- Homepage pricing section integration for campaign marketing
+- Database schema analysis for campaign configuration storage
+- User payment tracking and first payment detection logic
+- Campaign activation/deactivation controls for production deployment
+- Existing pricing and package system integration points
 
 ## Current Status
 
-- Session started: 2025-09-09 07:54:58
-- Focus: Refactor Clerk webhook to use RewardConfiguration for consistent reward allocation
-- Priority: Eliminate hardcoded DEFAULT_USER_VALUES and consolidate reward logic
+- Session started: 2025-09-09 09:04:32
+- Focus: First Payment Campaign Implementation (70% discount for new users)
+- Priority: Comprehensive campaign system with UI, database, and production controls

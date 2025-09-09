@@ -10,6 +10,7 @@ import { PackageCard } from "@/components/payments/PackageCard";
 import { PaymentForm } from "@/components/payments/PaymentForm";
 import { PaymentConfirmation } from "@/components/payments/PaymentConfirmation";
 import { usePayment } from "@/hooks/usePayment";
+import { useCampaign } from "@/hooks/useCampaign";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function PackagesPage() {
@@ -28,6 +29,16 @@ export default function PackagesPage() {
     resetPayment,
     getCurrentCredits,
   } = usePayment();
+  
+  const {
+    eligible: campaignEligible,
+    campaign,
+    loading: campaignLoading,
+    calculateDiscountedPrice,
+    getDiscountAmount,
+    formatPrice,
+    refresh: refreshCampaign
+  } = useCampaign();
 
   const [currentCredits, setCurrentCredits] = useState(0);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -66,6 +77,7 @@ export default function PackagesPage() {
       });
       setShowPaymentForm(false);
       loadCurrentCredits(); // Refresh credits display
+      refreshCampaign(); // Refresh campaign eligibility (will become ineligible)
     }
   };
 
@@ -140,6 +152,36 @@ export default function PackagesPage() {
                 </p>
               </div>
 
+              {/* Campaign Banner */}
+              {campaignEligible && campaign && (
+                <motion.div
+                  className="alert alert-success max-w-4xl mx-auto mb-6 bg-gradient-to-r from-success/10 to-primary/10 border-2 border-success/30"
+                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-start">
+                      <div className="text-2xl mr-3">🎉</div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg text-success mb-1">
+                          {campaign.bannerText}
+                        </h3>
+                        <p className="text-sm text-success/80">
+                          {campaign.marketingMessage}
+                        </p>
+                        <p className="text-xs text-success/70 mt-1">
+                          {campaign.urgencyText}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="badge badge-success badge-lg">
+                      -{campaign.discountPercentage}%
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Error Display */}
               {error && (
                 <motion.div
@@ -184,21 +226,83 @@ export default function PackagesPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                  {packages.map((pkg, index) => (
-                    <motion.div
-                      key={pkg.id}
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <PackageCard
-                        package={pkg}
-                        onSelect={handlePackageSelect}
-                        selected={selectedPackage?.id === pkg.id}
-                        loading={loading && selectedPackage?.id === pkg.id}
-                      />
-                    </motion.div>
-                  ))}
+                  {packages.map((pkg, index) => {
+                    const originalPrice = pkg.price;
+                    const discountedPrice = campaignEligible ? calculateDiscountedPrice(originalPrice) : originalPrice;
+                    const discountAmount = campaignEligible ? getDiscountAmount(originalPrice) : 0;
+                    const hasDiscount = campaignEligible && discountAmount > 0;
+
+                    return (
+                      <motion.div
+                        key={pkg.id}
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="relative"
+                      >
+                        {hasDiscount && (
+                          <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                            <div className="badge badge-error badge-lg animate-pulse">
+                              ลด {campaign?.discountPercentage}%
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className={`card ${hasDiscount ? 'ring-2 ring-success ring-opacity-50 shadow-2xl' : ''} ${pkg.popular ? 'border-primary' : 'border-base-300'} transition-all duration-300`}>
+                          <div className="card-body">
+                            <div className="text-center mb-4">
+                              <h3 className="text-xl font-bold mb-2">{pkg.title}</h3>
+                              {pkg.subtitle && (
+                                <p className="text-sm text-neutral-content mb-4">{pkg.subtitle}</p>
+                              )}
+                              
+                              <div className="price-display">
+                                {hasDiscount ? (
+                                  <div className="space-y-1">
+                                    <div className="text-lg text-neutral-content line-through">
+                                      ฿{formatPrice(originalPrice)}
+                                    </div>
+                                    <div className="text-3xl font-bold text-success">
+                                      ฿{formatPrice(discountedPrice)}
+                                    </div>
+                                    <div className="text-sm text-success">
+                                      ประหยัด ฿{formatPrice(discountAmount)}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="text-3xl font-bold text-primary">
+                                    ฿{formatPrice(originalPrice)}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="text-center mb-4">
+                              <div className="text-lg">
+                                ⭐ {pkg.creditAmount} เครดิต
+                              </div>
+                            </div>
+                            
+                            {hasDiscount && (
+                              <div className="alert alert-success alert-sm mb-4">
+                                <span className="text-xs">
+                                  🎁 ข้อเสนอพิเศษสำหรับสมาชิกใหม่!
+                                </span>
+                              </div>
+                            )}
+                            
+                            <button
+                              className={`btn ${hasDiscount ? 'btn-success' : pkg.popular ? 'btn-primary' : 'btn-outline btn-primary'} w-full ${loading && selectedPackage?.id === pkg.id ? 'loading' : ''}`}
+                              onClick={() => handlePackageSelect(pkg.id)}
+                              disabled={loading}
+                            >
+                              {hasDiscount && campaign?.ctaText ? campaign.ctaText : pkg.ctaText}
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -320,10 +424,18 @@ export default function PackagesPage() {
 
                 <h2 className="heading-2 mb-2">Complete Your Purchase</h2>
                 {selectedPackage && (
-                  <p className="text-neutral-content">
-                    {selectedPackage.title} - {selectedPackage.creditAmount}{" "}
-                    Credits
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-neutral-content">
+                      {selectedPackage.title} - {selectedPackage.creditAmount} Credits
+                    </p>
+                    {campaignEligible && campaign && (
+                      <div className="alert alert-success alert-sm">
+                        <span className="text-sm">
+                          🎉 ข้อเสนอพิเศษ: ลด {campaign.discountPercentage}% สำหรับการซื้อครั้งแรก!
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -331,7 +443,7 @@ export default function PackagesPage() {
               {clientSecret && selectedPackage && (
                 <StripeProvider clientSecret={clientSecret}>
                   <PaymentForm
-                    amount={selectedPackage.price}
+                    amount={campaignEligible ? calculateDiscountedPrice(selectedPackage.price) : selectedPackage.price}
                     currency="thb"
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}

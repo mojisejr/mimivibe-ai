@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { usePackages } from "@/hooks/usePackages";
+import { useCampaign } from "@/hooks/useCampaign";
 
 const cardHover = {
   hover: {
@@ -19,6 +20,7 @@ const fadeInUp = {
 
 export function PricingCards() {
   const { packages, loading, error } = usePackages();
+  const { eligible: campaignEligible, campaign, calculateDiscountedPrice, formatPrice } = useCampaign();
 
   if (loading) {
     return (
@@ -120,55 +122,122 @@ export function PricingCards() {
   };
 
   return (
-    <motion.div
-      className="grid grid-cols-1 md:grid-cols-3 gap-8"
-      initial="initial"
-      animate="animate"
-      variants={{
-        animate: {
-          transition: { staggerChildren: 0.2 },
-        },
-      }}
-    >
-      {packages.map((pkg, index) => (
+    <div className="space-y-8">
+      {/* Campaign Promotion Banner */}
+      {campaignEligible && campaign && (
         <motion.div
-          key={pkg.id}
-          variants={{
-            ...fadeInUp,
-            ...cardHover,
-          }}
-          className="group relative"
-          whileHover="hover"
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
         >
-          {pkg.popular && (
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-              <div className="badge badge-accent badge-lg">ยอดนิยม</div>
+          <div className="alert alert-success max-w-4xl mx-auto bg-gradient-to-r from-success/10 to-primary/10 border-2 border-success/30">
+            <div className="flex items-center justify-center w-full">
+              <div className="text-center">
+                <div className="text-3xl mb-2">🎉</div>
+                <h3 className="font-bold text-xl text-success mb-2">
+                  {campaign.bannerText}
+                </h3>
+                <p className="text-success/80 mb-3">
+                  {campaign.marketingMessage}
+                </p>
+                <p className="text-sm text-success/70 mb-4">
+                  {campaign.urgencyText}
+                </p>
+                <Link href="/packages">
+                  <button className="btn btn-success btn-lg">
+                    {campaign.ctaText}
+                  </button>
+                </Link>
+              </div>
+              <div className="absolute top-4 right-4">
+                <div className="badge badge-success badge-lg">
+                  -{campaign.discountPercentage}%
+                </div>
+              </div>
             </div>
-          )}
+          </div>
+        </motion.div>
+      )}
 
-          <div
-            className={`card ${getPackageStyle(
-              index,
-              pkg.popular || false
-            )} transition-all duration-300`}
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-3 gap-8"
+        initial="initial"
+        animate="animate"
+        variants={{
+          animate: {
+            transition: { staggerChildren: 0.2 },
+          },
+        }}
+      >
+      {packages.map((pkg, index) => {
+        const originalPrice = pkg.price;
+        const discountedPrice = campaignEligible ? calculateDiscountedPrice(originalPrice) : originalPrice;
+        const hasDiscount = campaignEligible && discountedPrice < originalPrice;
+        
+        return (
+          <motion.div
+            key={pkg.id}
+            variants={{
+              ...fadeInUp,
+              ...cardHover,
+            }}
+            className="group relative"
+            whileHover="hover"
           >
-            <div className="card-body text-center p-8">
-              <div className="mb-6">
-                <span className="text-4xl">{getPackageIcon(index)}</span>
+            {pkg.popular && (
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                <div className="badge badge-accent badge-lg">ยอดนิยม</div>
               </div>
-
-              <h3 className="text-2xl font-bold text-base-content mb-2">
-                {pkg.title}
-              </h3>
-
-              <div
-                className={`text-3xl font-bold ${getPriceColor(
-                  index,
-                  pkg.popular || false
-                )} mb-4`}
-              >
-                {(pkg.price / 100).toLocaleString("th-TH")}฿
+            )}
+            
+            {hasDiscount && (
+              <div className="absolute -top-4 right-4 z-10">
+                <div className="badge badge-error badge-lg animate-pulse">
+                  ลด {campaign?.discountPercentage}%
+                </div>
               </div>
+            )}
+
+            <div
+              className={`card ${getPackageStyle(
+                index,
+                pkg.popular || false
+              )} ${hasDiscount ? 'ring-2 ring-success ring-opacity-50 shadow-2xl' : ''} transition-all duration-300`}
+            >
+              <div className="card-body text-center p-8">
+                <div className="mb-6">
+                  <span className="text-4xl">{getPackageIcon(index)}</span>
+                </div>
+
+                <h3 className="text-2xl font-bold text-base-content mb-2">
+                  {pkg.title}
+                </h3>
+
+                <div className="price-section mb-4">
+                  {hasDiscount ? (
+                    <div className="space-y-1">
+                      <div className="text-lg text-neutral-content line-through">
+                        {formatPrice(originalPrice)}฿
+                      </div>
+                      <div className="text-3xl font-bold text-success">
+                        {formatPrice(discountedPrice)}฿
+                      </div>
+                      <div className="text-sm text-success">
+                        ประหยัด {formatPrice(originalPrice - discountedPrice)}฿
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className={`text-3xl font-bold ${getPriceColor(
+                        index,
+                        pkg.popular || false
+                      )}`}
+                    >
+                      {formatPrice(originalPrice)}฿
+                    </div>
+                  )}
+                </div>
 
               <ul className="text-left space-y-3 mb-8">
                 <li className="flex items-center">
@@ -205,15 +274,25 @@ export function PricingCards() {
                 )} */}
               </ul>
 
+              {hasDiscount && (
+                <div className="alert alert-success alert-sm mb-4">
+                  <span className="text-xs">
+                    🎁 ข้อเสนอพิเศษสำหรับสมาชิกใหม่!
+                  </span>
+                </div>
+              )}
+              
               <Link href="/packages">
-                <button className={getButtonStyle(index, pkg.popular || false)}>
-                  เลือกแพ็คเกจนี้
+                <button className={hasDiscount ? 'btn btn-success w-full shadow-lg' : getButtonStyle(index, pkg.popular || false)}>
+                  {hasDiscount && campaign?.ctaText ? campaign.ctaText : 'เลือกแพ็คเกจนี้'}
                 </button>
               </Link>
             </div>
           </div>
-        </motion.div>
-      ))}
-    </motion.div>
+          </motion.div>
+        );
+      })}
+      </motion.div>
+    </div>
   );
 }
