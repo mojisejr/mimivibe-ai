@@ -64,8 +64,8 @@ export function useCampaign() {
     }
     
     const discountPercentage = eligibility.campaign.discountPercentage;
-    const discount = Math.floor(originalPrice * (discountPercentage / 100));
-    return originalPrice - discount;
+    const discount = originalPrice * (discountPercentage / 100);
+    return Math.round((originalPrice - discount) * 100) / 100;
   }, [eligibility]);
 
   const getDiscountAmount = useCallback((originalPrice: number): number => {
@@ -74,11 +74,12 @@ export function useCampaign() {
     }
     
     const discountPercentage = eligibility.campaign.discountPercentage;
-    return Math.floor(originalPrice * (discountPercentage / 100));
+    const discount = originalPrice * (discountPercentage / 100);
+    return Math.round(discount * 100) / 100;
   }, [eligibility]);
 
   const formatPrice = useCallback((price: number): string => {
-    return (price / 100).toLocaleString('th-TH');
+    return price.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }, []);
 
   const refresh = useCallback(() => {

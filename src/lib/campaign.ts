@@ -83,8 +83,8 @@ export async function checkFirstPaymentCampaignEligibility(userId: string): Prom
  * Calculate discounted price for campaign
  */
 export function calculateCampaignPrice(originalPrice: number, discountPercentage: number): number {
-  const discount = Math.floor(originalPrice * (discountPercentage / 100));
-  return originalPrice - discount;
+  const discount = originalPrice * (discountPercentage / 100);
+  return Math.round((originalPrice - discount) * 100) / 100;
 }
 
 /**
