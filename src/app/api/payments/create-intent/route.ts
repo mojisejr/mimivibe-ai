@@ -4,6 +4,7 @@ import { stripe, formatAmountForStripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { rateLimit, paymentRateLimitConfig } from '@/lib/rate-limiter'
+import { checkFirstPaymentCampaignEligibility, calculateCampaignPrice } from '@/lib/campaign'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -69,10 +70,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // SECURITY ENHANCEMENT: Validate payment amount matches pack price
-    const expectedAmount = formatAmountForStripe(pack.price)
+    // Check campaign eligibility and calculate discounted price
+    const campaignEligibility = await checkFirstPaymentCampaignEligibility(userId)
+    let finalPrice = pack.price
+    let campaignDiscount = 0
     
-    // Create payment intent with validated amount
+    if (campaignEligibility.eligible && campaignEligibility.campaign) {
+      finalPrice = calculateCampaignPrice(pack.price, campaignEligibility.campaign.discountPercentage)
+      campaignDiscount = pack.price - finalPrice
+    }
+    
+    // SECURITY ENHANCEMENT: Validate payment amount (use discounted price if applicable)
+    const expectedAmount = formatAmountForStripe(finalPrice)
+    
+    // Create payment intent with campaign-adjusted amount
     const paymentIntent = await stripe.paymentIntents.create({
       amount: expectedAmount,
       currency: 'thb',
@@ -80,7 +91,12 @@ export async function POST(request: NextRequest) {
         userId,
         packId: packId.toString(),
         creditAmount: pack.creditAmount.toString(),
-        expectedAmount: expectedAmount.toString() // Store expected amount for verification
+        expectedAmount: expectedAmount.toString(),
+        originalPrice: pack.price.toString(),
+        finalPrice: finalPrice.toString(),
+        campaignDiscount: campaignDiscount.toString(),
+        campaignId: campaignEligibility.eligible ? campaignEligibility.campaign?.id || '' : '',
+        isFirstPayment: campaignEligibility.eligible ? 'true' : 'false'
       },
       automatic_payment_methods: {
         enabled: true,
@@ -91,8 +107,15 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         clientSecret: paymentIntent.client_secret,
-        amount: pack.price,
-        currency: 'thb'
+        amount: finalPrice,
+        originalAmount: pack.price,
+        campaignDiscount: campaignDiscount,
+        currency: 'thb',
+        campaign: campaignEligibility.eligible ? {
+          applied: true,
+          discountPercentage: campaignEligibility.campaign?.discountPercentage,
+          discountAmount: campaignDiscount
+        } : { applied: false }
       }
     })
 

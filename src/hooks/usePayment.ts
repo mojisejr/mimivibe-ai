@@ -9,6 +9,7 @@ interface Package {
   subtitle?: string;
   price: number;
   creditAmount: number;
+  ctaText: string;
   popular?: boolean;
   metadata?: any;
 }
