@@ -1,25 +1,26 @@
-import { auth } from '@clerk/nextjs'
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { auth } from "@clerk/nextjs";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getNewUserRewards } from "@/lib/utils/rewards";
 
 // Force dynamic rendering for authentication
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const { userId } = auth()
-    
+    const { userId } = auth();
+
     if (!userId) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: 'Unauthorized',
-          message: 'Authentication required',
+          error: "Unauthorized",
+          message: "Authentication required",
           timestamp: new Date().toISOString(),
-          path: '/api/user/profile'
-        }, 
+          path: "/api/user/profile",
+        },
         { status: 401 }
-      )
+      );
     }
 
     let user = await prisma.user.findUnique({
@@ -39,24 +40,29 @@ export async function GET() {
         prestigeLevel: true,
         prestigePoints: true,
         createdAt: true,
-        updatedAt: true
-      }
-    })
+        updatedAt: true,
+      },
+    });
 
-    // If user doesn't exist, create them with default values
+    // If user doesn't exist, create them with dynamic reward values
+    {
+      /* Create New User if not exists */
+    }
     if (!user) {
+      const newUserRewards = await getNewUserRewards();
+
       user = await prisma.user.create({
         data: {
           id: userId,
-          stars: 5, // Free trial credits
+          stars: newUserRewards.stars || 0,
           coins: 0,
           exp: 0,
           level: 1,
-          freePoint: 5,
-          role: 'USER',
+          freePoint: newUserRewards.freePoint || 3,
+          role: "USER",
           prestigeLevel: 0,
           prestigePoints: 0,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         select: {
           id: true,
@@ -73,9 +79,9 @@ export async function GET() {
           prestigeLevel: true,
           prestigePoints: true,
           createdAt: true,
-          updatedAt: true
-        }
-      })
+          updatedAt: true,
+        },
+      });
     }
 
     return NextResponse.json({
@@ -89,58 +95,60 @@ export async function GET() {
           level: user.level,
           freePoint: user.freePoint,
           prestigeLevel: user.prestigeLevel,
-          prestigePoints: user.prestigePoints
-        }
-      }
-    })
+          prestigePoints: user.prestigePoints,
+        },
+      },
+    });
   } catch (error) {
-    console.error('Profile fetch error:', error)
+    console.error("Profile fetch error:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
-        error: 'Internal server error',
-        message: 'Failed to fetch user profile',
+        error: "Internal server error",
+        message: "Failed to fetch user profile",
         timestamp: new Date().toISOString(),
-        path: '/api/user/profile'
+        path: "/api/user/profile",
       },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const { userId } = auth()
-    
+    const { userId } = auth();
+
     if (!userId) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: 'Unauthorized',
-          message: 'Authentication required',
+          error: "Unauthorized",
+          message: "Authentication required",
           timestamp: new Date().toISOString(),
-          path: '/api/user/profile'
-        }, 
+          path: "/api/user/profile",
+        },
         { status: 401 }
-      )
+      );
     }
 
-    const body = await request.json()
-    const { name, email, imageUrl } = body
+    const body = await request.json();
+    const { name, email, imageUrl } = body;
 
     // Validate input
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Bad request',
-          message: 'Invalid email format',
+          error: "Bad request",
+          message: "Invalid email format",
           timestamp: new Date().toISOString(),
-          path: '/api/user/profile'
+          path: "/api/user/profile",
         },
         { status: 400 }
-      )
+      );
     }
+
+    const newUserRewards = await getNewUserRewards();
 
     const updatedUser = await prisma.user.upsert({
       where: { id: userId },
@@ -148,22 +156,22 @@ export async function PUT(request: NextRequest) {
         ...(name && { name }),
         ...(email && { email }),
         ...(imageUrl && { imageUrl }),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       create: {
         id: userId,
         name: name || null,
         email: email || null,
         imageUrl: imageUrl || null,
-        stars: 5,
+        stars: newUserRewards.stars || 5,
         coins: 0,
         exp: 0,
         level: 1,
-        freePoint: 5,
-        role: 'USER',
+        freePoint: newUserRewards.freePoint || 5,
+        role: "USER",
         prestigeLevel: 0,
         prestigePoints: 0,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       select: {
         id: true,
@@ -180,9 +188,9 @@ export async function PUT(request: NextRequest) {
         prestigeLevel: true,
         prestigePoints: true,
         createdAt: true,
-        updatedAt: true
-      }
-    })
+        updatedAt: true,
+      },
+    });
 
     return NextResponse.json({
       success: true,
@@ -195,36 +203,36 @@ export async function PUT(request: NextRequest) {
           level: updatedUser.level,
           freePoint: updatedUser.freePoint,
           prestigeLevel: updatedUser.prestigeLevel,
-          prestigePoints: updatedUser.prestigePoints
-        }
-      }
-    })
+          prestigePoints: updatedUser.prestigePoints,
+        },
+      },
+    });
   } catch (error) {
-    console.error('Profile update error:', error)
-    
+    console.error("Profile update error:", error);
+
     // Handle unique constraint violations
-    if ((error as any)?.code === 'P2002') {
+    if ((error as any)?.code === "P2002") {
       return NextResponse.json(
         {
           success: false,
-          error: 'Conflict',
-          message: 'Email already exists',
+          error: "Conflict",
+          message: "Email already exists",
           timestamp: new Date().toISOString(),
-          path: '/api/user/profile'
+          path: "/api/user/profile",
         },
         { status: 409 }
-      )
+      );
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         success: false,
-        error: 'Internal server error',
-        message: 'Failed to update user profile',
+        error: "Internal server error",
+        message: "Failed to update user profile",
         timestamp: new Date().toISOString(),
-        path: '/api/user/profile'
+        path: "/api/user/profile",
       },
       { status: 500 }
-    )
+    );
   }
 }

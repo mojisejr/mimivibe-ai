@@ -60,6 +60,34 @@ export async function getReferralRewards(): Promise<ReferralRewards> {
 }
 
 /**
+ * Fetch new user reward configuration from database
+ */
+export async function getNewUserRewards(): Promise<RewardData> {
+  try {
+    const config = await prisma.rewardConfiguration.findUnique({
+      where: { 
+        name: 'NEW_USER_REWARDS',
+      },
+      select: { rewards: true, isActive: true }
+    })
+
+    // Fallback values if configuration not found or inactive
+    const fallbackRewards: RewardData = { stars: 5, freePoint: 5 }
+
+    if (config?.isActive) {
+      return config.rewards as RewardData
+    }
+
+    return fallbackRewards
+  } catch (error) {
+    console.error('Error fetching new user rewards:', error)
+    
+    // Return fallback values on error
+    return { stars: 5, freePoint: 5 }
+  }
+}
+
+/**
  * Convert reward data to legacy format for backward compatibility
  */
 export function toLegacyRewardFormat(rewards: RewardData) {
