@@ -12,6 +12,17 @@ import { PaymentConfirmation } from "@/components/payments/PaymentConfirmation";
 import { usePayment } from "@/hooks/usePayment";
 import { useCampaign } from "@/hooks/useCampaign";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  campaignBannerClasses,
+  campaignBannerAnimation,
+  campaignFadeInUp,
+  getPackageCardStyle,
+  getPackageButtonStyle,
+  priceDisplayClasses,
+  discountBadgeClasses,
+  campaignAriaLabels,
+  campaignSpacing,
+} from "@/utils/campaignStyles";
 
 export default function PackagesPage() {
   const { user, isLoaded } = useUser();
@@ -29,15 +40,14 @@ export default function PackagesPage() {
     resetPayment,
     getCurrentCredits,
   } = usePayment();
-  
+
   const {
     eligible: campaignEligible,
     campaign,
-    loading: campaignLoading,
     calculateDiscountedPrice,
     getDiscountAmount,
     formatPrice,
-    refresh: refreshCampaign
+    refresh: refreshCampaign,
   } = useCampaign();
 
   const [currentCredits, setCurrentCredits] = useState(0);
@@ -152,31 +162,27 @@ export default function PackagesPage() {
                 </p>
               </div>
 
-              {/* Campaign Banner */}
+              {/* Campaign Banner - Enhanced Contrast */}
               {campaignEligible && campaign && (
                 <motion.div
-                  className="alert alert-success max-w-4xl mx-auto mb-6 bg-gradient-to-r from-success/10 to-primary/10 border-2 border-success/30"
-                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className={`${campaignBannerClasses.base} ${campaignBannerClasses.gradient}`}
+                  {...campaignBannerAnimation}
+                  role="alert"
+                  aria-label={campaignAriaLabels.campaignBanner}
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-start">
-                      <div className="text-2xl mr-3">🎉</div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-lg text-success mb-1">
+                        <h3 className={campaignBannerClasses.text.title}>
                           {campaign.bannerText}
                         </h3>
-                        <p className="text-sm text-success/80">
+                        <p className={campaignBannerClasses.text.subtitle}>
                           {campaign.marketingMessage}
                         </p>
-                        <p className="text-xs text-success/70 mt-1">
+                        <p className={`${campaignBannerClasses.text.urgency} mt-1`}>
                           {campaign.urgencyText}
                         </p>
                       </div>
-                    </div>
-                    <div className="badge badge-success badge-lg">
-                      -{campaign.discountPercentage}%
                     </div>
                   </div>
                 </motion.div>
@@ -228,8 +234,12 @@ export default function PackagesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
                   {packages.map((pkg, index) => {
                     const originalPrice = pkg.price;
-                    const discountedPrice = campaignEligible ? calculateDiscountedPrice(originalPrice) : originalPrice;
-                    const discountAmount = campaignEligible ? getDiscountAmount(originalPrice) : 0;
+                    const discountedPrice = campaignEligible
+                      ? calculateDiscountedPrice(originalPrice)
+                      : originalPrice;
+                    const discountAmount = campaignEligible
+                      ? getDiscountAmount(originalPrice)
+                      : 0;
                     const hasDiscount = campaignEligible && discountAmount > 0;
 
                     return (
@@ -241,48 +251,62 @@ export default function PackagesPage() {
                         className="relative"
                       >
                         {hasDiscount && (
-                          <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                            <div className="badge badge-error badge-lg animate-pulse">
+                          <div className={discountBadgeClasses.container + " " + discountBadgeClasses.positions.topCenter}>
+                            <div 
+                              className={discountBadgeClasses.badge.discount}
+                              aria-label={campaignAriaLabels.discountBadge(campaign?.discountPercentage || 0)}
+                            >
                               ลด {campaign?.discountPercentage}%
                             </div>
                           </div>
                         )}
-                        
-                        <div className={`card ${hasDiscount ? 'ring-2 ring-success ring-opacity-50 shadow-2xl' : ''} ${pkg.popular ? 'border-primary' : 'border-base-300'} transition-all duration-300`}>
+
+                        <div className={getPackageCardStyle(index, pkg.popular, hasDiscount)}>
                           <div className="card-body">
                             <div className="text-center mb-4">
-                              <h3 className="text-xl font-bold mb-2">{pkg.title}</h3>
+                              <h3 className="text-xl font-bold mb-2">
+                                {pkg.title}
+                              </h3>
                               {pkg.subtitle && (
-                                <p className="text-sm text-neutral-content mb-4">{pkg.subtitle}</p>
+                                <p className="text-sm text-neutral-content mb-4">
+                                  {pkg.subtitle}
+                                </p>
                               )}
-                              
+
                               <div className="price-display">
                                 {hasDiscount ? (
-                                  <div className="space-y-1">
-                                    <div className="text-lg text-neutral-content line-through">
+                                  <div 
+                                    className={priceDisplayClasses.container}
+                                    aria-label={campaignAriaLabels.discountedPrice(
+                                      originalPrice, 
+                                      discountedPrice, 
+                                      discountAmount
+                                    )}
+                                  >
+                                    <div className={priceDisplayClasses.original}>
                                       ฿{formatPrice(originalPrice)}
                                     </div>
-                                    <div className="text-3xl font-bold text-success">
+                                    <div className={priceDisplayClasses.discounted}>
                                       ฿{formatPrice(discountedPrice)}
                                     </div>
-                                    <div className="text-sm text-success">
+                                    <div className={priceDisplayClasses.savings}>
                                       ประหยัด ฿{formatPrice(discountAmount)}
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="text-3xl font-bold text-primary">
+                                  <div className={priceDisplayClasses.regular}>
                                     ฿{formatPrice(originalPrice)}
                                   </div>
                                 )}
                               </div>
                             </div>
-                            
+
                             <div className="text-center mb-4">
                               <div className="text-lg">
                                 ⭐ {pkg.creditAmount} เครดิต
                               </div>
                             </div>
-                            
+
                             {hasDiscount && (
                               <div className="alert alert-success alert-sm mb-4">
                                 <span className="text-xs">
@@ -290,13 +314,20 @@ export default function PackagesPage() {
                                 </span>
                               </div>
                             )}
-                            
+
                             <button
-                              className={`btn ${hasDiscount ? 'btn-success' : pkg.popular ? 'btn-primary' : 'btn-outline btn-primary'} w-full ${loading && selectedPackage?.id === pkg.id ? 'loading' : ''}`}
+                              className={`${getPackageButtonStyle(index, pkg.popular, hasDiscount)} ${
+                                loading && selectedPackage?.id === pkg.id
+                                  ? "loading"
+                                  : ""
+                              }`}
                               onClick={() => handlePackageSelect(pkg.id)}
                               disabled={loading}
+                              aria-label={hasDiscount ? campaignAriaLabels.campaignButton(campaign?.discountPercentage || 0) : undefined}
                             >
-                              {hasDiscount && campaign?.ctaText ? campaign.ctaText : pkg.ctaText}
+                              {hasDiscount && campaign?.ctaText
+                                ? campaign.ctaText
+                                : pkg.ctaText}
                             </button>
                           </div>
                         </div>
@@ -306,12 +337,11 @@ export default function PackagesPage() {
                 </div>
               )}
 
-              {/* Current Credits Display */}
+              {/* Current Credits Display - Enhanced Spacing */}
               <motion.div
-                className="card card-mystical max-w-md mx-auto mt-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
+                className={`card card-mystical max-w-md mx-auto ${campaignSpacing.section}`}
+                {...campaignFadeInUp}
+                transition={{ ...campaignFadeInUp.transition, delay: 0.4 }}
               >
                 <div className="card-body text-center">
                   <h3 className="heading-3 mb-2">Current Balance</h3>
@@ -426,12 +456,14 @@ export default function PackagesPage() {
                 {selectedPackage && (
                   <div className="space-y-2">
                     <p className="text-neutral-content">
-                      {selectedPackage.title} - {selectedPackage.creditAmount} Credits
+                      {selectedPackage.title} - {selectedPackage.creditAmount}{" "}
+                      Credits
                     </p>
                     {campaignEligible && campaign && (
                       <div className="alert alert-success alert-sm">
                         <span className="text-sm">
-                          🎉 ข้อเสนอพิเศษ: ลด {campaign.discountPercentage}% สำหรับการซื้อครั้งแรก!
+                          🎉 ข้อเสนอพิเศษ: ลด {campaign.discountPercentage}%
+                          สำหรับการซื้อครั้งแรก!
                         </span>
                       </div>
                     )}
@@ -443,7 +475,11 @@ export default function PackagesPage() {
               {clientSecret && selectedPackage && (
                 <StripeProvider clientSecret={clientSecret}>
                   <PaymentForm
-                    amount={campaignEligible ? calculateDiscountedPrice(selectedPackage.price) : selectedPackage.price}
+                    amount={
+                      campaignEligible
+                        ? calculateDiscountedPrice(selectedPackage.price)
+                        : selectedPackage.price
+                    }
                     currency="thb"
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
