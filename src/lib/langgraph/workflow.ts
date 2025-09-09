@@ -1,5 +1,11 @@
+/**
+ * DEPRECATED: This workflow uses hardcoded prompts and is no longer used in production.
+ * Production now uses workflow-with-db.ts which loads encrypted prompts from database.
+ * This file is kept for reference only.
+ */
+
 import { StateGraph, Annotation, START, END } from "@langchain/langgraph";
-import { SYSTEM_PROMPTS, createProviderWithPrompt } from "@/lib/ai";
+import { createProviderWithPrompt } from "@/lib/ai";
 import {
   pickRandomCards,
   formatCardsForWorkflow,
@@ -33,7 +39,7 @@ export const ReadingState = Annotation.Root({
 async function questionFilterNode(state: typeof ReadingState.State) {
   try {
 
-    const filterAI = createProviderWithPrompt(SYSTEM_PROMPTS.questionFilter);
+    const filterAI = createProviderWithPrompt("DEPRECATED - This workflow no longer used in production");
 
     const response = await filterAI.invoke([
       { role: "user", content: `Question to validate: "${state.question}"` },
@@ -103,7 +109,7 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
     }
 
     const analysisAI = createProviderWithPrompt(
-      SYSTEM_PROMPTS.questionAnalysis
+      "DEPRECATED - This workflow no longer used in production"
     );
 
     const response = await analysisAI.invoke([
@@ -208,7 +214,7 @@ Return JSON with this structure:
     let response;
 
     try {
-      const readingAI = createProviderWithPrompt(SYSTEM_PROMPTS.readingAgent);
+      const readingAI = createProviderWithPrompt("DEPRECATED - This workflow no longer used in production");
       response = await readingAI.invoke([{ role: "user", content: prompt }]);
 
       parsed = parseAndValidateAIResponse<{
@@ -238,7 +244,7 @@ Return JSON with this structure:
 
         // Try fallback provider
         const fallbackAI = createProviderWithPrompt(
-          SYSTEM_PROMPTS.readingAgent,
+          "DEPRECATED - This workflow no longer used in production",
           "gemini"
         );
         response = await fallbackAI.invoke([{ role: "user", content: prompt }]);

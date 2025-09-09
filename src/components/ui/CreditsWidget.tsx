@@ -51,7 +51,7 @@ export function CreditsWidget({
         <div className="badge badge-accent gap-1">
           <span>🪙</span>
           <span className="text-sm font-medium">
-            {profileData.stats?.totalCoins || 0}
+            {profileData.stats?.coins || 0}
           </span>
         </div>
       </div>
@@ -85,7 +85,7 @@ export function CreditsWidget({
       >
         <span className="text-accent text-xl">🪙</span>
         <span className="font-semibold text-base-content">
-          {profileData.stats?.totalCoins || 0}
+          {profileData.stats?.coins || 0}
         </span>
       </motion.div>
     </div>

@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { GAMIFICATION_CONFIG } from '@/lib/gamification/levels'
+// Gamification config removed during refactor
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -31,7 +31,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { rate, dailyLimit, minExchange } = GAMIFICATION_CONFIG.coinExchange
+    // Exchange config removed during gamification refactor
+    const rate = 15 // 15 coins = 1 free point
+    const dailyLimit = 100 // max 100 free points per day
+    const minExchange = 15 // minimum 15 coins
 
     if (coinAmount < minExchange) {
       return NextResponse.json(

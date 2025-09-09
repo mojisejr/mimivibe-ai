@@ -2,8 +2,9 @@
 import { auth } from '@clerk/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { generateTarotReading } from '@/lib/langgraph/workflow'
+import { generateTarotReading } from '@/lib/langgraph/workflow-with-db'
 import type { ReadingResponse, ReadingError } from '@/types/reading'
+import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -84,7 +85,17 @@ export async function POST(request: NextRequest) {
     // Generate reading using LangGraph workflow
     let workflowResult
     try {
-      workflowResult = await generateTarotReading(question)
+      workflowResult = await generateTarotReading(question, userId)
+      
+      // Check if workflow returned an error
+      if (workflowResult.error) {
+        throw new Error(workflowResult.error)
+      }
+      
+      // Validate that we have the required reading data
+      if (!workflowResult.reading) {
+        throw new Error('Failed to generate reading - no reading data returned')
+      }
     } catch (error) {
       // Handle timeout error - don't deduct credits
       if (error instanceof Error && error.message.includes('Reading timeout')) {
@@ -150,8 +161,9 @@ export async function POST(request: NextRequest) {
       })
 
       // Update user credits and stats
-      const newExp = currentUser.exp + 25
-      const newLevel = Math.floor(newExp / 100) + 1
+      // TEMP_DISABLED: EXP system disabled via feature flags
+      const newExp = getSafeExpValue(currentUser.exp + 25)
+      const newLevel = getSafeLevelValue(Math.floor(newExp / 100) + 1)
 
       await tx.user.update({
         where: { id: userId },
@@ -159,8 +171,8 @@ export async function POST(request: NextRequest) {
           freePoint: currentUser.freePoint + deltaFreePoint,
           stars: currentUser.stars + deltaStars,
           coins: currentUser.coins + 5, // Reward coins
-          exp: newExp,
-          level: Math.max(currentUser.level, newLevel)
+          exp: newExp, // Will be 0 when EXP system disabled
+          level: Math.max(currentUser.level, newLevel) // Will remain current level when disabled
         }
       })
 
@@ -213,7 +225,8 @@ export async function POST(request: NextRequest) {
         
         if (referralCode?.referredBy) {
           // Give referrer reward
-          const { referrerReward } = await import('@/lib/gamification/levels').then(m => m.GAMIFICATION_CONFIG.referral)
+          // Referral rewards removed during gamification refactor
+    const referrerReward = { exp: 25, coins: 0, stars: 1 }
           
           await prisma.$transaction(async (tx) => {
             await tx.user.update({

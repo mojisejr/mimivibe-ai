@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
 import { prisma } from '@/lib/prisma'
-import { GAMIFICATION_CONFIG } from '@/lib/gamification/levels'
+import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -71,7 +71,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { referrerReward } = GAMIFICATION_CONFIG.referral
+    // Fetch dynamic referral rewards from RewardConfiguration
+    const rewardConfig = await getReferralRewards()
+    const referrerReward = toLegacyRewardFormat(rewardConfig.inviter)
 
     // Give referrer reward for first reading completion
     await prisma.$transaction(async (tx) => {

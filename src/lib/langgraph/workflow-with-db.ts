@@ -28,6 +28,7 @@ function getPromptManager(): PromptManager {
 // Define the state interface for the reading workflow
 export const ReadingState = Annotation.Root({
   question: Annotation<string>,
+  userId: Annotation<string>,
   isValid: Annotation<boolean>,
   validationReason: Annotation<string>,
   selectedCards: Annotation<SelectedCard[]>,
@@ -47,7 +48,7 @@ async function questionFilterNode(state: typeof ReadingState.State) {
 
     // Get prompt from database
     const manager = getPromptManager();
-    const promptContent = await manager.getPrompt('questionFilter');
+    const promptContent = await manager.getPrompt('questionFilter', state.userId);
     
     const filterAI = createProviderWithPrompt(promptContent);
 
@@ -129,7 +130,7 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
 
     // Get prompt from database
     const manager = getPromptManager();
-    const promptContent = await manager.getPrompt('questionAnalysis');
+    const promptContent = await manager.getPrompt('questionAnalysis', state.userId);
     
     const analyzerAI = createProviderWithPrompt(promptContent);
 
@@ -192,7 +193,7 @@ async function readingAgentNode(state: typeof ReadingState.State) {
 
     // Get prompt from database
     const manager = getPromptManager();
-    const promptContent = await manager.getPrompt('readingAgent');
+    const promptContent = await manager.getPrompt('readingAgent', state.userId);
 
     const readingAI = createProviderWithPrompt(promptContent);
 
@@ -333,6 +334,51 @@ export async function executeWorkflowWithDB(
     }
     
     throw error;
+  }
+}
+
+// Wrapper function to maintain API compatibility with original workflow
+export async function generateTarotReading(question: string, userId?: string) {
+  try {
+    // Execute the encrypted workflow and capture the final state
+    const finalState = await app.invoke({
+      question: question.trim(),
+      userId: userId || 'anonymous',
+      isValid: false,
+      validationReason: "",
+      selectedCards: [],
+      cardCount: 3,
+      questionAnalysis: { mood: "", topic: "", period: "" },
+      reading: {
+        header: "",
+        cards_reading: [],
+        reading: "",
+        suggestions: [],
+        next_questions: [],
+        final: "",
+        end: "",
+        notice: "",
+      },
+      error: "",
+    });
+
+    // Check if workflow was successful
+    if (finalState.error || !finalState.reading) {
+      return {
+        error: finalState.error || "Failed to generate reading",
+      };
+    }
+
+    // Return data in the same format as original workflow
+    return {
+      reading: finalState.reading,
+      questionAnalysis: finalState.questionAnalysis,
+      selectedCards: finalState.selectedCards,
+    };
+  } catch (error) {
+    return {
+      error: "Failed to generate reading",
+    };
   }
 }
 

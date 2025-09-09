@@ -298,12 +298,12 @@ export default function HomePage() {
               title: "🎁 Welcome!",
               message: "You received referral bonus rewards!",
             });
-            if (typeof window !== 'undefined') {
+            if (typeof window !== "undefined") {
               localStorage.removeItem("pendingReferral");
             }
           } else {
             console.error("Referral processing failed:", data.error);
-            if (typeof window !== 'undefined') {
+            if (typeof window !== "undefined") {
               localStorage.removeItem("pendingReferral");
             }
           }

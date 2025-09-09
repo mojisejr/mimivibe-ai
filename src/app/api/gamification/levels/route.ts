@@ -1,7 +1,8 @@
 import { auth } from '@clerk/nextjs'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { calculateLevel } from '@/lib/gamification/levels'
+import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
+// Level calculation removed during refactor
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -25,7 +26,19 @@ export async function GET() {
     }
 
     // Calculate level configuration
-    const levelConfig = calculateLevel(user.exp)
+    // Level calculation removed during gamification refactor
+    // TEMP_DISABLED: EXP system disabled via feature flags
+    const levelConfig = {
+      level: getSafeLevelValue(user.level),
+      currentExp: getSafeExpValue(user.exp),
+      expToNext: getSafeExpValue((user.level * 100) - user.exp),
+      expRequired: getSafeExpValue(user.level * 100),
+      benefits: { 
+        unlocks: [],
+        bonusExp: getSafeExpValue(0),
+        bonusCoins: 0
+      }
+    }
 
     // Update user level if it's different (level up might have happened)
     if (levelConfig.level !== user.level) {
@@ -39,7 +52,7 @@ export async function GET() {
       success: true,
       data: {
         currentLevel: levelConfig.level,
-        exp: user.exp,
+        exp: getSafeExpValue(user.exp),
         expRequired: levelConfig.expRequired,
         expToNext: levelConfig.expToNext,
         nextLevelBenefits: {

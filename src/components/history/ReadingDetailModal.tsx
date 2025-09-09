@@ -176,8 +176,7 @@ export const ReadingDetailModal = ({
       addToast({
         type: "success",
         title: "รีวิวสำเร็จ!",
-        message:
-          "ขอบคุณสำหรับรีวิวของคุณ คุณได้รับรางวัล +10 EXP และ +2 เหรียญแล้ว",
+        message: "ขอบคุณสำหรับรีวิวของคุณ คุณได้รับรางวัล +2 เหรียญแล้ว",
         duration: 4000,
       });
     } catch (error) {
@@ -268,10 +267,10 @@ export const ReadingDetailModal = ({
 
             {/* Rewards */}
             <div className="flex items-center justify-center space-x-6 text-sm">
-              <div className="flex items-center space-x-1 text-primary">
+              {/* <div className="flex items-center space-x-1 text-primary">
                 <span>⭐</span>
                 <span>+{reading.expEarned} EXP</span>
-              </div>
+              </div> */}
               <div className="flex items-center space-x-1 text-warning">
                 <span>🪙</span>
                 <span>+{reading.coinsEarned} Coins</span>

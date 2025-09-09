@@ -52,7 +52,9 @@ export default function ExchangePage() {
       }
     } catch (error) {
       console.error("Exchange data fetch error:", error);
-      setError(error instanceof Error ? error.message : "Failed to load exchange data");
+      setError(
+        error instanceof Error ? error.message : "Failed to load exchange data"
+      );
     } finally {
       setLoading(false);
     }
@@ -103,7 +105,7 @@ export default function ExchangePage() {
       <div className="min-h-screen bg-base-100">
         <UnifiedNavbar />
         <div className="pt-20 px-4 pb-8">
-          <SkeletonLoader type="events" />
+          <SkeletonLoader type="stats" />
         </div>
       </div>
     );
@@ -139,7 +141,7 @@ export default function ExchangePage() {
             <div className="alert alert-error max-w-md mx-auto">
               <span>{error}</span>
             </div>
-            <button 
+            <button
               className="btn btn-primary mt-4"
               onClick={() => fetchExchangeData()}
             >
@@ -157,7 +159,7 @@ export default function ExchangePage() {
       <div className="pt-20 px-4 pb-24 safe-area-bottom">
         <div className="max-w-4xl mx-auto space-y-8">
           <ExchangeHeader />
-          
+
           {exchangeData && (
             <>
               <SwapInterface
@@ -165,7 +167,7 @@ export default function ExchangePage() {
                 onSwap={handleSwap}
                 onRefresh={fetchExchangeData}
               />
-              
+
               <ExchangeHistory history={exchangeData.history} />
             </>
           )}

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
+import { rateLimit, webhookRateLimitConfig } from '@/lib/rate-limiter'
+import { markCampaignUsed } from '@/lib/campaign'
 
 // Force dynamic rendering for headers() usage
 export const dynamic = 'force-dynamic'
@@ -11,6 +13,12 @@ const DEBUG_MODE = process.env.NODE_ENV === 'development'
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY ENHANCEMENT: Apply rate limiting for webhooks
+    const rateLimitResponse = await rateLimit(request, webhookRateLimitConfig)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = await request.text()
     const signature = request.headers.get('stripe-signature')!
     
@@ -27,24 +35,29 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, endpointSecret)
     } catch (err) {
-      console.error('Webhook signature verification failed:', err)
-      console.error('Webhook signature:', signature)
-      console.error('Body length:', body.length)
-      console.error('Endpoint secret exists:', !!endpointSecret)
-      console.error('Endpoint secret prefix:', endpointSecret?.substring(0, 10))
+      // SECURITY FIX: Remove sensitive information from logs
+      console.error('Webhook signature verification failed')
       
       return NextResponse.json(
         { 
           success: false,
-          error: 'Webhook signature verification failed',
-          details: {
-            hasSignature: !!signature,
-            hasEndpointSecret: !!endpointSecret,
-            bodyLength: body.length,
-            errorMessage: err instanceof Error ? err.message : String(err)
-          },
-          timestamp: new Date().toISOString(),
-          path: '/api/payments/webhook'
+          error: 'Webhook signature verification failed'
+        },
+        { status: 400 }
+      )
+    }
+
+    // SECURITY ENHANCEMENT: Webhook replay attack prevention
+    const eventTimestamp = event.created * 1000 // Convert to milliseconds
+    const currentTime = Date.now()
+    const fiveMinutesInMs = 5 * 60 * 1000
+    
+    if (currentTime - eventTimestamp > fiveMinutesInMs) {
+      console.warn('Webhook event too old, potential replay attack')
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Webhook event expired'
         },
         { status: 400 }
       )
@@ -98,7 +111,16 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
-  const { userId, packId, creditAmount } = paymentIntent.metadata
+  const { 
+    userId, 
+    packId, 
+    creditAmount, 
+    originalPrice,
+    finalPrice,
+    campaignDiscount,
+    campaignId,
+    isFirstPayment
+  } = paymentIntent.metadata
   
   if (DEBUG_MODE) {
     console.log('💰 Processing successful payment:', {
@@ -107,7 +129,12 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
       currency: paymentIntent.currency,
       userId,
       packId,
-      creditAmount
+      creditAmount,
+      originalPrice,
+      finalPrice,
+      campaignDiscount: campaignDiscount || '0',
+      campaignId: campaignId || 'none',
+      isFirstPayment: isFirstPayment || 'false'
     })
   }
   
@@ -128,36 +155,64 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
         }
       })
 
-      // Record payment history
+      // Record payment history with campaign information
       await tx.paymentHistory.create({
         data: {
           userId,
           stripePaymentId: paymentIntent.id,
           packId: parseInt(packId),
-          amount: paymentIntent.amount,
+          amount: paymentIntent.amount, // This is the final paid amount (after discount)
           currency: paymentIntent.currency,
           status: 'succeeded',
-          creditsAdded: parseInt(creditAmount)
+          creditsAdded: parseInt(creditAmount),
+          // Store campaign info in metadata if this was a campaign purchase
+          ...(campaignId && campaignDiscount && {
+            metadata: {
+              campaignId,
+              originalPrice: parseInt(originalPrice || '0'),
+              campaignDiscount: parseInt(campaignDiscount),
+              discountApplied: true,
+              isFirstPayment: isFirstPayment === 'true'
+            }
+          })
         }
       })
 
-      // Record point transaction
+      // Record point transaction with campaign information
       await tx.pointTransaction.create({
         data: {
           id: `txn_${Date.now()}_${userId.slice(-8)}`,
           userId,
-          eventType: 'STRIPE_TOPUP',
+          eventType: campaignId && isFirstPayment === 'true' ? 'CAMPAIGN_PURCHASE' : 'STRIPE_TOPUP',
           deltaPoint: parseInt(creditAmount),
           deltaCoins: 0,
           deltaExp: 0,
           metadata: {
             stripePaymentId: paymentIntent.id,
             packId: parseInt(packId),
-            amount: paymentIntent.amount
+            amount: paymentIntent.amount,
+            ...(campaignId && {
+              campaignId,
+              originalPrice: parseInt(originalPrice || '0'),
+              campaignDiscount: parseInt(campaignDiscount || '0'),
+              isFirstPaymentCampaign: isFirstPayment === 'true'
+            })
           }
         }
       })
     })
+
+    // Mark campaign as used if this was a campaign purchase
+    if (campaignId && isFirstPayment === 'true') {
+      await markCampaignUsed(userId, campaignId, paymentIntent.id)
+      if (DEBUG_MODE) {
+        console.log('🎯 Campaign marked as used:', {
+          userId,
+          campaignId,
+          paymentIntentId: paymentIntent.id
+        })
+      }
+    }
 
     if (DEBUG_MODE) {
       console.log('✅ Payment transaction completed successfully for user:', userId)

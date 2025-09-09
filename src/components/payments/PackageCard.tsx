@@ -22,7 +22,7 @@ export function PackageCard({ package: pkg, onSelect, selected = false, loading 
     return new Intl.NumberFormat('th-TH', {
       style: 'currency',
       currency: 'THB',
-    }).format(price);
+    }).format(price / 100); // Convert from satoshi to THB
   };
 
   const calculateValuePerCredit = (price: number, credits: number) => {

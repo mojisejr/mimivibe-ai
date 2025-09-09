@@ -87,14 +87,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Check for achievements after successful reading save
-    try {
-      const { AchievementService } = await import('@/lib/services/AchievementService');
-      await AchievementService.checkAndTriggerAchievements(userId, 'READING');
-    } catch (error) {
-      console.error('Achievement check failed (non-critical):', error);
-      // Don't fail the reading save if achievement check fails
-    }
+    // Achievement system removed during refactor
 
     return NextResponse.json({
       success: true,

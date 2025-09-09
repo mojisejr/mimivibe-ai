@@ -9,9 +9,6 @@ import { Logo, ProfileLoadingState, ErrorState } from "@/components/ui";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 import { ReferralSection } from "@/components/referral/ReferralSection";
-import { UserStats } from "@/components/profile/UserStats";
-import { PrestigeSystem } from "@/components/profile/PrestigeSystem";
-import { AchievementProgress } from "@/components/profile/AchievementProgress";
 import { SkeletonProfile } from "@/components/common/SkeletonLoader";
 
 export default function ProfilePage() {
@@ -160,20 +157,15 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Enhanced Stats Dashboard */}
-            <UserStats stats={data.stats} />
-
-            {/* Prestige System */}
-            <PrestigeSystem />
-
-            {/* Achievement Progress */}
-            <AchievementProgress />
+            {/* Enhanced Stats Dashboard - Removed during refactor */}
+            {/* Prestige System - Removed during refactor */}
+            {/* Achievement Progress - Removed during refactor */}
 
             {/* Referral Section */}
             <ReferralSection />
 
             {/* Preferences Card */}
-            <div className="card card-mystical">
+            {/* <div className="card card-mystical">
               <div className="card-body">
                 <h2 className="heading-3 mb-4">Preferences</h2>
                 <div className="space-y-4">
@@ -216,7 +208,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         ) : null}
       </main>

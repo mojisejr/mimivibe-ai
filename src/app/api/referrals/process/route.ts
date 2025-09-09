@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { generateReferralCode } from '@/lib/gamification/referrals'
-import { GAMIFICATION_CONFIG } from '@/lib/gamification/levels'
+import { generateReferralCode } from '@/lib/utils/referrals'
+import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
 
 // Force dynamic rendering for database access
 export const dynamic = 'force-dynamic'
@@ -50,7 +50,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { referrerReward, referredReward } = GAMIFICATION_CONFIG.referral
+    // Fetch dynamic referral rewards from RewardConfiguration
+    const rewardConfig = await getReferralRewards()
+    const referrerReward = toLegacyRewardFormat(rewardConfig.inviter)
+    const referredReward = toLegacyRewardFormat(rewardConfig.invited)
 
     // Process referral
     await prisma.$transaction(async (tx) => {
@@ -92,18 +95,7 @@ export async function POST(request: NextRequest) {
       })
     })
 
-    // Check for achievements after referral processing
-    try {
-      const { AchievementService } = await import('@/lib/services/AchievementService');
-      // Check achievements for both referrer and new user
-      await Promise.allSettled([
-        AchievementService.checkAndTriggerAchievements(referral.userId, 'REFERRAL'),
-        AchievementService.checkAndTriggerAchievements(newUserId, 'REFERRAL')
-      ]);
-    } catch (error) {
-      console.error('Achievement check failed (non-critical):', error);
-      // Don't fail the referral processing if achievement check fails
-    }
+    // Achievement system removed during refactor
 
     return NextResponse.json({
       success: true,
