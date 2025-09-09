@@ -1,42 +1,46 @@
-# Current Focus
+# Current Focus: Critical 70% Off Campaign Pricing Bug
 
-**Last Updated**: 2025-09-09 (Thailand Time)
+**Updated**: 2025-09-09 22:17:16 (Thailand Time)
+**Status**: Critical Bug - Payment System
+**Priority**: HIGH - Customer Impact
 
-## Critical Security Issue - URGENT
+## Issue Description
 
-**CRITICAL NPM PACKAGE VULNERABILITY DETECTED**
+Completed 70% off campaign implementation but discovered critical pricing calculation bug during purchase testing:
 
-⚠️ **Security Alert**: NPM account of 'qix' (maintainer of critical packages like chalk, debug, strip-ansi, color-convert) was hijacked on 2025-09-08. Malicious versions containing crypto-clipper malware were published.
+- **Expected**: ฿29.70 (70% discount applied to ฿99 package) 
+- **Actual**: ฿2,970.00 (100x price inflation)
+- **Package**: Starter package with 70% discount
+- **Impact**: Critical - customers would be charged 100x more than intended
 
-**Malware Impact**:
-- Crypto-clipper targeting cryptocurrency wallets
-- Swaps wallet addresses during transactions
-- Hijacks transactions before signing
-- Over 1 billion weekly downloads affected
+## Context
 
-**Immediate Actions Required**:
-1. Audit current project dependencies for affected packages
-2. Pin safe versions using package.json resolutions/overrides
-3. Verify no malicious code in dependency chain
-4. Update lockfiles to prevent automatic updates to malicious versions
+- 70% off campaign system is 70% complete
+- Campaign detection and eligibility working
+- Bug appears to be in Stripe payment amount calculation
+- Likely decimal/currency unit conversion issue (baht vs satang)
 
-**Safe Versions to Pin**:
-```json
-{
-  "resolutions": {
-    "chalk": "5.3.0",
-    "strip-ansi": "7.1.0", 
-    "color-convert": "2.0.1",
-    "color-name": "1.1.4",
-    "is-core-module": "2.13.1",
-    "error-ex": "1.3.2",
-    "has-ansi": "5.0.1"
-  }
-}
-```
+## Technical Suspicion
 
-## Current Status
+Possible causes:
+1. Currency unit conversion error (baht to satang multiplication)
+2. Discount calculation applied incorrectly in payment flow
+3. Stripe payment intent amount formatting issue
 
-- Session started: 2025-09-09
-- **PRIORITY**: Critical security vulnerability remediation
-- **Action**: Immediate dependency audit and package pinning required
+## Next Steps Required
+
+1. Investigate payment calculation logic in campaign discount flow
+2. Check Stripe payment amount conversion (baht → satang)
+3. Verify discount application in payment creation
+4. Test payment flow with corrected calculations
+5. Ensure all packages work correctly with campaign discount
+
+## Safety Priority
+
+**CRITICAL**: This bug could result in customers being overcharged by 100x. Must be resolved before campaign goes live.
+
+## Previous Session Context
+
+- **NPM Security Vulnerability**: Successfully remediated critical security issues with qix package hijacking
+- **Security Implementation**: Completed vulnerability audit and package pinning
+- **Campaign Development**: 70% complete but payment calculation bug discovered
