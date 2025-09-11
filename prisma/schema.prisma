@@ -49,9 +49,6 @@ model CampaignTemplate {
   @@map("campaign_templates")
 }
 
-// REMOVED: DailyLoginCampaign - No active usage found in codebase
-// This table was defined but not implemented in any API endpoints or frontend
-
 model ExchangeSetting {
   id           Int      @id @default(autoincrement())
   exchangeType String
@@ -174,10 +171,6 @@ model ReferralCode {
   @@map("referral_codes")
 }
 
-// REMOVED: RequestLog - No active usage found in codebase
-// This table was defined but not used by any monitoring system
-// High bloat potential - would grow with every API request
-
 model Review {
   id            Int      @id @default(autoincrement())
   readingId     String
@@ -191,31 +184,31 @@ model Review {
 }
 
 model User {
-  id                  String               @id
-  lineId              String?              @unique
-  email               String?              @unique
-  name                String?
-  tel                 String?
-  imageUrl            String?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime
-  stars               Int                  @default(0)
-  coins               Int                  @default(0)
-  exp                 Int                  @default(0)
-  level               Int                  @default(1)
-  freePoint           Int                  @default(0)
-  role                UserRole             @default(USER)
-  prestigeLevel       Int                  @default(0)
-  prestigePoints      Int                  @default(0)
-  CoinExchange        CoinExchange[]
-  PaymentHistory      PaymentHistory[]
-  PointTransaction    PointTransaction[]
-  Review              Review[]
-  UserLimit           UserLimit[]
-  // REMOVED: dailyLoginCampaigns - DailyLoginCampaign table removed
-  Reading             Reading[]
-  referredUsers       ReferralCode[]       @relation("UserReferrals")
-  ReferralCode        ReferralCode[]
+  id                    String                  @id
+  lineId                String?                 @unique
+  email                 String?                 @unique
+  name                  String?
+  tel                   String?
+  imageUrl              String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  stars                 Int                     @default(0)
+  coins                 Int                     @default(0)
+  exp                   Int                     @default(0)
+  level                 Int                     @default(1)
+  freePoint             Int                     @default(0)
+  role                  UserRole                @default(USER)
+  prestigeLevel         Int                     @default(0)
+  prestigePoints        Int                     @default(0)
+  CoinExchange          CoinExchange[]
+  PaymentHistory        PaymentHistory[]
+  PointTransaction      PointTransaction[]
+  Review                Review[]
+  UserLimit             UserLimit[]
+  daily_login_campaigns daily_login_campaigns[]
+  Reading               Reading[]
+  referredUsers         ReferralCode[]          @relation("UserReferrals")
+  ReferralCode          ReferralCode[]
 }
 
 model UserLimit {
@@ -273,6 +266,32 @@ model PromptTestResult {
 
   @@index([templateId, createdAt])
   @@map("prompt_test_results")
+}
+
+model RequestLog {
+  id        Int      @id @default(autoincrement())
+  userId    String?
+  ip        String
+  endpoint  String
+  createdAt DateTime @default(now())
+
+  @@index([ip, endpoint, createdAt])
+  @@index([userId, endpoint, createdAt])
+}
+
+model daily_login_campaigns {
+  id          String    @id
+  userId      String
+  year        Int
+  month       Int
+  claimedDays Json      @default("[]")
+  streak      Int       @default(0)
+  lastClaim   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, year, month])
 }
 
 enum TransactionStatus {
