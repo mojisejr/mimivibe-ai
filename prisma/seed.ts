@@ -240,35 +240,8 @@ async function seedUserData(userId: string, index: number) {
     }
   }
 
-  // 4. Create daily login campaign for current month
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
-  const claimedDays = Array.from({ length: Math.min(now.getDate(), 15) }, (_, i) => i + 1);
-
-  await prisma.dailyLoginCampaign.upsert({
-    where: {
-      userId_year_month: {
-        userId,
-        year: currentYear,
-        month: currentMonth
-      }
-    },
-    update: {
-      claimedDays: JSON.stringify(claimedDays),
-      streak: claimedDays.length,
-      lastClaim: new Date(),
-    },
-    create: {
-      userId,
-      year: currentYear,
-      month: currentMonth,
-      claimedDays: JSON.stringify(claimedDays),
-      streak: claimedDays.length,
-      lastClaim: new Date(),
-    }
-  });
+  // REMOVED: Daily login campaign feature - no longer in use
+  // This was creating DailyLoginCampaign records that are not used by any API endpoints
 
   // 5. Create referral code
   const refCode = `REF${userId.slice(-6).toUpperCase()}`;

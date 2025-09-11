@@ -49,21 +49,8 @@ model CampaignTemplate {
   @@map("campaign_templates")
 }
 
-model DailyLoginCampaign {
-  id          String    @id @default(cuid())
-  userId      String
-  year        Int
-  month       Int
-  claimedDays Json      @default("[]")
-  streak      Int       @default(0)
-  lastClaim   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, year, month])
-  @@map("daily_login_campaigns")
-}
+// REMOVED: DailyLoginCampaign - No active usage found in codebase
+// This table was defined but not implemented in any API endpoints or frontend
 
 model ExchangeSetting {
   id           Int      @id @default(autoincrement())
@@ -187,16 +174,9 @@ model ReferralCode {
   @@map("referral_codes")
 }
 
-model RequestLog {
-  id        Int      @id @default(autoincrement())
-  userId    String?
-  ip        String
-  endpoint  String
-  createdAt DateTime @default(now())
-
-  @@index([ip, endpoint, createdAt])
-  @@index([userId, endpoint, createdAt])
-}
+// REMOVED: RequestLog - No active usage found in codebase
+// This table was defined but not used by any monitoring system
+// High bloat potential - would grow with every API request
 
 model Review {
   id            Int      @id @default(autoincrement())
@@ -232,7 +212,7 @@ model User {
   PointTransaction    PointTransaction[]
   Review              Review[]
   UserLimit           UserLimit[]
-  dailyLoginCampaigns DailyLoginCampaign[]
+  // REMOVED: dailyLoginCampaigns - DailyLoginCampaign table removed
   Reading             Reading[]
   referredUsers       ReferralCode[]       @relation("UserReferrals")
   ReferralCode        ReferralCode[]
