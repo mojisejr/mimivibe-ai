@@ -1,10 +1,22 @@
 /**
  * Get the current base URL dynamically based on environment
+ * Supports localhost, Vercel deployments, and custom domains
  */
-export function getBaseUrl(): string {
-  // In the browser, use window.location
+export function getBaseUrl(req?: Request): string {
+  // In the browser, use window.location for client-side detection
   if (typeof window !== 'undefined') {
     return window.location.origin;
+  }
+
+  // Server-side URL detection from request headers (most accurate for dynamic environments)
+  if (req && req.headers) {
+    const host = req.headers.get('host');
+    if (host) {
+      // Determine protocol based on forwarded headers or host
+      const forwardedProto = req.headers.get('x-forwarded-proto');
+      const protocol = forwardedProto || (host.includes('localhost') ? 'http' : 'https');
+      return `${protocol}://${host}`;
+    }
   }
 
   // On server side, try to get from environment variables first
@@ -27,15 +39,16 @@ export function getBaseUrl(): string {
     return 'http://localhost:3000';
   }
 
-  // Production fallback - this should be overridden by environment variables
-  return 'https://your-domain.com';
+  // Production fallback - updated to actual domain
+  return 'https://mimivibe.com';
 }
 
 /**
  * Build a full URL with the given path
+ * Supports dynamic URL detection from request context
  */
-export function buildUrl(path: string = ''): string {
-  const baseUrl = getBaseUrl();
+export function buildUrl(path: string = '', req?: Request): string {
+  const baseUrl = getBaseUrl(req);
   
   // Remove leading slash if present to avoid double slashes
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
@@ -44,4 +57,15 @@ export function buildUrl(path: string = ''): string {
   const separator = cleanPath && !baseUrl.endsWith('/') ? '/' : '';
   
   return `${baseUrl}${separator}${cleanPath}`;
+}
+
+/**
+ * Generate a referral link with dynamic URL detection
+ * @param referralCode The referral code to include in the link
+ * @param req Optional request object for server-side URL detection
+ * @returns Complete referral URL
+ */
+export function buildReferralUrl(referralCode: string, req?: Request): string {
+  const baseUrl = getBaseUrl(req);
+  return `${baseUrl}?ref=${referralCode}`;
 }
