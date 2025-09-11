@@ -85,7 +85,22 @@ function AnimatedCardImage({
           src={src}
           alt={alt}
           className="w-full h-full object-contain bg-white"
-          onError={() => setHasError(true)}
+          onError={(e) => {
+            console.error(`Card image load failed:`, {
+              src,
+              alt,
+              position,
+              error: e
+            });
+            setHasError(true);
+          }}
+          onLoad={() => {
+            console.log(`Card image loaded successfully:`, {
+              src,
+              alt,
+              position
+            });
+          }}
           role="img"
           aria-describedby={`card-${position}-description`}
         />
@@ -135,12 +150,28 @@ export function AnimatedArticleDisplay({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Debug: Log card data on component mount
+  useEffect(() => {
+    console.log('🃏 AnimatedArticleDisplay cards data:', {
+      cardsCount: readingData?.cards?.length || 0,
+      cards: readingData?.cards?.map(card => ({
+        id: card.id,
+        name: card.name,
+        displayName: card.displayName,
+        imageUrl: card.imageUrl,
+        hasImageUrl: !!card.imageUrl
+      }))
+    });
+  }, [readingData?.cards]);
+
   const handleSave = async () => {
     if (isSaving || isSaved) return;
 
     setIsSaving(true);
     try {
-      await onSave?.();
+      if (onSave) {
+        await onSave();
+      }
       // isSaved state is now managed by parent component through readingData
     } catch (error) {
       setErrorMessage("ไม่สามารถบันทึกการทำนายได้ กรุณาลองใหม่");
@@ -155,7 +186,9 @@ export function AnimatedArticleDisplay({
 
     setIsDeleting(true);
     try {
-      await onDelete?.();
+      if (onDelete) {
+        await onDelete();
+      }
     } catch (error) {
       setErrorMessage("ไม่สามารถลบการทำนายได้ กรุณาลองใหม่");
       setShowError(true);
@@ -377,7 +410,21 @@ export function AnimatedArticleDisplay({
                       src={card.imageUrl}
                       alt={card.displayName}
                       className="w-full h-full object-contain bg-white"
-                      onError={() => {}}
+                      onError={(e) => {
+                        console.error(`Mobile card image load failed:`, {
+                          src: card.imageUrl,
+                          alt: card.displayName,
+                          cardId: card.id,
+                          error: e
+                        });
+                      }}
+                      onLoad={() => {
+                        console.log(`Mobile card image loaded:`, {
+                          src: card.imageUrl,
+                          alt: card.displayName,
+                          cardId: card.id
+                        });
+                      }}
                     />
                   </motion.div>
                   <motion.div
