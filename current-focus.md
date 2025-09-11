@@ -1,46 +1,40 @@
-# Current Focus: Critical 70% Off Campaign Pricing Bug
+# Current Focus: Referral System Analysis and Dynamic URL Implementation
 
-**Updated**: 2025-09-09 22:17:16 (Thailand Time)
-**Status**: Critical Bug - Payment System
-**Priority**: HIGH - Customer Impact
+**Updated**: 2025-09-11 15:02:26 (Thailand Time)
+**Status**: System Analysis - Referral System
+**Priority**: HIGH - System Improvement
 
 ## Issue Description
 
-Completed 70% off campaign implementation but discovered critical pricing calculation bug during purchase testing:
+Analyzing the referral system to identify and fix hardcoded link issues. The goal is to make the referral link generation dynamic based on the current URL that the system is running on.
 
-- **Expected**: ฿29.70 (70% discount applied to ฿99 package) 
-- **Actual**: ฿2,970.00 (100x price inflation)
-- **Package**: Starter package with 70% discount
-- **Impact**: Critical - customers would be charged 100x more than intended
+- **Current Issue**: Referral links are hardcoded in the system
+- **Target**: Dynamic URL generation based on current environment
+- **Impact**: Referral system should work seamlessly across local, staging, and production environments
 
 ## Context
 
-- 70% off campaign system is 70% complete
-- Campaign detection and eligibility working
-- Bug appears to be in Stripe payment amount calculation
-- Likely decimal/currency unit conversion issue (baht vs satang)
+- User has identified hardcoded referral links in the system
+- Need comprehensive analysis of referral system implementation
+- Implement dynamic URL detection and generation
+- Ensure proper functionality across different deployment environments
 
-## Technical Suspicion
+## Technical Investigation Areas
 
-Possible causes:
-1. Currency unit conversion error (baht to satang multiplication)
-2. Discount calculation applied incorrectly in payment flow
-3. Stripe payment intent amount formatting issue
+Key areas to analyze:
+1. **Referral Link Generation**: Locate where referral links are currently hardcoded
+2. **URL Detection**: Implement dynamic URL detection based on current environment
+3. **System Integration**: Ensure referral links work across different deployment environments
+4. **Environment Handling**: Support for localhost, staging, and production URLs
 
 ## Next Steps Required
 
-1. Investigate payment calculation logic in campaign discount flow
-2. Check Stripe payment amount conversion (baht → satang)
-3. Verify discount application in payment creation
-4. Test payment flow with corrected calculations
-5. Ensure all packages work correctly with campaign discount
+1. Analyze current referral system implementation
+2. Identify all hardcoded URL references
+3. Implement dynamic URL generation logic
+4. Test across different environments (local/staging/production)
+5. Update documentation and ensure proper functionality
 
-## Safety Priority
+## Investigation Focus
 
-**CRITICAL**: This bug could result in customers being overcharged by 100x. Must be resolved before campaign goes live.
-
-## Previous Session Context
-
-- **NPM Security Vulnerability**: Successfully remediated critical security issues with qix package hijacking
-- **Security Implementation**: Completed vulnerability audit and package pinning
-- **Campaign Development**: 70% complete but payment calculation bug discovered
+**PRIMARY**: Comprehensive analysis of referral system to replace hardcoded links with dynamic URL generation based on current system environment.

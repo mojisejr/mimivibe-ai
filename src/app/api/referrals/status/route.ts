@@ -2,13 +2,13 @@ import { auth } from '@clerk/nextjs'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateReferralCode } from '@/lib/utils/referrals'
-import { getBaseUrl } from '@/lib/utils/url'
+import { buildReferralUrl } from '@/lib/utils/url'
 import { getSafeExpValue } from '@/lib/feature-flags'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const { userId } = auth()
     
@@ -69,7 +69,7 @@ export async function GET() {
         }
       }))
 
-    const referralLink = `${getBaseUrl()}?ref=${referralCode.code}`
+    const referralLink = buildReferralUrl(referralCode.code, request)
 
     return NextResponse.json({
       success: true,

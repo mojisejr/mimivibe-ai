@@ -179,7 +179,9 @@ export default function PackagesPage() {
                         <p className={campaignBannerClasses.text.subtitle}>
                           {campaign.marketingMessage}
                         </p>
-                        <p className={`${campaignBannerClasses.text.urgency} mt-1`}>
+                        <p
+                          className={`${campaignBannerClasses.text.urgency} mt-1`}
+                        >
                           {campaign.urgencyText}
                         </p>
                       </div>
@@ -251,17 +253,31 @@ export default function PackagesPage() {
                         className="relative"
                       >
                         {hasDiscount && (
-                          <div className={discountBadgeClasses.container + " " + discountBadgeClasses.positions.topCenter}>
-                            <div 
+                          <div
+                            className={
+                              discountBadgeClasses.container +
+                              " " +
+                              discountBadgeClasses.positions.topCenter
+                            }
+                          >
+                            <div
                               className={discountBadgeClasses.badge.discount}
-                              aria-label={campaignAriaLabels.discountBadge(campaign?.discountPercentage || 0)}
+                              aria-label={campaignAriaLabels.discountBadge(
+                                campaign?.discountPercentage || 0
+                              )}
                             >
                               ลด {campaign?.discountPercentage}%
                             </div>
                           </div>
                         )}
 
-                        <div className={getPackageCardStyle(index, pkg.popular, hasDiscount)}>
+                        <div
+                          className={getPackageCardStyle(
+                            index,
+                            pkg.popular,
+                            hasDiscount
+                          )}
+                        >
                           <div className="card-body">
                             <div className="text-center mb-4">
                               <h3 className="text-xl font-bold mb-2">
@@ -275,21 +291,27 @@ export default function PackagesPage() {
 
                               <div className="price-display">
                                 {hasDiscount ? (
-                                  <div 
+                                  <div
                                     className={priceDisplayClasses.container}
                                     aria-label={campaignAriaLabels.discountedPrice(
-                                      originalPrice, 
-                                      discountedPrice, 
+                                      originalPrice,
+                                      discountedPrice,
                                       discountAmount
                                     )}
                                   >
-                                    <div className={priceDisplayClasses.original}>
+                                    <div
+                                      className={priceDisplayClasses.original}
+                                    >
                                       ฿{formatPrice(originalPrice)}
                                     </div>
-                                    <div className={priceDisplayClasses.discounted}>
+                                    <div
+                                      className={priceDisplayClasses.discounted}
+                                    >
                                       ฿{formatPrice(discountedPrice)}
                                     </div>
-                                    <div className={priceDisplayClasses.savings}>
+                                    <div
+                                      className={priceDisplayClasses.savings}
+                                    >
                                       ประหยัด ฿{formatPrice(discountAmount)}
                                     </div>
                                   </div>
@@ -316,14 +338,24 @@ export default function PackagesPage() {
                             )}
 
                             <button
-                              className={`${getPackageButtonStyle(index, pkg.popular, hasDiscount)} ${
+                              className={`${getPackageButtonStyle(
+                                index,
+                                pkg.popular,
+                                hasDiscount
+                              )} ${
                                 loading && selectedPackage?.id === pkg.id
                                   ? "loading"
                                   : ""
                               }`}
                               onClick={() => handlePackageSelect(pkg.id)}
                               disabled={loading}
-                              aria-label={hasDiscount ? campaignAriaLabels.campaignButton(campaign?.discountPercentage || 0) : undefined}
+                              aria-label={
+                                hasDiscount
+                                  ? campaignAriaLabels.campaignButton(
+                                      campaign?.discountPercentage || 0
+                                    )
+                                  : undefined
+                              }
                             >
                               {hasDiscount && campaign?.ctaText
                                 ? campaign.ctaText
@@ -339,7 +371,7 @@ export default function PackagesPage() {
 
               {/* Current Credits Display - Enhanced Spacing */}
               <motion.div
-                className={`card card-mystical max-w-md mx-auto ${campaignSpacing.section}`}
+                className={`card card-mystical max-w-md mx-auto ${campaignSpacing.section} mt-6`}
                 {...campaignFadeInUp}
                 transition={{ ...campaignFadeInUp.transition, delay: 0.4 }}
               >
