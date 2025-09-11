@@ -25,7 +25,7 @@ export async function GET() {
         data: {
           rates: [{
             id: 'default',
-            exchangeType: 'COIN_TO_FREE_POINT',
+            exchangeType: 'COIN_TO_CREDIT',
             receivedItem: 'FREE_POINTS',
             coinPerUnit: 15,
             displayText: '15 Coins = 1 Free Point'
@@ -78,7 +78,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { coinAmount, exchangeType = 'COIN_TO_FREE_POINT' } = body
+    const { coinAmount, exchangeType = 'COIN_TO_CREDIT' } = body
 
     if (!coinAmount || typeof coinAmount !== 'number' || coinAmount <= 0) {
       return NextResponse.json(

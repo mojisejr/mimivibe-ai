@@ -31,12 +31,12 @@ export function ExchangeHeader() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-md mx-auto">
           {/* Coins */}
           <div className="text-center">
-            <div className="w-20 h-20 mx-auto mb-4 bg-secondary/20 rounded-full flex items-center justify-center">
-              <span className="text-4xl">🪙</span>
+            <div className="w-16 h-16 mx-auto mb-3 bg-secondary/20 rounded-full flex items-center justify-center">
+              <span className="text-3xl">🪙</span>
             </div>
-            <div className="text-3xl font-bold text-secondary mb-2">
+            <div className="text-2xl font-bold text-secondary mb-2">
               {loading ? (
-                <div className="skeleton h-8 w-24 mx-auto rounded"></div>
+                <div className="skeleton h-6 w-20 mx-auto rounded"></div>
               ) : (
                 `${(profileData?.stats.coins || 0).toLocaleString()}`
               )}
@@ -44,20 +44,21 @@ export function ExchangeHeader() {
             <div className="text-sm text-base-content/70 font-medium">COIN</div>
           </div>
 
-          {/* Free Points */}
+          {/* Stars */}
           <div className="text-center">
-            <div className="w-20 h-20 mx-auto mb-4 bg-primary/20 rounded-full flex items-center justify-center">
-              <span className="text-4xl">🎁</span>
+            <div className="w-16 h-16 mx-auto mb-3 bg-accent/20 rounded-full flex items-center justify-center">
+              <span className="text-3xl">⭐</span>
             </div>
-            <div className="text-3xl font-bold text-primary mb-2">
+            <div className="text-2xl font-bold text-accent mb-2">
               {loading ? (
-                <div className="skeleton h-8 w-20 mx-auto rounded"></div>
+                <div className="skeleton h-6 w-20 mx-auto rounded"></div>
               ) : (
-                `${(profileData?.credits.freePoint || 0).toLocaleString()}`
+                `${(profileData?.credits.stars || 0).toLocaleString()}`
               )}
             </div>
-            <div className="text-sm text-base-content/70 font-medium">FREE</div>
+            <div className="text-sm text-base-content/70 font-medium">STAR</div>
           </div>
+
         </div>
 
         {/* Exchange Info */}

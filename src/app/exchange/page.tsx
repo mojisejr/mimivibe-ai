@@ -9,8 +9,8 @@ import { ExchangeHistory } from "@/components/exchange/ExchangeHistory";
 import { SkeletonLoader } from "@/components/common/SkeletonLoader";
 
 interface ExchangeSettings {
-  coinToCredit: {
-    rate: number; // coins per credit
+  coinToStar: {
+    rate: number; // coins per star
     available: boolean;
   };
 }
@@ -77,7 +77,7 @@ export default function ExchangePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          exchangeType: "COIN_TO_CREDIT",
+          exchangeType: "COIN_TO_STAR",
           coinAmount,
         }),
       });
@@ -163,7 +163,7 @@ export default function ExchangePage() {
           {exchangeData && (
             <>
               <SwapInterface
-                exchangeRate={exchangeData.settings.coinToCredit.rate}
+                exchangeRate={exchangeData.settings.coinToStar.rate}
                 onSwap={handleSwap}
                 onRefresh={fetchExchangeData}
               />

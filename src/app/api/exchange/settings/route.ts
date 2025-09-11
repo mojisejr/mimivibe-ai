@@ -28,19 +28,13 @@ export async function GET() {
 
     // Default exchange rates if not configured in database
     const defaultSettings = {
-      coinToStar: { rate: 10, available: true }, // 10 coins = 1 star
-      coinToCredit: { rate: 15, available: true } // 15 coins = 1 credit
+      coinToStar: { rate: 100, available: true } // 100 coins = 1 star
     }
 
     // Process settings from database
     const settings = exchangeSettings.reduce((acc, setting) => {
       if (setting.exchangeType === 'COIN_TO_STAR') {
         acc.coinToStar = {
-          rate: setting.coinPerUnit,
-          available: setting.isActive
-        }
-      } else if (setting.exchangeType === 'COIN_TO_CREDIT') {
-        acc.coinToCredit = {
           rate: setting.coinPerUnit,
           available: setting.isActive
         }

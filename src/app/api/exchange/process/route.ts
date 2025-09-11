@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate exchange type
-    if (!['COIN_TO_STAR', 'COIN_TO_CREDIT'].includes(exchangeType)) {
+    if (exchangeType !== 'COIN_TO_STAR') {
       return NextResponse.json({ 
         success: false, 
-        error: 'Invalid exchange type' 
+        error: 'Invalid exchange type. Only COIN_TO_STAR is supported.' 
       }, { status: 400 })
     }
 
@@ -39,13 +39,10 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Default rates if not configured
-    const defaultRates = {
-      'COIN_TO_STAR': 10,  // 10 coins = 1 star
-      'COIN_TO_CREDIT': 15  // 15 coins = 1 credit
-    }
+    // Default rate if not configured
+    const defaultRate = 100  // 100 coins = 1 star
 
-    const exchangeRate = exchangeSetting?.coinPerUnit || defaultRates[exchangeType as keyof typeof defaultRates]
+    const exchangeRate = exchangeSetting?.coinPerUnit || defaultRate
     
     if (coinAmount < exchangeRate) {
       return NextResponse.json({ 
@@ -92,7 +89,7 @@ export async function POST(request: NextRequest) {
           userId,
           exchangeType,
           coinAmount: actualCoinsUsed,
-          receivedItem: exchangeType === 'COIN_TO_STAR' ? 'star' : 'freePoint',
+          receivedItem: 'star',
           receivedAmount,
           status: 'completed',
           metadata: {
@@ -106,13 +103,8 @@ export async function POST(request: NextRequest) {
       // Update user balances
       const userUpdateData: any = {
         coins: { decrement: actualCoinsUsed },
+        stars: { increment: receivedAmount },
         updatedAt: new Date()
-      }
-
-      if (exchangeType === 'COIN_TO_STAR') {
-        userUpdateData.stars = { increment: receivedAmount }
-      } else if (exchangeType === 'COIN_TO_CREDIT') {
-        userUpdateData.freePoint = { increment: receivedAmount }
       }
 
       const updatedUser = await tx.user.update({
@@ -127,11 +119,11 @@ export async function POST(request: NextRequest) {
           userId,
           eventType: 'EXCHANGE',
           deltaCoins: -actualCoinsUsed,
-          deltaPoint: exchangeType === 'COIN_TO_CREDIT' ? receivedAmount : 0,
+          deltaPoint: receivedAmount,
           metadata: {
             exchangeId: exchange.id,
             exchangeType,
-            receivedItem: exchangeType === 'COIN_TO_STAR' ? 'star' : 'freePoint',
+            receivedItem: 'star',
             receivedAmount,
             exchangeRate
           }
@@ -147,7 +139,7 @@ export async function POST(request: NextRequest) {
         exchangeId: result.exchange.id,
         coinAmount: actualCoinsUsed,
         receivedAmount,
-        receivedItem: exchangeType === 'COIN_TO_STAR' ? 'star' : 'freePoint',
+        receivedItem: 'star',
         newBalances: {
           coins: result.updatedUser.coins,
           stars: result.updatedUser.stars,
