@@ -1,41 +1,49 @@
-# Current Session Focus
+# Current Focus - 2025-09-11 22:24:25
 
-**Date**: 2025-09-11 14:26:53 (Thailand Time)
-**Session Type**: Critical Bug Investigation & Fix
-**Priority**: High - Production Issue
+## ✅ RESOLVED: Core Prediction System Recovery Complete
 
-## Issue Summary
+### Recovery Summary
+**Status**: ✅ **FULLY RESOLVED** - All critical systems restored and operational
 
-🚨 **CRITICAL PRICING BUG DISCOVERED**
+Successfully completed comprehensive 5-phase recovery of core prediction system `/ask` that was failing due to missing security monitoring database tables.
 
-### Problem Description
-เจอปัญหาการกำหนดราคาที่ไม่ถูกต้องในระบบ:
+### Root Cause Identified & Fixed
+- **Issue**: Missing `prompt_access_logs` and `security_alerts` database tables
+- **Cause**: Database introspection removed security tables that weren't properly mapped
+- **Solution**: Re-added security tables to Prisma schema and ran migration
 
-1. **Database Pricing Inconsistency**:
-   - พบราคา 9900 ใน database 
-   - ความต้องการจริง: 99 บาท
-   - เป็นการคำนวณราคาที่ผิดพลาด (มากกว่า 99 เท่า)
+### Systems Restored
 
-2. **70% First Purchase Campaign**:
-   - ได้สร้าง campaign ส่วนลด 70% สำหรับการซื้อครั้งแรก
-   - ต้องเชคความถูกต้องของการคำนวณส่วนลด
-   - ต้องตรวจสอบว่าการกำหนดราคาใน codebase กับ database สอดคล้องกัน
+1. **✅ Database Schema Recovery**
+   - Added missing `PromptAccessLog` and `SecurityAlert` tables
+   - Migration `20250911153030_add_security_monitoring_tables` applied successfully
+   - All database relationships properly restored
 
-### Investigation Required
-- ✅ ตรวจสอบการคำนวณราคาใน Stripe integration
-- ✅ เชคความสอดคล้องระหว่าง codebase และ database pricing
-- ✅ ทดสอบ campaign discount 70% calculation
-- ✅ ใช้ use context มากขึ้นเพื่อให้ได้ข้อมูลที่ถูกต้อง
+2. **✅ Prompt Management System**
+   - Verified 3 prompt templates exist and accessible
+   - AES-256-GCM encryption system operational
+   - Prompt Manager CLI tools functional
 
-### Potential Impact
-- 🔥 **High Impact**: ลูกค้าอาจถูกเก็บเงินมากกว่าที่ควรจะเป็น
-- 🔥 **Trust Issue**: อาจส่งผลต่อความเชื่อถือของระบบ payment
-- 🔥 **Revenue Loss**: การคำนวณส่วนลดที่ผิดพลาดอาจส่งผลต่อรายได้
+3. **✅ Security Monitoring System**
+   - PromptSecurityMonitor can now query security tables
+   - Real-time access logging restored
+   - Threat detection and alerting operational
+
+4. **✅ Core /ask Endpoint**
+   - Integration tests confirm proper authentication flow
+   - Workflow-with-db (encrypted) system active
+   - Error handling and credit validation working
+
+5. **✅ System Validation**
+   - TypeScript compilation: ✅ No errors
+   - Database connectivity: ✅ All tables accessible
+   - Development server: ✅ Running properly
+
+### Technical Implementation
+- **Branch**: `feature/115-core-prediction-system-recovery`
+- **Migration**: Added security monitoring tables with proper indexing
+- **Validation**: All systems tested and confirmed operational
+- **Impact**: Zero data loss, full functionality restored
 
 ### Next Steps
-1. Comprehensive investigation of pricing system
-2. Database vs codebase price comparison
-3. Campaign discount validation
-4. Fix implementation with proper testing
-
-**Status**: Investigation Phase - Need comprehensive audit of pricing system
+Ready for PR creation and deployment to restore full production functionality.
