@@ -4,17 +4,13 @@ import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { ExchangeHeader } from "@/components/exchange/ExchangeHeader";
-import { CoinExchangePanel } from "@/components/exchange/CoinExchangePanel";
+import { SwapInterface } from "@/components/exchange/SwapInterface";
 import { ExchangeHistory } from "@/components/exchange/ExchangeHistory";
 import { SkeletonLoader } from "@/components/common/SkeletonLoader";
 
 interface ExchangeSettings {
   coinToStar: {
     rate: number; // coins per star
-    available: boolean;
-  };
-  coinToCredit: {
-    rate: number; // coins per credit
     available: boolean;
   };
 }
@@ -73,7 +69,7 @@ export default function ExchangePage() {
     }
   }, [isLoaded, user]);
 
-  const handleExchange = async (exchangeType: string, coinAmount: number) => {
+  const handleSwap = async (coinAmount: number) => {
     try {
       const response = await fetch("/api/exchange/process", {
         method: "POST",
@@ -81,13 +77,13 @@ export default function ExchangePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          exchangeType,
+          exchangeType: "COIN_TO_STAR",
           coinAmount,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Exchange failed");
+        throw new Error("Swap failed");
       }
 
       const result = await response.json();
@@ -96,10 +92,10 @@ export default function ExchangePage() {
         await fetchExchangeData();
         return result;
       } else {
-        throw new Error(result.error || "Exchange failed");
+        throw new Error(result.error || "Swap failed");
       }
     } catch (error) {
-      console.error("Exchange error:", error);
+      console.error("Swap error:", error);
       throw error;
     }
   };
@@ -166,9 +162,9 @@ export default function ExchangePage() {
 
           {exchangeData && (
             <>
-              <CoinExchangePanel
-                settings={exchangeData.settings}
-                onExchange={handleExchange}
+              <SwapInterface
+                exchangeRate={exchangeData.settings.coinToStar.rate}
+                onSwap={handleSwap}
                 onRefresh={fetchExchangeData}
               />
 

@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/ToastContainer";
 import { useProfile } from "@/hooks/useProfile";
 
 interface SwapInterfaceProps {
-  exchangeRate: number; // coins per freePoint
+  exchangeRate: number; // coins per star
   onSwap: (coinAmount: number) => Promise<any>;
   onRefresh: () => Promise<void>;
 }
@@ -22,9 +22,9 @@ export function SwapInterface({
   const { addToast } = useToast();
 
   const currentCoins = profileData?.stats.coins || 0;
-  const currentFreePoints = profileData?.credits.freePoint || 0;
+  const currentStars = profileData?.credits.stars || 0;
 
-  const calculateFreePoints = (coins: number): number => {
+  const calculateStars = (coins: number): number => {
     return Math.floor(coins / exchangeRate);
   };
 
@@ -63,11 +63,11 @@ export function SwapInterface({
       const result = await onSwap(coins);
       
       if (result.success) {
-        const received = calculateFreePoints(coins);
+        const received = calculateStars(coins);
         
         addToast({
           type: "success",
-          message: `Swap สำเร็จ! ได้ ${received} Free Points 🎉 🎁`,
+          message: `Swap สำเร็จ! ได้ ${received} ดาว 🎉 ⭐`,
           duration: 4000,
         });
         
@@ -92,7 +92,7 @@ export function SwapInterface({
   };
 
   const coins = parseFloat(coinAmount) || 0;
-  const expectedFreePoints = calculateFreePoints(coins);
+  const expectedStars = calculateStars(coins);
 
   return (
     <motion.div
@@ -173,19 +173,19 @@ export function SwapInterface({
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-base-content/70">To</span>
             <span className="text-sm text-base-content/70">
-              Balance: {currentFreePoints.toLocaleString()}
+              Balance: {currentStars.toLocaleString()}
             </span>
           </div>
           
           <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2 bg-primary/20 px-3 py-2 rounded-xl min-w-[100px]">
-              <span className="text-2xl">🎁</span>
-              <span className="font-bold text-primary">FREE</span>
+            <div className="flex items-center space-x-2 bg-accent/20 px-3 py-2 rounded-xl min-w-[100px]">
+              <span className="text-2xl">⭐</span>
+              <span className="font-bold text-accent">STAR</span>
             </div>
             
             <div className="flex-1">
               <div className="text-right text-2xl font-bold text-base-content">
-                {expectedFreePoints.toLocaleString()}
+                {expectedStars.toLocaleString()}
               </div>
             </div>
           </div>
@@ -201,7 +201,7 @@ export function SwapInterface({
             <div className="flex items-center justify-between text-sm">
               <span className="text-info">Exchange Rate:</span>
               <span className="font-medium text-info">
-                {exchangeRate} COIN = 1 FREE
+                {exchangeRate} COIN = 1 STAR
               </span>
             </div>
             <div className="flex items-center justify-between text-sm mt-1">
@@ -210,7 +210,7 @@ export function SwapInterface({
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-base-content/70">You receive:</span>
-              <span className="font-medium">{expectedFreePoints} 🎁</span>
+              <span className="font-medium">{expectedStars} ⭐</span>
             </div>
           </motion.div>
         )}
@@ -239,7 +239,7 @@ export function SwapInterface({
           ) : coins > currentCoins ? (
             "Insufficient balance"
           ) : (
-            `Swap ${coins} COIN → ${expectedFreePoints} FREE`
+            `Swap ${coins} COIN → ${expectedStars} STAR`
           )}
         </button>
       </div>
