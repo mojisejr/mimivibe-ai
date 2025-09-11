@@ -143,7 +143,7 @@ export function CoinExchangePanel({
     >
       {/* Exchange Options */}
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-base-content text-center">
+        <h2 className="text-xl font-bold text-base-content text-center" id="exchange-type-heading" role="heading" aria-level={2}>
           เลือกประเภทการแลกเปลี่ยน
         </h2>
         
@@ -218,7 +218,7 @@ export function CoinExchangePanel({
               แลกเปลี่ยน{selectedExchange === "star" ? "ดาว" : "เครดิต"}
             </h3>
             <div className="text-sm text-base-content/70">
-              คุณมีเหรียญ {currentCoins} เหรียญ
+              คุณมีเหรียญ {currentCoins.toLocaleString()} เหรียญ
             </div>
           </div>
 
@@ -260,15 +260,17 @@ export function CoinExchangePanel({
 
             {/* Exchange Preview */}
             {coinAmount > 0 && (
-              <div className="bg-gradient-to-r from-secondary/10 to-primary/10 rounded-xl p-4">
+              <div className="bg-gradient-to-r from-secondary/10 to-primary/10 rounded-xl p-4" role="region" aria-live="polite" aria-label="ตัวอย่างการแลกเปลี่ยน">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-base-content/70">จ่าย:</span>
-                  <span className="font-bold text-secondary">{coinAmount} 🪙</span>
+                  <span className="font-bold text-secondary" aria-label={`จ่าย ${coinAmount} เหรียญ`}>
+                    {coinAmount.toLocaleString()} 🪙
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-sm mt-2">
                   <span className="text-base-content/70">ได้รับ:</span>
-                  <span className="font-bold text-primary">
-                    {calculateReceived(selectedExchange, coinAmount)} {selectedExchange === "star" ? "⭐" : "🎁"}
+                  <span className="font-bold text-primary" aria-label={`ได้รับ ${calculateReceived(selectedExchange, coinAmount)} ${selectedExchange === "star" ? "ดาว" : "เครดิต"}`}>
+                    {calculateReceived(selectedExchange, coinAmount).toLocaleString()} {selectedExchange === "star" ? "⭐" : "🎁"}
                   </span>
                 </div>
               </div>
