@@ -42,8 +42,14 @@ export interface ReadingResponse {
     transactionId: string; // For saving the reading later
     selectedCards: Array<{
       id: number;
+      name: string;
+      displayName: string;
+      arcana: string;
+      shortMeaning: string;
+      keywords: string;
+      imageUrl: string;
       position: number;
-    }>; // For saving the reading later
+    }>; // Complete database card records for UI display
     createdAt: string;
     isSaved: boolean; // Track if reading is saved to database
   };

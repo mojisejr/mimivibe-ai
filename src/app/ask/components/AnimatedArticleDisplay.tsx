@@ -6,12 +6,132 @@ import { ReadingResponse } from "@/types/reading";
 import { CardFallback } from "@/components/cards/CardFallback";
 import { X } from "lucide-react";
 
+// Optimized utility function for selectedCards with complete URLs
+const getCardImageUrl = (originalUrl: string, cardName?: string): string => {
+  // selectedCards already have complete Supabase URLs, use them directly
+  if (originalUrl.includes("supabase.co") || originalUrl.startsWith("http")) {
+    return originalUrl;
+  }
+
+  // Fallback for local paths (legacy support)
+  if (originalUrl.startsWith("/images/cards/")) {
+    return originalUrl;
+  }
+
+  // Final fallback to local images with cardName
+  return `/images/cards/${cardName || "fallback"}.png`;
+};
+
 interface AnimatedCardImageProps {
   src: string;
   alt: string;
   position: number;
   index: number;
   shouldAnimate: boolean;
+  cardName?: string;
+}
+
+// Mobile Card Component to avoid React Hooks issue
+interface MobileCardProps {
+  card: {
+    id: number;
+    name: string;
+    displayName: string;
+    imageUrl: string;
+  };
+  index: number;
+  cardsRevealed: boolean;
+  onCardClick: () => void;
+}
+
+function MobileCardComponent({
+  card,
+  index,
+  cardsRevealed,
+  onCardClick,
+}: MobileCardProps) {
+  const [mobileImageError, setMobileImageError] = useState(false);
+  const [mobileCurrentUrl, setMobileCurrentUrl] = useState(() =>
+    getCardImageUrl(card.imageUrl, card.name)
+  );
+
+  const handleMobileImageError = () => {
+    if (
+      mobileCurrentUrl.startsWith("/images/cards/") &&
+      card.imageUrl !== mobileCurrentUrl
+    ) {
+      setMobileCurrentUrl(card.imageUrl);
+    } else {
+      setMobileImageError(true);
+    }
+  };
+
+  return (
+    <div className="text-center">
+      <div className="relative group mb-3 cursor-pointer" onClick={onCardClick}>
+        <motion.div
+          className="w-full aspect-[2/3] overflow-hidden rounded-lg shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] relative"
+          initial={{ scale: 0, rotateY: 180 }}
+          animate={{
+            scale: cardsRevealed ? 1 : 0,
+            rotateY: cardsRevealed ? 0 : 180,
+          }}
+          transition={{
+            duration: 0.8,
+            ease: "easeInOut",
+            delay: 1.2 + index * 0.6,
+          }}
+        >
+          {!mobileImageError ? (
+            <img
+              src={mobileCurrentUrl}
+              alt={card.displayName}
+              className="w-full h-full object-contain bg-white"
+              onError={handleMobileImageError}
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/30 flex items-center justify-center">
+              <div className="text-center p-2">
+                <div className="text-primary text-lg mb-1">🔮</div>
+                <p className="text-xs text-neutral-content">
+                  {card.displayName || card.name?.replace(/_/g, " ")}
+                </p>
+              </div>
+            </div>
+          )}
+        </motion.div>
+        <motion.div
+          className="absolute bottom-1 right-1 w-5 h-5 bg-primary/80 text-primary-content text-xs font-medium rounded-full flex items-center justify-center shadow-sm"
+          initial={{ scale: 0 }}
+          animate={{ scale: cardsRevealed ? 1 : 0 }}
+          transition={{
+            delay: 1.6 + index * 0.6,
+            duration: 0.3,
+            type: "spring",
+            stiffness: 300,
+          }}
+        >
+          {index + 1}
+        </motion.div>
+      </div>
+      <motion.h3
+        className="font-semibold text-base-content text-xs mb-2 leading-tight"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: cardsRevealed ? 1 : 0 }}
+        transition={{ delay: 2.4 + index * 0.6, duration: 0.3 }}
+      >
+        {card.displayName ||
+          (card.name || "")
+            .split("_")
+            .map(
+              (word: string) =>
+                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            )
+            .join(" ")}
+      </motion.h3>
+    </div>
+  );
 }
 
 function AnimatedCardImage({
@@ -20,31 +140,25 @@ function AnimatedCardImage({
   position,
   index,
   shouldAnimate,
+  cardName,
 }: AnimatedCardImageProps) {
-  // DEBUG: Log individual card image props
-  console.log(`🖼️ AnimatedCardImage ${index + 1}:`, {
-    src,
-    alt,
-    position,
-    index,
-    shouldAnimate,
-  });
-
-  // Fix image URL if it's missing proper path prefix
-  const fixedImageUrl = src?.startsWith('/') && !src?.startsWith('/images/') && !src?.startsWith('http') 
-    ? `/images/cards${src}` 
-    : src;
-  
-  // DEBUG: Log URL transformation
-  if (fixedImageUrl !== src) {
-    console.log(`🔧 Fixed image URL:`, {
-      original: src,
-      fixed: fixedImageUrl,
-    });
-  }
-
   const [hasError, setHasError] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState(() =>
+    getCardImageUrl(src, cardName)
+  );
+
+  const handleImageError = () => {
+    // If local image failed and we haven't tried the original URL yet
+    if (
+      currentImageUrl.startsWith("/images/cards/") &&
+      src !== currentImageUrl
+    ) {
+      setCurrentImageUrl(src);
+    } else {
+      setHasError(true);
+    }
+  };
 
   useEffect(() => {
     if (shouldAnimate) {
@@ -104,27 +218,11 @@ function AnimatedCardImage({
     >
       <div className="w-full aspect-[2/3] overflow-hidden rounded-lg shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:scale-[1.02]">
         <img
-          src={fixedImageUrl}
+          src={currentImageUrl}
           alt={alt}
           className="w-full h-full object-contain bg-white"
-          onError={(e) => {
-            console.error(`❌ Card image load failed:`, {
-              originalSrc: src,
-              fixedSrc: fixedImageUrl,
-              alt,
-              position,
-              actualLoadedSrc: e.currentTarget?.src,
-            });
-            setHasError(true);
-          }}
-          onLoad={() => {
-            console.log(`✅ Card image loaded successfully:`, {
-              originalSrc: src,
-              fixedSrc: fixedImageUrl,
-              alt,
-              position,
-            });
-          }}
+          onError={handleImageError}
+          loading="lazy"
           role="img"
           aria-describedby={`card-${position}-description`}
         />
@@ -161,23 +259,7 @@ export function AnimatedArticleDisplay({
   onAskAgain,
   onQuestionClick,
 }: AnimatedArticleDisplayProps) {
-  // DEBUG: Log the complete readingData structure
-  console.log("🔍 AnimatedArticleDisplay - Full readingData:", readingData);
-  console.log("🃏 AnimatedArticleDisplay - Cards array:", readingData?.cards);
-  console.log("📊 AnimatedArticleDisplay - Cards count:", readingData?.cards?.length);
-  
-  // DEBUG: Log each individual card
-  readingData?.cards?.forEach((card, index) => {
-    console.log(`🎴 Card ${index + 1}:`, {
-      id: card.id,
-      name: card.name,
-      displayName: card.displayName,
-      imageUrl: card.imageUrl,
-      position: card.position,
-      shortMeaning: card.shortMeaning,
-      keywords: card.keywords,
-    });
-  });
+  console.log("reading Data", readingData);
 
   const [scope, animate] = useAnimate();
   const [animationPhase, setAnimationPhase] = useState<
@@ -369,18 +451,7 @@ export function AnimatedArticleDisplay({
           </motion.h2>
           {/* Desktop Cards */}
           <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 max-w-4xl mx-auto">
-            {readingData.cards.map((card, index) => {
-              // DEBUG: Log card mapping in desktop view
-              console.log(`🖥️ Desktop Card ${index + 1} mapping:`, {
-                cardId: card.id,
-                cardName: card.name,
-                cardDisplayName: card.displayName,
-                cardImageUrl: card.imageUrl,
-                indexPosition: index,
-                calculatedPosition: index + 1,
-              });
-              
-              return (
+            {readingData.selectedCards.map((card, index) => (
               <div key={card.id} className="text-center">
                 <div
                   className="relative group mb-4 cursor-pointer"
@@ -395,6 +466,7 @@ export function AnimatedArticleDisplay({
                     position={index + 1}
                     index={index}
                     shouldAnimate={cardsRevealed}
+                    cardName={card.name}
                   />
                 </div>
                 <motion.h3
@@ -414,87 +486,23 @@ export function AnimatedArticleDisplay({
                       .join(" ")}
                 </motion.h3>
               </div>
-              );
-            })}
+            ))}
           </div>
 
           {/* Mobile Cards - Smaller with Modal */}
           <div className="md:hidden grid grid-cols-3 gap-3 max-w-sm mx-auto">
-            {readingData.cards.map((card, index) => {
-              // DEBUG: Log card mapping in mobile view
-              console.log(`📱 Mobile Card ${index + 1} mapping:`, {
-                cardId: card.id,
-                cardName: card.name,
-                cardDisplayName: card.displayName,
-                cardImageUrl: card.imageUrl,
-                indexPosition: index,
-                calculatedPosition: index + 1,
-              });
-              
-              return (
-              <div key={card.id} className="text-center">
-                <div
-                  className="relative group mb-3 cursor-pointer"
-                  onClick={() => {
-                    setSelectedCard(card);
-                    setShowCardModal(true);
-                  }}
-                >
-                  <motion.div
-                    className="w-full aspect-[2/3] overflow-hidden rounded-lg shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02]"
-                    initial={{ scale: 0, rotateY: 180 }}
-                    animate={{
-                      scale: cardsRevealed ? 1 : 0,
-                      rotateY: cardsRevealed ? 0 : 180,
-                    }}
-                    transition={{
-                      duration: 0.8,
-                      ease: "easeInOut",
-                      delay: 1.2 + index * 0.6,
-                    }}
-                  >
-                    <img
-                      src={card.imageUrl?.startsWith('/') && !card.imageUrl?.startsWith('/images/') && !card.imageUrl?.startsWith('http') 
-                        ? `/images/cards${card.imageUrl}` 
-                        : card.imageUrl}
-                      alt={card.displayName}
-                      className="w-full h-full object-contain bg-white"
-                      onError={() => {}}
-                    />
-                  </motion.div>
-                  <motion.div
-                    className="absolute bottom-1 right-1 w-5 h-5 bg-primary/80 text-primary-content text-xs font-medium rounded-full flex items-center justify-center shadow-sm"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: cardsRevealed ? 1 : 0 }}
-                    transition={{
-                      delay: 1.6 + index * 0.6,
-                      duration: 0.3,
-                      type: "spring",
-                      stiffness: 300,
-                    }}
-                  >
-                    {index + 1}
-                  </motion.div>
-                </div>
-                <motion.h3
-                  className="font-semibold text-base-content text-xs mb-2 leading-tight"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: cardsRevealed ? 1 : 0 }}
-                  transition={{ delay: 2.4 + index * 0.6, duration: 0.3 }}
-                >
-                  {card.displayName ||
-                    (card.name || "")
-                      .split("_")
-                      .map(
-                        (word: string) =>
-                          word.charAt(0).toUpperCase() +
-                          word.slice(1).toLowerCase()
-                      )
-                      .join(" ")}
-                </motion.h3>
-              </div>
-              );
-            })}
+            {readingData.selectedCards.map((card, index) => (
+              <MobileCardComponent
+                key={card.id}
+                card={card}
+                index={index}
+                cardsRevealed={cardsRevealed}
+                onCardClick={() => {
+                  setSelectedCard(card);
+                  setShowCardModal(true);
+                }}
+              />
+            ))}
           </div>
         </motion.section>
 
@@ -814,9 +822,19 @@ export function AnimatedArticleDisplay({
               <div className="relative bg-white p-4">
                 <div className="w-32 h-48 mx-auto">
                   <img
-                    src={selectedCard.imageUrl}
+                    src={getCardImageUrl(
+                      selectedCard.imageUrl,
+                      selectedCard.name
+                    )}
                     alt={selectedCard.displayName}
                     className="w-full h-full object-contain rounded-lg"
+                    onError={(e) => {
+                      // Try original URL if local fails
+                      if (e.currentTarget.src !== selectedCard.imageUrl) {
+                        e.currentTarget.src = selectedCard.imageUrl;
+                      }
+                    }}
+                    loading="lazy"
                   />
                 </div>
               </div>
