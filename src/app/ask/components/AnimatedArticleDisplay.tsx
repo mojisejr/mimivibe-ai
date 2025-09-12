@@ -21,6 +21,28 @@ function AnimatedCardImage({
   index,
   shouldAnimate,
 }: AnimatedCardImageProps) {
+  // DEBUG: Log individual card image props
+  console.log(`🖼️ AnimatedCardImage ${index + 1}:`, {
+    src,
+    alt,
+    position,
+    index,
+    shouldAnimate,
+  });
+
+  // Fix image URL if it's missing proper path prefix
+  const fixedImageUrl = src?.startsWith('/') && !src?.startsWith('/images/') && !src?.startsWith('http') 
+    ? `/images/cards${src}` 
+    : src;
+  
+  // DEBUG: Log URL transformation
+  if (fixedImageUrl !== src) {
+    console.log(`🔧 Fixed image URL:`, {
+      original: src,
+      fixed: fixedImageUrl,
+    });
+  }
+
   const [hasError, setHasError] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -82,21 +104,23 @@ function AnimatedCardImage({
     >
       <div className="w-full aspect-[2/3] overflow-hidden rounded-lg shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:scale-[1.02]">
         <img
-          src={src}
+          src={fixedImageUrl}
           alt={alt}
           className="w-full h-full object-contain bg-white"
           onError={(e) => {
-            console.error(`Card image load failed:`, {
-              src,
+            console.error(`❌ Card image load failed:`, {
+              originalSrc: src,
+              fixedSrc: fixedImageUrl,
               alt,
               position,
-              error: e,
+              actualLoadedSrc: e.currentTarget?.src,
             });
             setHasError(true);
           }}
           onLoad={() => {
-            console.log(`Card image loaded successfully:`, {
-              src,
+            console.log(`✅ Card image loaded successfully:`, {
+              originalSrc: src,
+              fixedSrc: fixedImageUrl,
               alt,
               position,
             });
@@ -137,6 +161,24 @@ export function AnimatedArticleDisplay({
   onAskAgain,
   onQuestionClick,
 }: AnimatedArticleDisplayProps) {
+  // DEBUG: Log the complete readingData structure
+  console.log("🔍 AnimatedArticleDisplay - Full readingData:", readingData);
+  console.log("🃏 AnimatedArticleDisplay - Cards array:", readingData?.cards);
+  console.log("📊 AnimatedArticleDisplay - Cards count:", readingData?.cards?.length);
+  
+  // DEBUG: Log each individual card
+  readingData?.cards?.forEach((card, index) => {
+    console.log(`🎴 Card ${index + 1}:`, {
+      id: card.id,
+      name: card.name,
+      displayName: card.displayName,
+      imageUrl: card.imageUrl,
+      position: card.position,
+      shortMeaning: card.shortMeaning,
+      keywords: card.keywords,
+    });
+  });
+
   const [scope, animate] = useAnimate();
   const [animationPhase, setAnimationPhase] = useState<
     "question" | "header" | "cards" | "reading" | "complete"
@@ -327,7 +369,18 @@ export function AnimatedArticleDisplay({
           </motion.h2>
           {/* Desktop Cards */}
           <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 max-w-4xl mx-auto">
-            {readingData.cards.map((card, index) => (
+            {readingData.cards.map((card, index) => {
+              // DEBUG: Log card mapping in desktop view
+              console.log(`🖥️ Desktop Card ${index + 1} mapping:`, {
+                cardId: card.id,
+                cardName: card.name,
+                cardDisplayName: card.displayName,
+                cardImageUrl: card.imageUrl,
+                indexPosition: index,
+                calculatedPosition: index + 1,
+              });
+              
+              return (
               <div key={card.id} className="text-center">
                 <div
                   className="relative group mb-4 cursor-pointer"
@@ -361,12 +414,24 @@ export function AnimatedArticleDisplay({
                       .join(" ")}
                 </motion.h3>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Mobile Cards - Smaller with Modal */}
           <div className="md:hidden grid grid-cols-3 gap-3 max-w-sm mx-auto">
-            {readingData.cards.map((card, index) => (
+            {readingData.cards.map((card, index) => {
+              // DEBUG: Log card mapping in mobile view
+              console.log(`📱 Mobile Card ${index + 1} mapping:`, {
+                cardId: card.id,
+                cardName: card.name,
+                cardDisplayName: card.displayName,
+                cardImageUrl: card.imageUrl,
+                indexPosition: index,
+                calculatedPosition: index + 1,
+              });
+              
+              return (
               <div key={card.id} className="text-center">
                 <div
                   className="relative group mb-3 cursor-pointer"
@@ -389,7 +454,9 @@ export function AnimatedArticleDisplay({
                     }}
                   >
                     <img
-                      src={card.imageUrl}
+                      src={card.imageUrl?.startsWith('/') && !card.imageUrl?.startsWith('/images/') && !card.imageUrl?.startsWith('http') 
+                        ? `/images/cards${card.imageUrl}` 
+                        : card.imageUrl}
                       alt={card.displayName}
                       className="w-full h-full object-contain bg-white"
                       onError={() => {}}
@@ -426,7 +493,8 @@ export function AnimatedArticleDisplay({
                       .join(" ")}
                 </motion.h3>
               </div>
-            ))}
+              );
+            })}
           </div>
         </motion.section>
 
