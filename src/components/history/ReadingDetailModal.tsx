@@ -64,6 +64,34 @@ const EnhancedCardDisplay = ({
   onClick: () => void;
 }) => {
   const [imageError, setImageError] = useState(false);
+  
+  // Try local image first, fallback to original URL
+  const getImageUrl = (originalUrl: string, cardName: string) => {
+    // If it's already a local path, use it
+    if (originalUrl.startsWith('/images/cards/')) {
+      return originalUrl;
+    }
+    
+    // If it's an external URL, try local version first
+    if (originalUrl.includes('supabase.co') || originalUrl.startsWith('http')) {
+      return `/images/cards/${cardName}.png`;
+    }
+    
+    return originalUrl;
+  };
+
+  const [currentImageUrl, setCurrentImageUrl] = useState(() => 
+    getImageUrl(card.imageUrl, card.name)
+  );
+
+  const handleImageError = () => {
+    // If local image failed and we haven't tried the original URL yet
+    if (currentImageUrl.startsWith('/images/cards/') && card.imageUrl !== currentImageUrl) {
+      setCurrentImageUrl(card.imageUrl);
+    } else {
+      setImageError(true);
+    }
+  };
 
   return (
     <div
@@ -71,13 +99,13 @@ const EnhancedCardDisplay = ({
       onClick={onClick}
       title={card.nameTh || card.name}
     >
-      {card.imageUrl && !imageError ? (
+      {!imageError ? (
         <div className="relative aspect-[2/3] rounded-lg overflow-hidden border border-base-300 bg-white shadow-md hover:shadow-lg transition-shadow duration-200">
           <img
-            src={card.imageUrl}
+            src={currentImageUrl}
             alt={card.nameTh || card.name}
             className="w-full h-full object-contain"
-            onError={() => setImageError(true)}
+            onError={handleImageError}
             loading="lazy"
           />
           {/* Hover overlay */}
@@ -85,7 +113,12 @@ const EnhancedCardDisplay = ({
         </div>
       ) : (
         <div className="aspect-[2/3] bg-gradient-to-br from-primary/20 to-secondary/30 rounded-lg border border-primary/30 flex items-center justify-center transition-colors duration-200 hover:from-primary/30 hover:to-secondary/40 shadow-md hover:shadow-lg">
-          <div className="text-primary text-2xl">🔮</div>
+          <div className="text-center p-4">
+            <div className="text-primary text-2xl mb-2">🔮</div>
+            <p className="text-xs text-neutral-content text-center break-words">
+              {card.nameTh || card.name.replace(/_/g, ' ')}
+            </p>
+          </div>
         </div>
       )}
     </div>
@@ -95,23 +128,51 @@ const EnhancedCardDisplay = ({
 // Card Detail Image Component with error handling
 const CardDetailImage = ({ card }: { card: Card }) => {
   const [imageError, setImageError] = useState(false);
+  
+  // Try local image first, fallback to original URL
+  const getImageUrl = (originalUrl: string, cardName: string) => {
+    // If it's already a local path, use it
+    if (originalUrl.startsWith('/images/cards/')) {
+      return originalUrl;
+    }
+    
+    // If it's an external URL, try local version first
+    if (originalUrl.includes('supabase.co') || originalUrl.startsWith('http')) {
+      return `/images/cards/${cardName}.png`;
+    }
+    
+    return originalUrl;
+  };
+
+  const [currentImageUrl, setCurrentImageUrl] = useState(() => 
+    getImageUrl(card.imageUrl, card.name)
+  );
+
+  const handleImageError = () => {
+    // If local image failed and we haven't tried the original URL yet
+    if (currentImageUrl.startsWith('/images/cards/') && card.imageUrl !== currentImageUrl) {
+      setCurrentImageUrl(card.imageUrl);
+    } else {
+      setImageError(true);
+    }
+  };
 
   return (
     <div className="w-48 h-auto mx-auto">
-      {card.imageUrl && !imageError ? (
+      {!imageError ? (
         <img
-          src={card.imageUrl}
+          src={currentImageUrl}
           alt={card.nameTh || card.name}
           className="w-full h-auto object-contain bg-white rounded-lg shadow-lg"
-          onError={() => setImageError(true)}
+          onError={handleImageError}
           loading="lazy"
         />
       ) : (
         <div className="aspect-[2/3] bg-gradient-to-br from-primary/20 to-secondary/30 rounded-lg border border-primary/30 flex items-center justify-center shadow-lg">
-          <div className="text-center">
+          <div className="text-center p-6">
             <div className="text-primary text-4xl mb-2">🔮</div>
-            <p className="text-sm text-neutral-content">
-              {card.nameTh || card.name}
+            <p className="text-sm text-neutral-content break-words">
+              {card.nameTh || card.name.replace(/_/g, ' ')}
             </p>
           </div>
         </div>
