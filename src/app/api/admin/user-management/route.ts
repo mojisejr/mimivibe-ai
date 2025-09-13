@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   try {
     // Validate admin access
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     // Validate admin access
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const body = await request.json();
     const { userId, updates, bulkOperation } = body;

@@ -16,7 +16,7 @@ const exchangeSettingSchema = z.object({
 export async function GET() {
   try {
     // Validate admin access using Clerk metadata
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const settings = await prisma.exchangeSetting.findMany({
       orderBy: [
@@ -58,7 +58,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     // Validate admin access using Clerk metadata
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const body = await request.json()
     const validation = exchangeSettingSchema.safeParse(body)
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     // Validate admin access using Clerk metadata
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const body = await request.json()
     const { id, ...updateData } = body
@@ -216,7 +216,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Validate admin access using Clerk metadata
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')

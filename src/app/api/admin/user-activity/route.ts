@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   try {
     // Validate admin access
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const { searchParams } = new URL(request.url);
     const timeRange = searchParams.get('timeRange') || '7d'; // 1d, 7d, 30d, 90d, all

@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   try {
     // Validate admin access
-    validateAdminAccess();
+    await validateAdminAccess();
 
     // Get popular packages with their purchase statistics
     const popularPackagesQuery = await prisma.pack.findMany({

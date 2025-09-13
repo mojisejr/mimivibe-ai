@@ -20,7 +20,7 @@ const rewardSchema = z.object({
 export async function GET() {
   try {
     // Validate admin access using Clerk metadata
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const rewards = await prisma.rewardConfiguration.findMany({
       orderBy: [
@@ -64,7 +64,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     // Validate admin access using Clerk metadata
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const body = await request.json()
     const validation = rewardSchema.safeParse(body)
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     // Validate admin access using Clerk metadata
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const body = await request.json()
     const { id, ...updateData } = body
