@@ -15,12 +15,7 @@ export default function ProfilePage() {
   const { user, isLoaded } = useUser();
   const { data, loading, error, refresh } = useProfile();
 
-  // Debug authentication state
-  console.log("🔐 Authentication state:", {
-    isLoaded,
-    userId: user?.id,
-    isSignedIn: !!user,
-  });
+  // Authentication state check for profile page
 
   // Don't render until auth is loaded
   if (!isLoaded) {

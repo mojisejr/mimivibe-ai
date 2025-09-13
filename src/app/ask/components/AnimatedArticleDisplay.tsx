@@ -259,7 +259,7 @@ export function AnimatedArticleDisplay({
   onAskAgain,
   onQuestionClick,
 }: AnimatedArticleDisplayProps) {
-  console.log("reading Data", readingData);
+  // Debug: reading data structure
 
   const [scope, animate] = useAnimate();
   const [animationPhase, setAnimationPhase] = useState<

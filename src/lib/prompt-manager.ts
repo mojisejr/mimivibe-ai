@@ -58,14 +58,7 @@ export class PromptManager {
    * Initialize prompts from existing prompts.ts file
    */
   public async initializePrompts(): Promise<void> {
-    console.log(chalk.cyan(figlet.textSync('Prompt Init', { horizontalLayout: 'fitted' })));
-    console.log(chalk.cyan('🚀 Initializing prompts from code...\n'));
-    
-    // Note: Hardcoded prompts have been archived for security
-    // This init function is now primarily for reference - prompts are already encrypted in database
-    console.log(chalk.yellow('⚠️  Hardcoded prompts have been archived for security.'));
-    console.log(chalk.yellow('⚠️  Encrypted prompts are already active in production.'));
-    console.log(chalk.green('✅ Current system uses encrypted database prompts.'));
+    // Prompt initialization - using encrypted database prompts for security
     
     const promptEntries: Array<{ name: string; content: string }> = [
       // Prompts are now loaded from encrypted database storage
@@ -77,7 +70,7 @@ export class PromptManager {
 
     for (const { name, content } of promptEntries) {
       if (!content) {
-        console.log(chalk.yellow(`⚠️  Skipping ${name} (no content)`));
+        // Skipping prompt with no content
         continue;
       }
 
@@ -86,8 +79,8 @@ export class PromptManager {
       const existing = await this.prisma.promptTemplate.findUnique({
         where: { name }
       });
-
-      if (!existing) {
+  
+        if (!existing) {
         spinner.text = `Encrypting ${name}...`;
         const encryptedContent = await PromptEncryption.encrypt(content);
         
@@ -118,12 +111,15 @@ export class PromptManager {
       }
     }
     
-    console.log('\n' + boxen(
-      chalk.green(`🎉 Initialization Complete!\n`) +
-      chalk.white(`✅ Initialized: ${initialized}\n`) +
-      chalk.gray(`⏭️  Skipped: ${skipped}`),
-      { padding: 1, borderColor: 'green', borderStyle: 'round' }
-    ));
+    console.log(chalk.blue(boxen(
+      `🔐 Prompt Initialization Complete\n\n` +
+      `✅ Initialized: ${initialized} prompts\n` +
+      `⏭️  Skipped: ${skipped} prompts\n` +
+      `📊 Total: ${initialized + skipped} prompts processed`,
+      { padding: 1, borderColor: 'blue', borderStyle: 'round' }
+    )));
+    
+    // Prompt initialization completed - all prompts encrypted in database
   }
 
   /**
@@ -266,6 +262,7 @@ export class PromptManager {
             }
           });
 
+          console.log(chalk.green(`✅ Updated prompt '${name}' to version ${nextVersion}`));
           return nextVersion;
         }, {
           // Transaction options for better error handling
@@ -291,7 +288,7 @@ export class PromptManager {
         const delay = 100 * Math.pow(2, attempt - 1);
         await new Promise(resolve => setTimeout(resolve, delay));
         
-        console.warn(`Attempt ${attempt} failed for updatePrompt('${name}'): ${error.message}. Retrying in ${delay}ms...`);
+        console.warn(chalk.yellow(`⚠️  Attempt ${attempt} failed for updatePrompt('${name}'): ${error.message}. Retrying in ${delay}ms...`));
       }
     }
 
@@ -338,7 +335,8 @@ export class PromptManager {
         updatedAt: new Date()
       }
     });
-
+    
+    console.log(chalk.green(`✅ Activated version ${version} for prompt '${name}'`));
   }
 
   /**
@@ -349,6 +347,8 @@ export class PromptManager {
       where: { name },
       data: { isActive: false }
     });
+    
+    console.log(chalk.yellow(`⏸️  Deactivated prompt '${name}'`));
 
   }
 
@@ -401,6 +401,8 @@ export class PromptManager {
         aiProvider: result.aiProvider
       }
     });
+    
+    console.log(chalk.blue(`📊 Saved test result for template ${result.templateId} v${result.version} (${result.executionTimeMs}ms, ${result.tokenUsage} tokens)`));
   }
 
   /**
@@ -465,6 +467,8 @@ export class PromptManager {
     );
 
     const recommendations = this.generateRecommendations(versions);
+    
+    console.log(chalk.cyan(`📈 Performance analytics for '${name}': ${versions.length} versions analyzed, best performing: v${bestPerforming.version} (${(bestPerforming.successRate * 100).toFixed(1)}% success)`));
 
     return { versions, bestPerforming, recommendations };
   }

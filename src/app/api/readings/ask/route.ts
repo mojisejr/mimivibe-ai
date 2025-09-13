@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
       }
     } catch (referralError) {
       // Log but don't fail the reading request
-      console.log('Referral reward claim failed (optional):', referralError)
+      // Referral reward claim failed (optional) - non-critical
     }
 
     return NextResponse.json({
