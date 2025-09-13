@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { Card, CardBody } from '@/components/ui/Card';
 import { PaymentHistorySection } from './PaymentHistorySection';
+import { UserManagementSection } from './UserManagementSection';
+import { AdvancedAnalyticsSection } from './AdvancedAnalyticsSection';
 
 interface UserStats {
   totalMembers: number;
@@ -29,6 +31,8 @@ interface AdminDashboardProps {
   className?: string;
 }
 
+type TabType = 'overview' | 'users' | 'payments' | 'analytics';
+
 export function AdminDashboard({ className = '' }: AdminDashboardProps) {
   const { user } = useUser();
   const [userStats, setUserStats] = useState<UserStats | null>(null);
@@ -36,6 +40,7 @@ export function AdminDashboard({ className = '' }: AdminDashboardProps) {
   const [popularPackages, setPopularPackages] = useState<PopularPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   useEffect(() => {
     const fetchAdminData = async () => {
@@ -102,6 +107,134 @@ export function AdminDashboard({ className = '' }: AdminDashboardProps) {
     );
   }
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <>
+            {/* User Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card variant="mystical">
+                <CardBody>
+                  <h3 className="heading-4 mb-2">Total Members</h3>
+                  <div className="text-3xl font-bold text-primary">
+                    {userStats?.totalMembers?.toLocaleString() || '0'}
+                  </div>
+                  <div className="text-sm text-neutral-content">Active users</div>
+                </CardBody>
+              </Card>
+
+              <Card variant="mystical">
+                <CardBody>
+                  <h3 className="heading-4 mb-2">Today</h3>
+                  <div className="text-3xl font-bold text-success">
+                    +{userStats?.newMembersToday || 0}
+                  </div>
+                  <div className="text-sm text-neutral-content">New members</div>
+                </CardBody>
+              </Card>
+
+              <Card variant="mystical">
+                <CardBody>
+                  <h3 className="heading-4 mb-2">Last 7 Days</h3>
+                  <div className="text-3xl font-bold text-secondary">
+                    +{userStats?.newMembers7Days || 0}
+                  </div>
+                  <div className="text-sm text-neutral-content">New members</div>
+                </CardBody>
+              </Card>
+
+              <Card variant="mystical">
+                <CardBody>
+                  <h3 className="heading-4 mb-2">Last 30 Days</h3>
+                  <div className="text-3xl font-bold text-accent">
+                    +{userStats?.newMembers30Days || 0}
+                  </div>
+                  <div className="text-sm text-neutral-content">New members</div>
+                </CardBody>
+              </Card>
+            </div>
+
+            {/* Revenue Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card variant="mystical">
+                <CardBody>
+                  <h3 className="heading-4 mb-2">Today&apos;s Revenue</h3>
+                  <div className="text-3xl font-bold text-success">
+                    ฿{revenueStats?.today?.toLocaleString() || '0'}
+                  </div>
+                  <div className="text-sm text-neutral-content">Thai Baht</div>
+                </CardBody>
+              </Card>
+
+              <Card variant="mystical">
+                <CardBody>
+                  <h3 className="heading-4 mb-2">This Month</h3>
+                  <div className="text-3xl font-bold text-primary">
+                    ฿{revenueStats?.thisMonth?.toLocaleString() || '0'}
+                  </div>
+                  <div className="text-sm text-neutral-content">Thai Baht</div>
+                </CardBody>
+              </Card>
+
+              <Card variant="mystical">
+                <CardBody>
+                  <h3 className="heading-4 mb-2">This Year</h3>
+                  <div className="text-3xl font-bold text-secondary">
+                    ฿{revenueStats?.thisYear?.toLocaleString() || '0'}
+                  </div>
+                  <div className="text-sm text-neutral-content">Thai Baht</div>
+                </CardBody>
+              </Card>
+            </div>
+
+            {/* Popular Packages */}
+            <Card variant="mystical" className="mb-8">
+              <CardBody>
+                <h3 className="heading-3 mb-2">Most Popular Packages</h3>
+                <p className="text-neutral-content mb-4">Ranked by purchase volume</p>
+                {popularPackages.length > 0 ? (
+                  <div className="space-y-4">
+                    {popularPackages.map((pkg, index) => (
+                      <div key={pkg.id} className="flex items-center justify-between p-4 bg-base-200 rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div className="badge badge-primary">#{index + 1}</div>
+                          <div>
+                            <h4 className="font-semibold">{pkg.title}</h4>
+                            <p className="text-sm text-neutral-content">
+                              {pkg.purchaseCount} purchases
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-success">
+                            ฿{pkg.revenue.toLocaleString()}
+                          </div>
+                          <div className="text-sm text-neutral-content">Revenue</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-neutral-content">
+                    No package data available
+                  </div>
+                )}
+              </CardBody>
+            </Card>
+          </>
+        );
+      case 'users':
+        return <UserManagementSection />;
+      case 'payments':
+        return <PaymentHistorySection />;
+      case 'analytics':
+        return <AdvancedAnalyticsSection />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className={`min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 ${className}`}>
       <div className="content-container pt-8 pb-8">
@@ -116,140 +249,36 @@ export function AdminDashboard({ className = '' }: AdminDashboardProps) {
           </div>
         </div>
 
-        {/* User Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card variant="mystical">
-            <CardBody>
-              <h3 className="heading-4 mb-2">Total Members</h3>
-              <div className="text-3xl font-bold text-primary">
-                {userStats?.totalMembers?.toLocaleString() || '0'}
-              </div>
-              <div className="text-sm text-neutral-content">Active users</div>
-            </CardBody>
-          </Card>
-
-          <Card variant="mystical">
-            <CardBody>
-              <h3 className="heading-4 mb-2">Today</h3>
-              <div className="text-3xl font-bold text-success">
-                +{userStats?.newMembersToday || 0}
-              </div>
-              <div className="text-sm text-neutral-content">New members</div>
-            </CardBody>
-          </Card>
-
-          <Card variant="mystical">
-            <CardBody>
-              <h3 className="heading-4 mb-2">Last 7 Days</h3>
-              <div className="text-3xl font-bold text-secondary">
-                +{userStats?.newMembers7Days || 0}
-              </div>
-              <div className="text-sm text-neutral-content">New members</div>
-            </CardBody>
-          </Card>
-
-          <Card variant="mystical">
-            <CardBody>
-              <h3 className="heading-4 mb-2">Last 30 Days</h3>
-              <div className="text-3xl font-bold text-accent">
-                +{userStats?.newMembers30Days || 0}
-              </div>
-              <div className="text-sm text-neutral-content">New members</div>
-            </CardBody>
-          </Card>
+        {/* Navigation Tabs */}
+        <div className="tabs tabs-boxed justify-center mb-8">
+          <button
+            className={`tab ${activeTab === 'overview' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            📊 Overview
+          </button>
+          <button
+            className={`tab ${activeTab === 'users' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('users')}
+          >
+            👥 Users
+          </button>
+          <button
+            className={`tab ${activeTab === 'payments' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('payments')}
+          >
+            💳 Payments
+          </button>
+          <button
+            className={`tab ${activeTab === 'analytics' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            📈 Analytics
+          </button>
         </div>
 
-        {/* Revenue Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card variant="mystical">
-            <CardBody>
-              <h3 className="heading-4 mb-2">Today&apos;s Revenue</h3>
-              <div className="text-3xl font-bold text-success">
-                ฿{revenueStats?.today?.toLocaleString() || '0'}
-              </div>
-              <div className="text-sm text-neutral-content">Thai Baht</div>
-            </CardBody>
-          </Card>
-
-          <Card variant="mystical">
-            <CardBody>
-              <h3 className="heading-4 mb-2">This Month</h3>
-              <div className="text-3xl font-bold text-primary">
-                ฿{revenueStats?.thisMonth?.toLocaleString() || '0'}
-              </div>
-              <div className="text-sm text-neutral-content">Thai Baht</div>
-            </CardBody>
-          </Card>
-
-          <Card variant="mystical">
-            <CardBody>
-              <h3 className="heading-4 mb-2">This Year</h3>
-              <div className="text-3xl font-bold text-secondary">
-                ฿{revenueStats?.thisYear?.toLocaleString() || '0'}
-              </div>
-              <div className="text-sm text-neutral-content">Thai Baht</div>
-            </CardBody>
-          </Card>
-        </div>
-
-        {/* Popular Packages */}
-        <Card variant="mystical" className="mb-8">
-          <CardBody>
-            <h3 className="heading-3 mb-2">Most Popular Packages</h3>
-            <p className="text-neutral-content mb-4">Ranked by purchase volume</p>
-            {popularPackages.length > 0 ? (
-              <div className="space-y-4">
-                {popularPackages.map((pkg, index) => (
-                  <div key={pkg.id} className="flex items-center justify-between p-4 bg-base-200 rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="badge badge-primary">#{index + 1}</div>
-                      <div>
-                        <h4 className="font-semibold">{pkg.title}</h4>
-                        <p className="text-sm text-neutral-content">
-                          {pkg.purchaseCount} purchases
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-success">
-                        ฿{pkg.revenue.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-neutral-content">Revenue</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-neutral-content">
-                No package data available
-              </div>
-            )}
-          </CardBody>
-        </Card>
-
-        {/* Enhanced Payment Management */}
-        <PaymentHistorySection className="mb-8" />
-
-        {/* Quick Actions */}
-        <Card variant="mystical">
-          <CardBody>
-            <h3 className="heading-3 mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button className="btn btn-primary">
-                <span className="mr-2">👥</span>
-                Manage Users
-              </button>
-              <button className="btn btn-secondary">
-                <span className="mr-2">💳</span>
-                Payment History
-              </button>
-              <button className="btn btn-accent">
-                <span className="mr-2">📊</span>
-                Analytics
-              </button>
-            </div>
-          </CardBody>
-        </Card>
+        {/* Tab Content */}
+        {renderTabContent()}
       </div>
     </div>
   );
