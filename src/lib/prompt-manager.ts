@@ -202,45 +202,100 @@ export class PromptManager {
     content: string, 
     description?: string
   ): Promise<number> {
-    const template = await this.prisma.promptTemplate.findUnique({
-      where: { name },
-      include: {
-        versions: {
-          orderBy: { version: 'desc' },
-          take: 1
-        }
-      }
-    });
+    const maxRetries = 3;
+    let lastError: Error;
 
-    if (!template) {
-      throw new Error(`Prompt template '${name}' not found`);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Use transaction to ensure atomicity and prevent race conditions
+        return await this.prisma.$transaction(async (tx) => {
+          const template = await tx.promptTemplate.findUnique({
+            where: { name },
+            include: {
+              versions: {
+                orderBy: { version: 'desc' },
+                take: 1
+              }
+            }
+          });
+
+          if (!template) {
+            throw new Error(`Prompt template '${name}' not found`);
+          }
+
+          // Use database-level MAX() query for accurate version calculation
+          const maxVersionResult = await tx.promptVersion.aggregate({
+            where: { templateId: template.id },
+            _max: { version: true }
+          });
+
+          const nextVersion = (maxVersionResult._max.version || 0) + 1;
+
+          // Double-check for duplicate version to prevent unique constraint violation
+          const existingVersion = await tx.promptVersion.findFirst({
+            where: {
+              templateId: template.id,
+              version: nextVersion
+            }
+          });
+
+          if (existingVersion) {
+            throw new Error(`Version ${nextVersion} already exists for prompt '${name}'. This indicates a race condition.`);
+          }
+
+          const encryptedContent = await PromptEncryption.encrypt(content);
+
+          // Create new version with duplicate protection
+          await tx.promptVersion.create({
+            data: {
+              templateId: template.id,
+              version: nextVersion,
+              encryptedContent,
+              isActive: false,
+              description
+            }
+          });
+
+          // Update main template
+          await tx.promptTemplate.update({
+            where: { id: template.id },
+            data: {
+              encryptedContent,
+              version: nextVersion,
+              updatedAt: new Date()
+            }
+          });
+
+          return nextVersion;
+        }, {
+          // Transaction options for better error handling
+          maxWait: 5000, // 5 seconds
+          timeout: 10000, // 10 seconds
+        });
+      } catch (error) {
+        lastError = error as Error;
+        
+        // Check if it's a retryable error (unique constraint, deadlock, etc.)
+        const isRetryable = error instanceof Error && (
+          error.message.includes('Unique constraint') ||
+          error.message.includes('deadlock') ||
+          error.message.includes('race condition') ||
+          error.message.includes('timeout')
+        );
+
+        if (!isRetryable || attempt === maxRetries) {
+          throw error;
+        }
+
+        // Exponential backoff: wait 100ms, 200ms, 400ms
+        const delay = 100 * Math.pow(2, attempt - 1);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        console.warn(`Attempt ${attempt} failed for updatePrompt('${name}'): ${error.message}. Retrying in ${delay}ms...`);
+      }
     }
 
-    const nextVersion = template.versions.length > 0 ? template.versions[0].version + 1 : 1;
-    const encryptedContent = await PromptEncryption.encrypt(content);
-
-    // Create new version
-    await this.prisma.promptVersion.create({
-      data: {
-        templateId: template.id,
-        version: nextVersion,
-        encryptedContent,
-        isActive: false,
-        description
-      }
-    });
-
-    // Update main template
-    await this.prisma.promptTemplate.update({
-      where: { id: template.id },
-      data: {
-        encryptedContent,
-        version: nextVersion,
-        updatedAt: new Date()
-      }
-    });
-
-    return nextVersion;
+    throw lastError!;
   }
 
   /**

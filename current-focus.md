@@ -1,56 +1,103 @@
-# Current Focus: Admin Dashboard Authentication Error
+# Current Focus: Fix Unique Constraint Error in Prompt Version Creation
 
-**Session Date**: 2025-09-13
-**Focus**: Admin dashboard returning 403 Forbidden errors on all API endpoints
+**Date**: 2025-09-13 20:49:36  
+**Session Type**: Bug Investigation & Planning  
+**GitHub Task Issue**: #140  
+**Priority**: High  
+**Status**: Plan Created - Ready for Implementation
 
-## Issue Description
+## Problem Summary
 
-Manual testing of the admin dashboard revealed systematic authentication failures across all admin API endpoints:
+Encountered a unique constraint failure when running `npm run prompt:update readingAgent`. The error occurs during `promptVersion.create()` operation with message "Unique constraint failed on the fields: (`id`)". Despite thorough database analysis showing no version conflicts, the issue persists.
 
-### Affected Endpoints (All returning 403 Forbidden):
-- `/api/admin/revenue-stats`
-- `/api/admin/user-stats`
-- `/api/admin/popular-packages`
+## Root Cause Analysis Completed
 
-### Error Pattern:
-```
-Error fetching [endpoint]: Response {
-  status: 403,
-  statusText: '',
-  headers: Headers { 'Content-Type': 'application/json' },
-  body: ReadableStream { locked: false, state: 'readable', supportsBYOB: true },
-  bodyUsed: false,
-  ok: false,
-  redirected: false,
-  type: 'default',
-  url: ''
-}
-```
+### Database State Verified
 
-### Frontend Impact:
-- Admin dashboard displays "Failed to load admin dashboard data"
-- All admin data sections fail to populate
-- Console shows repeated 403 errors for all admin endpoints
+- **readingAgent Template**: ID=3, Current Version=5
+- **Next Version**: Should be 6 (confirmed doesn't exist)
+- **No Duplicate Versions**: Analysis shows clean version history
+- **Schema Constraints**: Unique constraint on `(templateId, version)` combination
 
-### Context:
-- User profile and credits endpoints working normally (200 status)
-- Only admin-specific endpoints are affected
-- Suggests authentication/authorization issue specifically for admin role verification
+### Identified Issues
 
-## Investigation Priorities:
-1. Check admin role authentication middleware
-2. Verify user role permissions in database
-3. Review admin API route authorization logic
-4. Test admin role assignment and verification flow
+1. **No Transaction Wrapping**: Operations not atomic
+2. **Race Condition Vulnerability**: Multiple concurrent updates possible
+3. **Missing Version Conflict Protection**: No duplicate checking
+4. **Autoincrement ID Conflict**: Potential sequence corruption
 
-## Previous Context
-### Completed Implementation
-The admin dashboard was implemented with:
-- **Route Structure**: `/meamor` as main admin dashboard route
-- **Component Organization**: Separate `meamor` folder in `components` directory
-- **Access Control**: Admin access through `/profile` page with database-level admin role configuration
-- **Database Schema**: User admin role field implementation
-- **Security**: Admin role verification middleware
-- **UI/UX**: Professional dashboard interface with data visualization
+## Investigation Tools Created
 
-## Status: Ready for Investigation
+- `debug-prompt.js`: Database state checker
+- `debug-version-conflict.js`: Version conflict analyzer
+
+## Plan Status
+
+✅ **Analysis Phase Complete**
+
+- Database schema reviewed
+- Current data state verified
+- Code flow analyzed
+- Root causes identified
+
+✅ **Planning Phase Complete**
+
+- Comprehensive 4-phase implementation plan created
+- GitHub Task Issue #140 created with detailed specifications
+- Timeline estimated: 6-10 hours total
+
+🔄 **Next Phase**: Implementation
+
+- Ready for `=impl` command
+- All requirements documented in Issue #140
+
+## Technical Details
+
+### Files Involved
+
+- **Primary**: `src/lib/prompt-manager.ts` (updatePrompt method)
+- **Schema**: `prisma/schema.prisma` (PromptVersion model)
+- **CLI**: `scripts/prompt-manager.ts` (update command)
+
+### Solution Approach
+
+1. **Transaction Wrapper**: Ensure atomic operations
+2. **Version Protection**: Add duplicate checking
+3. **Improved Calculation**: Use database-level MAX() queries
+4. **Error Recovery**: Add retry mechanisms
+
+## Implementation Phases
+
+### Phase 1: Immediate Fix (High Priority)
+
+- Add Prisma transaction wrapper
+- Implement duplicate version protection
+- Improve version calculation logic
+
+### Phase 2: Enhanced Error Handling (Medium Priority)
+
+- Add comprehensive error recovery
+- Implement database health checks
+
+### Phase 3: Testing & Validation (Medium Priority)
+
+- Create unit tests for concurrent scenarios
+- Add integration tests for CLI workflow
+
+### Phase 4: Monitoring & Prevention (Low Priority)
+
+- Add operation monitoring
+- Implement database migration safety
+
+## Success Criteria
+
+- ✅ Prompt updates complete without unique constraint errors
+- ✅ Concurrent updates handled gracefully
+- ✅ Version sequencing remains consistent
+- ✅ Error recovery mechanisms work properly
+- ✅ All existing functionality preserved
+
+---
+
+**GitHub Issue**: https://github.com/mojisejr/mimivibe-ai/issues/140  
+**Ready for Implementation**: Use `=impl` to execute the plan
