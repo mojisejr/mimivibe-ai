@@ -4,6 +4,11 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Convert satang to THB (Stripe stores amounts in smallest currency unit)
+const convertToTHB = (amount: number): number => {
+  return Math.round(amount / 100);
+};
+
 export async function GET(request: NextRequest) {
   try {
     // Validate admin access
@@ -159,7 +164,7 @@ export async function GET(request: NextRequest) {
       return {
         userId: payment.userId,
         user: userDetail,
-        totalAmount: payment._sum.amount,
+        totalAmount: convertToTHB(payment._sum.amount || 0),
         paymentCount: payment._count.id
       };
     });
@@ -169,8 +174,8 @@ export async function GET(request: NextRequest) {
         totalPayments,
         successfulPayments,
         failedPayments,
-        totalRevenue: totalRevenue._sum.amount || 0,
-        averagePaymentAmount: Math.round(averagePaymentAmount._avg.amount || 0),
+        totalRevenue: convertToTHB(totalRevenue._sum.amount || 0),
+        averagePaymentAmount: convertToTHB(averagePaymentAmount._avg.amount || 0),
         overallSuccessRate: Math.round(overallSuccessRate * 100) / 100
       },
       timeBasedMetrics: {
@@ -194,7 +199,7 @@ export async function GET(request: NextRequest) {
       paymentMethodStats: paymentMethodStats.map(stat => ({
         status: stat.status,
         count: stat._count.id,
-        totalAmount: stat._sum.amount || 0
+        totalAmount: convertToTHB(stat._sum.amount || 0)
       }))
     };
 

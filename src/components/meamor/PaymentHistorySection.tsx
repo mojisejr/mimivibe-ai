@@ -143,7 +143,11 @@ export function PaymentHistorySection({ className = '' }: PaymentHistorySectionP
   };
 
   const formatCurrency = (amount: number) => {
-    return `฿${amount.toLocaleString()}`;
+    // Ensure consistent Thai Baht formatting with no decimals for whole numbers
+    return `฿${amount.toLocaleString('th-TH', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    })}`;
   };
 
   const formatDate = (dateString: string) => {

@@ -4,6 +4,11 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Convert satang to THB (Stripe stores amounts in smallest currency unit)
+const convertToTHB = (amount: number): number => {
+  return Math.round(amount / 100);
+};
+
 export async function GET(request: NextRequest) {
   try {
     // Validate admin access
@@ -93,7 +98,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        payments,
+        payments: payments.map(payment => ({
+          ...payment,
+          amount: convertToTHB(payment.amount) // Convert to THB
+        })),
         pagination: {
           page,
           limit,

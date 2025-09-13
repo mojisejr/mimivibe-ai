@@ -1,11 +1,11 @@
 # Current Focus
 
-**Last Updated**: 2025-09-13 21:47:55
+**Updated**: 2025-09-13 22:09:51
 
 ## Context
 
-clear all unnecessary console.log all over the project
+ในส่วนของ admin dashboard มีปัญหาเรื่องการแสดงผล จำนวนเงินผิด เช่น 99 เป็น 9900 บาท ต้องไปดู stripe ว่าทำยังไง แล้วเอามาปรับใช้
 
----
+## Status
 
-*This file is automatically managed by the Context Management Agent*
+Active - Context saved to GitHub Issue
