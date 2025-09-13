@@ -79,8 +79,8 @@ export class PromptManager {
       const existing = await this.prisma.promptTemplate.findUnique({
         where: { name }
       });
-
-      if (!existing) {
+  
+        if (!existing) {
         spinner.text = `Encrypting ${name}...`;
         const encryptedContent = await PromptEncryption.encrypt(content);
         
@@ -110,6 +110,14 @@ export class PromptManager {
         skipped++;
       }
     }
+    
+    console.log(chalk.blue(boxen(
+      `🔐 Prompt Initialization Complete\n\n` +
+      `✅ Initialized: ${initialized} prompts\n` +
+      `⏭️  Skipped: ${skipped} prompts\n` +
+      `📊 Total: ${initialized + skipped} prompts processed`,
+      { padding: 1, borderColor: 'blue', borderStyle: 'round' }
+    )));
     
     // Prompt initialization completed - all prompts encrypted in database
   }
@@ -254,6 +262,7 @@ export class PromptManager {
             }
           });
 
+          console.log(chalk.green(`✅ Updated prompt '${name}' to version ${nextVersion}`));
           return nextVersion;
         }, {
           // Transaction options for better error handling
@@ -279,7 +288,7 @@ export class PromptManager {
         const delay = 100 * Math.pow(2, attempt - 1);
         await new Promise(resolve => setTimeout(resolve, delay));
         
-        console.warn(`Attempt ${attempt} failed for updatePrompt('${name}'): ${error.message}. Retrying in ${delay}ms...`);
+        console.warn(chalk.yellow(`⚠️  Attempt ${attempt} failed for updatePrompt('${name}'): ${error.message}. Retrying in ${delay}ms...`));
       }
     }
 
@@ -326,7 +335,8 @@ export class PromptManager {
         updatedAt: new Date()
       }
     });
-
+    
+    console.log(chalk.green(`✅ Activated version ${version} for prompt '${name}'`));
   }
 
   /**
@@ -337,6 +347,8 @@ export class PromptManager {
       where: { name },
       data: { isActive: false }
     });
+    
+    console.log(chalk.yellow(`⏸️  Deactivated prompt '${name}'`));
 
   }
 
@@ -389,6 +401,8 @@ export class PromptManager {
         aiProvider: result.aiProvider
       }
     });
+    
+    console.log(chalk.blue(`📊 Saved test result for template ${result.templateId} v${result.version} (${result.executionTimeMs}ms, ${result.tokenUsage} tokens)`));
   }
 
   /**
@@ -453,6 +467,8 @@ export class PromptManager {
     );
 
     const recommendations = this.generateRecommendations(versions);
+    
+    console.log(chalk.cyan(`📈 Performance analytics for '${name}': ${versions.length} versions analyzed, best performing: v${bestPerforming.version} (${(bestPerforming.successRate * 100).toFixed(1)}% success)`));
 
     return { versions, bestPerforming, recommendations };
   }
