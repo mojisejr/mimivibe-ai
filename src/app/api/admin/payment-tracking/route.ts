@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   try {
     // Validate admin access
-    validateAdminAccess();
+    await validateAdminAccess();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
