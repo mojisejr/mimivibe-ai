@@ -1,18 +1,9 @@
-import { auth } from '@clerk/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { validateAdminAccess } from '@/middleware/admin-auth'
 
 export const dynamic = 'force-dynamic'
-
-// Check admin authorization
-async function checkAdminAuth(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { role: true }
-  })
-  return user?.role === 'ADMIN'
-}
 
 const exchangeSettingSchema = z.object({
   exchangeType: z.string().min(1, 'Exchange type is required'),
@@ -24,34 +15,8 @@ const exchangeSettingSchema = z.object({
 
 export async function GET() {
   try {
-    const { userId } = auth()
-    
-    if (!userId) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Unauthorized',
-          message: 'Authentication required',
-          timestamp: new Date().toISOString(),
-          path: '/api/admin/exchange'
-        }, 
-        { status: 401 }
-      )
-    }
-
-    const isAdmin = await checkAdminAuth(userId)
-    if (!isAdmin) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Forbidden',
-          message: 'Admin access required',
-          timestamp: new Date().toISOString(),
-          path: '/api/admin/exchange'
-        },
-        { status: 403 }
-      )
-    }
+    // Validate admin access using Clerk metadata
+    validateAdminAccess();
 
     const settings = await prisma.exchangeSetting.findMany({
       orderBy: [
@@ -92,34 +57,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = auth()
-    
-    if (!userId) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Unauthorized',
-          message: 'Authentication required',
-          timestamp: new Date().toISOString(),
-          path: '/api/admin/exchange'
-        }, 
-        { status: 401 }
-      )
-    }
-
-    const isAdmin = await checkAdminAuth(userId)
-    if (!isAdmin) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Forbidden',
-          message: 'Admin access required',
-          timestamp: new Date().toISOString(),
-          path: '/api/admin/exchange'
-        },
-        { status: 403 }
-      )
-    }
+    // Validate admin access using Clerk metadata
+    validateAdminAccess();
 
     const body = await request.json()
     const validation = exchangeSettingSchema.safeParse(body)
@@ -182,34 +121,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { userId } = auth()
-    
-    if (!userId) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Unauthorized',
-          message: 'Authentication required',
-          timestamp: new Date().toISOString(),
-          path: '/api/admin/exchange'
-        }, 
-        { status: 401 }
-      )
-    }
-
-    const isAdmin = await checkAdminAuth(userId)
-    if (!isAdmin) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Forbidden',
-          message: 'Admin access required',
-          timestamp: new Date().toISOString(),
-          path: '/api/admin/exchange'
-        },
-        { status: 403 }
-      )
-    }
+    // Validate admin access using Clerk metadata
+    validateAdminAccess();
 
     const body = await request.json()
     const { id, ...updateData } = body
@@ -302,34 +215,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { userId } = auth()
-    
-    if (!userId) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Unauthorized',
-          message: 'Authentication required',
-          timestamp: new Date().toISOString(),
-          path: '/api/admin/exchange'
-        }, 
-        { status: 401 }
-      )
-    }
-
-    const isAdmin = await checkAdminAuth(userId)
-    if (!isAdmin) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Forbidden',
-          message: 'Admin access required',
-          timestamp: new Date().toISOString(),
-          path: '/api/admin/exchange'
-        },
-        { status: 403 }
-      )
-    }
+    // Validate admin access using Clerk metadata
+    validateAdminAccess();
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
