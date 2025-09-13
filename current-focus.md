@@ -1,56 +1,37 @@
-# Current Focus - 2025-09-12 12:43:49
+# Current Focus - MiMiVibes Admin Dashboard
 
-## ปัญหา Card Data Mismatch ระหว่าง cards และ selectedCards fields
+**Last Updated**: 2025-09-13 07:06:23 (Thailand Time)
+**Status**: Context Saved - Ready for Planning
 
-### สถานการณ์ปัจจุบัน
-- ผู้ใช้รายงานปัญหาการแสดงผล card images ใน AnimatedArticleDisplay component
-- พบว่า component ใช้ `readingData.cards` แต่ควรใช้ `readingData.selectedCards`
-- เพิ่งแก้ไขเปลี่ยนจาก `readingData.cards.map()` เป็น `readingData.selectedCards.map()` ใน desktop และ mobile card rendering
+## Objective
+สร้าง admin dashboard ที่จะสามารถ monitor ระบบ และ user ได้ โดยให้อยู่ใน route /meamor และแยก component folder ออกไปเป็น meamor ใน folder components อย่างเป็นระบบ และ ให้เข้าได้ผ่าน /profile เมื่อกำหนดให้ user เป็น admin (ด้วยการเข้าไปกำหนดใน database ก่อนในช่วงแรก)
 
-### ปัญหาที่พบ
-1. **Data Structure Inconsistency**: API response มี 2 fields สำหรับ card data:
-   - `cards`: simplified card objects จาก `reading.cards_reading` (imageUrl เป็น filename เช่น "the_magician.png")
-   - `selectedCards`: complete database records (imageUrl เป็น full URL จาก Supabase)
+## Admin Dashboard Requirements
 
-2. **Image URL Issues**: 
-   - `cards` field มี incomplete imageUrl ทำให้ต้องใช้ fallback logic ใน `getCardImageUrl()`
-   - `selectedCards` field มี complete Supabase URLs ที่ทำงานได้ทันที
+### Core Functionality
+1. **User Statistics**
+   - ดูจำนวนสมาชิกปัจจุบันได้
+   - ดูได้ว่าสมาชิกใหม่ ในวันนี้, 7 วันที่แล้ว, 30วันที่แล้ว ทั้งหมดกี่คน
 
-3. **Component Logic**: AnimatedArticleDisplay เดิมใช้ `cards` field ซึ่งไม่เหมาะสม
+2. **Payment Management**
+   - ดูประวัติการจ่ายเงินของ user แต่ละคนได้ มี filter ให้ค้นหาได้ง่าย
+   - ดูได้ว่า รายได้เดือนนี้เท่าไหร่แล้ว, ปีนี้ และ วันนี้เข้ามาเท่าไหร่
+   - package ที่คนเติมเยอะที่สุด ตามลำดับ
 
-### การแก้ไขที่ทำ
-- เปลี่ยน desktop cards rendering จาก `readingData.cards.map()` เป็น `readingData.selectedCards.map()`
-- เปลี่ยน mobile cards rendering จาก `readingData.cards.map()` เป็น `readingData.selectedCards.map()`
+### Technical Requirements
+- **Route Structure**: `/meamor` as main admin dashboard route
+- **Component Organization**: Separate `meamor` folder in `components` directory
+- **Access Control**: Admin access through `/profile` page with database-level admin role configuration
+- **Database Schema**: User admin role field implementation
 
-### สิ่งที่ต้องติดตาม
-- ตรวจสอบว่า TypeScript types เข้ากันหรือไม่
-- ทดสอบการแสดงผล card images บน UI
-- ตรวจสอบว่า card modal ทำงานปกติหรือไม่
+### Architecture Considerations
+- **Security**: Admin role verification middleware
+- **Performance**: Efficient data aggregation queries
+- **UI/UX**: Professional dashboard interface with data visualization
+- **Responsive**: Mobile-friendly admin interface
 
-### ข้อมูลเทคนิค
-- **File แก้ไข**: `/src/app/ask/components/AnimatedArticleDisplay.tsx`
-- **API Route**: `/src/app/api/readings/ask/route.ts` (lines 200, 204)
-- **Workflow**: `/src/lib/langgraph/workflow-with-db.ts`
-- **Types**: `/src/types/reading.ts`
-
-### Data Structure ที่ควรใช้
-```typescript
-// ✅ ถูกต้อง - selectedCards มี complete data
-readingData.selectedCards: {
-  id: number,
-  name: string,
-  displayName: string,
-  imageUrl: "https://...supabase.co/.../card.png", // Complete URL
-  position: number,
-  // ... other fields
-}
-
-// ❌ ไม่เหมาะสม - cards มี incomplete imageUrl  
-readingData.cards: {
-  id: number,
-  name: string, 
-  displayName: string,
-  imageUrl: "the_magician.png", // Just filename
-  // ... other fields
-}
-```
+## Next Steps
+1. Analyze current codebase structure
+2. Design database schema for admin roles
+3. Plan component architecture for admin dashboard
+4. Create comprehensive implementation plan

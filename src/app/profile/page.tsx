@@ -161,6 +161,36 @@ export default function ProfilePage() {
             {/* Prestige System - Removed during refactor */}
             {/* Achievement Progress - Removed during refactor */}
 
+            {/* Admin Access Section */}
+            {(() => {
+              // Check if user has admin role
+              const publicMetadata = user?.publicMetadata as { role?: 'admin' | 'user' };
+              const isAdmin = publicMetadata?.role === 'admin';
+              
+              if (isAdmin) {
+                return (
+                  <div className="card card-mystical">
+                    <div className="card-body">
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="heading-3">Admin Access</h2>
+                        <div className="badge badge-secondary">ADMIN</div>
+                      </div>
+                      <p className="body-normal text-neutral-content mb-4">
+                        You have administrative privileges to manage the system.
+                      </p>
+                      <div className="card-actions justify-end">
+                        <Link href="/meamor" className="btn btn-secondary">
+                          <span className="mr-2">⚙️</span>
+                          Open Admin Dashboard
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
             {/* Referral Section */}
             <ReferralSection />
 
