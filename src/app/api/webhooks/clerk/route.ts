@@ -57,7 +57,7 @@ interface UserRewardValues {
 // Dynamic reward configuration retrieval with comprehensive error handling
 async function getNewUserRewardConfiguration(): Promise<UserRewardValues> {
   try {
-    console.log('🔍 Fetching NEW_USER_REWARDS configuration...');
+    // Fetching NEW_USER_REWARDS configuration
     
     const rewardConfig = await prisma.rewardConfiguration.findFirst({
       where: { 
@@ -88,7 +88,7 @@ async function getNewUserRewardConfiguration(): Promise<UserRewardValues> {
     const stars = typeof rewards.stars === 'number' ? rewards.stars : 0;
     const freePoint = typeof rewards.freePoint === 'number' ? rewards.freePoint : 3;
 
-    console.log(`✅ Successfully loaded reward configuration: stars=${stars}, freePoint=${freePoint}`);
+    // Successfully loaded reward configuration
     
     return {
       stars,
@@ -97,7 +97,7 @@ async function getNewUserRewardConfiguration(): Promise<UserRewardValues> {
 
   } catch (error) {
     console.error('❌ Failed to fetch NEW_USER_REWARDS configuration:', error);
-    console.log('🔄 Using fallback reward values: stars=0, freePoint=3');
+    // Using fallback reward values
     
     // Return safe fallback values
     return {

@@ -58,14 +58,7 @@ export class PromptManager {
    * Initialize prompts from existing prompts.ts file
    */
   public async initializePrompts(): Promise<void> {
-    console.log(chalk.cyan(figlet.textSync('Prompt Init', { horizontalLayout: 'fitted' })));
-    console.log(chalk.cyan('🚀 Initializing prompts from code...\n'));
-    
-    // Note: Hardcoded prompts have been archived for security
-    // This init function is now primarily for reference - prompts are already encrypted in database
-    console.log(chalk.yellow('⚠️  Hardcoded prompts have been archived for security.'));
-    console.log(chalk.yellow('⚠️  Encrypted prompts are already active in production.'));
-    console.log(chalk.green('✅ Current system uses encrypted database prompts.'));
+    // Prompt initialization - using encrypted database prompts for security
     
     const promptEntries: Array<{ name: string; content: string }> = [
       // Prompts are now loaded from encrypted database storage
@@ -77,7 +70,7 @@ export class PromptManager {
 
     for (const { name, content } of promptEntries) {
       if (!content) {
-        console.log(chalk.yellow(`⚠️  Skipping ${name} (no content)`));
+        // Skipping prompt with no content
         continue;
       }
 
@@ -118,12 +111,7 @@ export class PromptManager {
       }
     }
     
-    console.log('\n' + boxen(
-      chalk.green(`🎉 Initialization Complete!\n`) +
-      chalk.white(`✅ Initialized: ${initialized}\n`) +
-      chalk.gray(`⏭️  Skipped: ${skipped}`),
-      { padding: 1, borderColor: 'green', borderStyle: 'round' }
-    ));
+    // Prompt initialization completed - all prompts encrypted in database
   }
 
   /**

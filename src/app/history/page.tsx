@@ -95,12 +95,7 @@ export default function HistoryPage() {
   // Search hook now automatically updates when historyData?.readings changes
   // No manual refresh needed
 
-  // Debug authentication state
-  console.log("🔐 Authentication state (History):", {
-    isLoaded,
-    userId: user?.id,
-    isSignedIn: !!user,
-  });
+  // Authentication state check for history page
 
   // Don't render until auth is loaded
   if (!isLoaded) {

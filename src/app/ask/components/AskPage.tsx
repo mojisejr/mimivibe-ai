@@ -93,7 +93,7 @@ export function AskPage() {
       } : null);
 
       // Show success feedback (could be a toast notification)
-      console.log("Reading saved successfully");
+      // Reading saved successfully
     } catch (err) {
       console.error("Save error:", err);
       // Show error feedback

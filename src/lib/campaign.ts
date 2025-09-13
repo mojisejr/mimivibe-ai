@@ -106,7 +106,7 @@ export async function markCampaignUsed(userId: string, campaignId: string, payme
   try {
     // This is tracked through PaymentHistory - first payment automatically
     // disqualifies user from future campaign eligibility
-    console.log(`Campaign ${campaignId} used by user ${userId} for payment ${paymentId}`);
+    // Campaign usage recorded for payment tracking
     return true;
   } catch (error) {
     console.error('Error marking campaign as used:', error);
