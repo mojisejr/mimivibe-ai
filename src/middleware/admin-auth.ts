@@ -49,23 +49,53 @@ export async function withAdminAuth(request: NextRequest, handler: (request: Nex
  */
 export function validateAdminAccess(): { userId: string; isAdmin: boolean } {
   const { userId, sessionClaims } = auth();
-  
+
+  // Debug logging for development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔐 Admin Auth Debug:', {
+      userId: userId || 'null',
+      hasSessionClaims: !!sessionClaims,
+      publicMetadata: sessionClaims?.publicMetadata || 'null',
+      role: (sessionClaims?.publicMetadata as any)?.role || 'null',
+      timestamp: new Date().toISOString()
+    });
+  }
+
   if (!userId) {
+    console.log('❌ Admin auth failed: No userId');
     throw new Response(
-      JSON.stringify({ success: false, error: 'Authentication required' }),
+      JSON.stringify({
+        success: false,
+        error: 'Authentication required',
+        debug: { userId: null, sessionClaims: null }
+      }),
       { status: 401, headers: { 'Content-Type': 'application/json' } }
     );
   }
 
   const publicMetadata = sessionClaims?.publicMetadata as { role?: 'admin' | 'user' };
   const isAdmin = publicMetadata?.role === 'admin';
-  
+
   if (!isAdmin) {
+    console.log('❌ Admin auth failed: User not admin', {
+      userId,
+      role: publicMetadata?.role || 'no-role',
+      publicMetadata
+    });
     throw new Response(
-      JSON.stringify({ success: false, error: 'Admin access required' }),
+      JSON.stringify({
+        success: false,
+        error: 'Admin access required',
+        debug: {
+          userId,
+          role: publicMetadata?.role || 'no-role',
+          hasSessionClaims: !!sessionClaims
+        }
+      }),
       { status: 403, headers: { 'Content-Type': 'application/json' } }
     );
   }
 
+  console.log('✅ Admin auth successful:', { userId, role: publicMetadata.role });
   return { userId, isAdmin };
 }
