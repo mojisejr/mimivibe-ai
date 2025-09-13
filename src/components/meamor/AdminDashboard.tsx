@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { Card, CardBody } from '@/components/ui/Card';
+import { PaymentHistorySection } from './PaymentHistorySection';
 
 interface UserStats {
   totalMembers: number;
@@ -225,6 +226,9 @@ export function AdminDashboard({ className = '' }: AdminDashboardProps) {
             )}
           </CardBody>
         </Card>
+
+        {/* Enhanced Payment Management */}
+        <PaymentHistorySection className="mb-8" />
 
         {/* Quick Actions */}
         <Card variant="mystical">
