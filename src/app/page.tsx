@@ -208,14 +208,32 @@ export default function HomePage() {
     }
   }, [searchParams, referralCode, handleReferralCode]);
 
-  // Process referral after login
+  // Process referral after login with Clerk authentication delay handling
   useEffect(() => {
     if (isSignedIn && userId && !hasProcessedReferral) {
       const storedReferralCode = localStorage.getItem("pendingReferral");
       if (storedReferralCode) {
-        processReferral(storedReferralCode, userId);
+        console.log(`🎯 Referral processing triggered for user ${userId} with code: ${storedReferralCode}`);
+        console.log(`⏰ Clerk auth state - isSignedIn: ${isSignedIn}, hasUserId: ${!!userId}`);
+
+        // Add small delay to ensure Clerk authentication context is fully propagated
+        // This helps prevent the credits API from returning 404 due to auth timing issues
+        setTimeout(() => {
+          console.log(`🚀 Starting referral processing after auth stabilization delay`);
+          processReferral(storedReferralCode, userId);
+        }, 1500); // 1.5 second delay for Clerk auth context to stabilize
+
         setHasProcessedReferral(true);
+      } else {
+        console.log(`ℹ️ No pending referral found for user ${userId}`);
       }
+    } else {
+      console.log(`⏳ Referral processing conditions not met:`, {
+        isSignedIn,
+        hasUserId: !!userId,
+        hasProcessedReferral,
+        timestamp: new Date().toISOString()
+      });
     }
   }, [isSignedIn, userId, hasProcessedReferral, processReferral]);
 
