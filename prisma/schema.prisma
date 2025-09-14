@@ -294,6 +294,45 @@ model daily_login_campaigns {
   @@unique([userId, year, month])
 }
 
+model PromptAccessLog {
+  id              Int      @id @default(autoincrement())
+  promptName      String
+  accessType      String
+  userId          String?
+  ipAddress       String?
+  userAgent       String?
+  success         Boolean
+  errorMessage    String?
+  executionTimeMs Int?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  @@index([promptName])
+  @@index([userId])
+  @@index([ipAddress])
+  @@index([createdAt])
+  @@index([success])
+  @@map("prompt_access_logs")
+}
+
+model SecurityAlert {
+  id          Int      @id @default(autoincrement())
+  alertType   String
+  severity    String
+  description String
+  userId      String?
+  ipAddress   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([alertType])
+  @@index([severity])
+  @@index([userId])
+  @@index([ipAddress])
+  @@index([createdAt])
+  @@map("security_alerts")
+}
+
 enum TransactionStatus {
   PENDING
   SUCCESS
@@ -312,44 +351,4 @@ enum TransactionType {
 enum UserRole {
   USER
   ADMIN
-}
-
-// Security Monitoring Models
-model PromptAccessLog {
-  id               Int      @id @default(autoincrement())
-  promptName       String
-  accessType       String   // 'READ', 'DECRYPT', 'UPDATE', 'DELETE'
-  userId           String?
-  ipAddress        String?
-  userAgent        String?
-  success          Boolean
-  errorMessage     String?
-  executionTimeMs  Int?
-  metadata         Json?
-  createdAt        DateTime @default(now())
-
-  @@map("prompt_access_logs")
-  @@index([promptName])
-  @@index([userId])
-  @@index([ipAddress])
-  @@index([createdAt])
-  @@index([success])
-}
-
-model SecurityAlert {
-  id          Int      @id @default(autoincrement())
-  alertType   String   // 'UNAUTHORIZED_ACCESS', 'MULTIPLE_FAILED_ATTEMPTS', 'SUSPICIOUS_PATTERN', 'ENCRYPTION_FAILURE'
-  severity    String   // 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'
-  description String
-  userId      String?
-  ipAddress   String?
-  metadata    Json?
-  createdAt   DateTime @default(now())
-
-  @@map("security_alerts")
-  @@index([alertType])
-  @@index([severity])
-  @@index([userId])
-  @@index([ipAddress])
-  @@index([createdAt])
 }
