@@ -118,6 +118,6 @@ export function toLegacyRewardFormat(rewards: RewardData) {
   return {
     exp: rewards.exp || 0,
     coins: rewards.coins || 0,
-    stars: rewards.stars || rewards.freePoint || 0, // Map freePoint to stars for compatibility
+    stars: rewards.stars || 0, // Only use actual stars, not freePoint
   };
 }

@@ -15,8 +15,9 @@ export default function HomePage() {
   const { isSignedIn, userId } = useAuth();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
-  const [referralCode, setReferralCode] = useState<string | null>(null);
-  const [hasProcessedReferral, setHasProcessedReferral] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+  const [hasProcessedReferral, setHasProcessedReferral] = useState(false)
+  const [isProcessingReferral, setIsProcessingReferral] = useState(false);
 
   const handleReferralCode = useCallback(
     async (code: string) => {
@@ -347,6 +348,7 @@ export default function HomePage() {
   const { addToast } = useToast();
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [hasProcessedReferral, setHasProcessedReferral] = useState(false);
+  const [isProcessingReferral, setIsProcessingReferral] = useState(false);
 
   // Keep referral functionality
   const handleReferralCode = useCallback(
@@ -396,60 +398,165 @@ export default function HomePage() {
 
   const processReferral = useCallback(
     async (code: string, newUserId: string) => {
-      try {
-        const response = await fetch("/api/referrals/process", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ referralCode: code, newUserId }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            addToast({
-              type: "success",
-              title: "🎁 Welcome!",
-              message: "You received referral bonus rewards!",
-            });
-            if (typeof window !== "undefined") {
-              localStorage.removeItem("pendingReferral");
-            }
-          } else {
-            console.error("Referral processing failed:", data.error);
-            if (typeof window !== "undefined") {
-              localStorage.removeItem("pendingReferral");
-            }
-          }
-        } else {
-          console.error("Referral processing failed");
-          localStorage.removeItem("pendingReferral");
-        }
-      } catch (error) {
-        console.error("Referral processing error:", error);
-        localStorage.removeItem("pendingReferral");
+      // Prevent multiple simultaneous processing
+      if (isProcessingReferral) {
+        console.log('🔄 Referral processing already in progress, skipping...');
+        return;
       }
+
+      // Check if this referral was already processed recently
+      const processedKey = `processed_referral_${code}_${newUserId}`;
+      const lastProcessed = localStorage.getItem(processedKey);
+      if (lastProcessed) {
+        const timeSinceProcessed = Date.now() - parseInt(lastProcessed);
+        if (timeSinceProcessed < 60000) { // 1 minute cooldown
+          console.log('🔄 Referral was processed recently, skipping...');
+          return;
+        }
+      }
+
+      setIsProcessingReferral(true);
+      let retryCount = 0;
+      const maxRetries = 3;
+      const retryDelay = 1000; // 1 second
+
+      const attemptProcess = async (): Promise<void> => {
+        try {
+          console.log(`🔄 Processing referral attempt ${retryCount + 1}/${maxRetries}`, {
+            code,
+            userId: newUserId,
+            timestamp: new Date().toISOString()
+          });
+
+          const response = await fetch('/api/referrals/process', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              referralCode: code,
+              newUserId: newUserId
+            })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            console.log('✅ Referral processed successfully:', data);
+            
+            addToast({
+              type: 'success',
+              title: '🎁 Welcome!',
+              message: 'You received referral bonus rewards!',
+            });
+
+            // Mark as processed and clear stored referral code
+            localStorage.setItem(processedKey, Date.now().toString());
+            localStorage.removeItem('pendingReferral');
+            setReferralCode(null);
+            setHasProcessedReferral(true);
+            return;
+          }
+
+          // Handle specific error cases
+          if (response.status === 409) {
+            console.log('ℹ️ Referral already processed or user already referred');
+            addToast({
+              type: 'info',
+              title: 'Already processed',
+              message: 'This referral code has already been used.',
+            });
+            localStorage.setItem(processedKey, Date.now().toString());
+            localStorage.removeItem('pendingReferral');
+            setReferralCode(null);
+            setHasProcessedReferral(true);
+            return;
+          }
+
+          if (response.status === 404) {
+            console.log('❌ Invalid referral code');
+            addToast({
+              type: 'error',
+              title: 'Invalid referral code',
+              message: 'The referral code is not valid.',
+            });
+            localStorage.removeItem('pendingReferral');
+            setReferralCode(null);
+            return;
+          }
+
+          // For other errors, attempt retry
+          throw new Error(`API Error: ${response.status} - ${data.error || 'Unknown error'}`);
+
+        } catch (error) {
+          console.error(`❌ Referral processing attempt ${retryCount + 1} failed:`, error);
+          
+          retryCount++;
+          
+          if (retryCount < maxRetries) {
+            console.log(`🔄 Retrying in ${retryDelay}ms... (${retryCount}/${maxRetries})`);
+            
+            addToast({
+              type: 'info',
+              title: 'Retrying...',
+              message: `Attempting to process referral (${retryCount}/${maxRetries})`,
+            });
+            
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return attemptProcess();
+          } else {
+            console.error('🚨 Max retries reached, giving up');
+            
+            // Check if it's a network error
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+              addToast({
+                type: 'error',
+                title: 'Connection Error',
+                message: 'Unable to connect. Please check your internet connection.',
+              });
+            } else {
+              addToast({
+                type: 'error',
+                title: 'Processing Error',
+                message: 'Failed to process referral code. Please try again later.',
+              });
+            }
+            
+            // Don't clear referral code on final failure, allow manual retry
+          }
+        } finally {
+          setIsProcessingReferral(false);
+        }
+      };
+
+      await attemptProcess();
     },
-    [addToast]
+    [addToast, isProcessingReferral]
   );
 
-  // Handle referral code from URL
+  // Handle referral code from URL and process after login
   useEffect(() => {
     const refCode = searchParams.get("ref");
+    
+    // Handle referral code from URL
     if (refCode && !referralCode) {
       handleReferralCode(refCode);
     }
-  }, [searchParams, referralCode, handleReferralCode]);
-
-  // Process referral after login
-  useEffect(() => {
+    
+    // Process referral after login with delay to prevent double calls
     if (isSignedIn && userId && !hasProcessedReferral) {
       const storedReferralCode = localStorage.getItem("pendingReferral");
       if (storedReferralCode) {
-        processReferral(storedReferralCode, userId);
-        setHasProcessedReferral(true);
+        // Add delay to ensure Clerk context is stable and prevent race conditions
+        const timer = setTimeout(() => {
+          processReferral(storedReferralCode, userId);
+          setHasProcessedReferral(true);
+        }, 1500);
+        
+        return () => clearTimeout(timer);
       }
     }
-  }, [isSignedIn, userId, hasProcessedReferral, processReferral]);
+  }, [searchParams, referralCode, handleReferralCode, isSignedIn, userId, hasProcessedReferral, processReferral]);
 
   // Animation variants
   const fadeInUp = {
