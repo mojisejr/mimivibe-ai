@@ -70,6 +70,14 @@ export async function ensureUserExists(userId: string): Promise<JITUserResult> {
     const newUserRewards = await getNewUserRewards();
     console.log(`🎁 JIT: Using reward configuration:`, newUserRewards);
 
+    // Fix field name mapping: convert 'coin' to 'coins' for Prisma compatibility
+    const normalizedRewards = {
+      stars: newUserRewards.stars || 0,
+      freePoint: newUserRewards.freePoint || 0,
+      coins: (newUserRewards as any).coin || newUserRewards.coins || 0 // Handle both coin/coins
+    };
+    console.log(`🔧 JIT: Normalized rewards:`, normalizedRewards);
+
     // Extract user information from Clerk
     const primaryEmail = clerkUser.emailAddresses?.find(
       (email) => email.verification?.status === "verified"
@@ -99,7 +107,7 @@ export async function ensureUserExists(userId: string): Promise<JITUserResult> {
           name: fullName,
           imageUrl: clerkUser.imageUrl || null,
           ...BASE_USER_VALUES,
-          ...newUserRewards,
+          ...normalizedRewards,
           createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt) : new Date(),
           updatedAt: new Date(),
         },
@@ -119,7 +127,7 @@ export async function ensureUserExists(userId: string): Promise<JITUserResult> {
           eventType: "welcome_bonus",
           deltaExp: 0,
           deltaCoins: 0,
-          deltaPoint: newUserRewards.freePoint || 3,
+          deltaPoint: normalizedRewards.freePoint || 3,
           metadata: {
             reason: "JIT Welcome to MiMiVibes!",
             source: "jit_provisioning",
