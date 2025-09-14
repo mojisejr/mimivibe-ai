@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { seedWithSafetyChecks } from '../src/lib/database-seed'
 
 const defaultPackages = [
   {
@@ -76,7 +75,7 @@ const defaultPackages = [
   }
 ]
 
-async function main() {
+async function main(prisma: PrismaClient) {
   console.log('🌱 Start seeding packages...')
   
   // อัพเดต packages ด้วย upsert
@@ -98,11 +97,11 @@ async function main() {
   console.log('\n✅ Seeding finished successfully!')
 }
 
-main()
+// Run with safety checks
+seedWithSafetyChecks(async (prisma) => {
+  await main(prisma);
+}, 'Package Seed Script')
   .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+    console.error(e);
+    process.exit(1);
+  });
