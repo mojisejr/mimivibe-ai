@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAdminAccess } from '@/middleware/admin-auth';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 // Convert satang to THB (Stripe stores amounts in smallest currency unit)
 const convertToTHB = (amount: number): number => {

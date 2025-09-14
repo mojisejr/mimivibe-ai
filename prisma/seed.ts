@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { seedWithSafetyChecks } from '../src/lib/database-seed';
 
 // User IDs to seed
 const USER_IDS = [
@@ -55,7 +54,7 @@ function getRandomDate(start: Date, end: Date): Date {
 // Get available card IDs from database
 let availableCardIds: number[] = [];
 
-async function getAvailableCardIds() {
+async function getAvailableCardIds(prisma: PrismaClient) {
   if (availableCardIds.length === 0) {
     const cards = await prisma.card.findMany({ select: { id: true } });
     availableCardIds = cards.map(c => c.id);
@@ -63,8 +62,8 @@ async function getAvailableCardIds() {
   return availableCardIds;
 }
 
-async function generateCardIds(count: number = 3): Promise<number[]> {
-  const allCardIds = await getAvailableCardIds();
+async function generateCardIds(prisma: PrismaClient, count: number = 3): Promise<number[]> {
+  const allCardIds = await getAvailableCardIds(prisma);
   const cardIds = [];
   const usedIds = new Set();
   
@@ -80,7 +79,7 @@ async function generateCardIds(count: number = 3): Promise<number[]> {
   return cardIds;
 }
 
-async function seedUserData(userId: string, index: number) {
+async function seedUserData(prisma: PrismaClient, userId: string, index: number) {
   console.log(`🌱 Seeding data for user: ${userId}`);
   
   // Different levels for variety
@@ -118,7 +117,7 @@ async function seedUserData(userId: string, index: number) {
     const createdAt = getRandomDate(new Date('2024-01-01'), new Date());
     const question = getRandomItem(THAI_QUESTIONS);
     const answer = getRandomItem(THAI_READINGS);
-    const cardIds = await generateCardIds(Math.floor(Math.random() * 3) + 3); // 3-5 cards
+    const cardIds = await generateCardIds(prisma, Math.floor(Math.random() * 3) + 3); // 3-5 cards
     
     readings.push({
       id: readingId,
@@ -277,7 +276,7 @@ async function seedUserData(userId: string, index: number) {
   console.log(`✅ Completed seeding for user: ${userId}`);
 }
 
-async function seedPaymentPackages() {
+async function seedPaymentPackages(prisma: PrismaClient) {
   console.log('🛍️ Seeding payment packages...');
   
   const packages = [
@@ -340,7 +339,7 @@ async function seedPaymentPackages() {
   console.log('✅ Payment packages seeded');
 }
 
-async function seedExchangeSettings() {
+async function seedExchangeSettings(prisma: PrismaClient) {
   console.log('💱 Seeding exchange settings...');
   
   await prisma.exchangeSetting.upsert({
@@ -372,17 +371,17 @@ async function seedExchangeSettings() {
   console.log('✅ Exchange settings seeded');
 }
 
-async function main() {
+async function main(prisma: PrismaClient) {
   console.log('🚀 Starting seed process...');
 
   try {
     // Seed payment packages and exchange settings first
-    await seedPaymentPackages();
-    await seedExchangeSettings();
+    await seedPaymentPackages(prisma);
+    await seedExchangeSettings(prisma);
 
     // Seed data for each user
     for (let i = 0; i < USER_IDS.length; i++) {
-      await seedUserData(USER_IDS[i], i);
+      await seedUserData(prisma, USER_IDS[i], i);
     }
 
     console.log('🎉 Seed completed successfully!');
@@ -401,11 +400,11 @@ async function main() {
   }
 }
 
-main()
+// Run with safety checks
+seedWithSafetyChecks(async (prisma) => {
+  await main(prisma);
+}, 'Main Seed Script')
   .catch((e) => {
     console.error(e);
     process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
   });
