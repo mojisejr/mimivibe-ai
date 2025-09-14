@@ -1,27 +1,47 @@
 # Current Focus
 
-**Date**: 2025-09-14 21:34:11
-**Focus**: Referral System Foreign Key Constraint Analysis - Timing Issue Between Clerk Authentication and Database Sync
+**Date**: 2025-09-14 23:44:11
+**Focus**: JIT User Provisioning Implementation - Eliminating Webhook Dependency for Referral System
 
 ## Session Context
 
 ### Issue Overview
-Completed comprehensive analysis of critical bug in referral system where users don't receive referral bonuses due to foreign key constraint violations. The issue occurs when Clerk authentication completes but User record hasn't been synced to Supabase database via webhook yet.
+Persistent timing issues between Clerk authentication and webhook-based User record creation causing referral system failures with `Foreign key constraint violated on the constraint: referral_codes_userId_fkey`. Previous debugging showed 10+ second gaps between authentication and User record availability.
 
-### Key Findings
-- **Root Cause**: Timing issue between Clerk authentication and database synchronization
-- **Error Location**: `/src/app/api/referrals/process/route.ts:61-69` during ReferralCode creation
-- **Technical Issue**: Foreign key constraint `referral_codes_userId_fkey` violation
-- **Impact**: Users don't receive referral bonuses, poor UX with 500 errors
+### Root Cause Analysis
+Webhook dependency creates timing race conditions where:
+- Clerk authentication completes instantly
+- User record creation via webhook takes 10+ seconds
+- Referral processing fails due to missing User records
 
-### Files Analyzed
-- `/src/app/api/referrals/process/route.ts` (primary error location)
-- `prisma/schema.prisma` (foreign key relationships)
-- `/src/app/page.tsx` (referral processing flow)
+### Solution Strategy: Just-In-Time (JIT) User Provisioning
+**Approach**: Create User records on-demand when first API call is made, eliminating webhook dependency
 
-### Status
-Analysis phase completed. Ready for implementation planning to resolve timing synchronization issues and add proper user existence validation.
+**Benefits**:
+- ✅ Zero timing issues - User created when needed
+- ✅ Eliminates webhook dependency entirely
+- ✅ Immediate data consistency
+- ✅ Simpler error handling
+
+### Implementation Plan
+1. Create `ensureUserExists()` utility function with Clerk API integration
+2. Implement JIT pattern in referral processing API route
+3. Update credits API to use JIT provisioning
+4. Add comprehensive error handling and logging
+5. Maintain webhook as fallback for batch operations
+
+### Files to Modify
+- `src/lib/utils/jit-user.ts` (NEW): JIT user provisioning utility
+- `src/app/api/referrals/process/route.ts`: Replace user existence check with JIT provisioning
+- `src/app/api/user/credits/route.ts`: Implement JIT pattern for user lookup
+
+### Active Work
+- **PR**: #164 - Enhanced referral system debugging
+- **Issue**: #163 - Foreign key constraint error in referral system
+
+### Goal
+Eliminate webhook timing dependency and provide instant User record availability for referral system.
 
 ---
 
-*Session started: 2025-09-14 21:34:11*
+*Session started: 2025-09-14 23:44:11*

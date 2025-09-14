@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getOrCreateUser } from '@/lib/utils/jit-user'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -33,64 +34,40 @@ export async function GET() {
 
     console.log(`✅ [${requestTimestamp}] Authentication successful for userId: ${userId}`)
 
-    console.log(`🔍 [${requestTimestamp}] Querying database for userId: ${userId}`)
+    console.log(`🔧 [${requestTimestamp}] Using JIT provisioning to ensure user exists for userId: ${userId}`)
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        stars: true,
-        coins: true,
-        freePoint: true,
-        level: true,
-        exp: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    })
+    let user
+    try {
+      user = await getOrCreateUser(userId)
+      console.log(`✅ [${requestTimestamp}] JIT: User ready for credits query:`, {
+        id: user.id,
+        stars: user.stars,
+        coins: user.coins,
+        freePoint: user.freePoint,
+        wasJitProvisioned: !user.createdAt || (Date.now() - user.createdAt.getTime()) < 5000 // Created within last 5 seconds
+      })
 
-    if (!user) {
-      console.log(`❌ [${requestTimestamp}] User NOT FOUND in database for userId: ${userId}`)
-      console.log(`🔍 [${requestTimestamp}] Debugging: This suggests Clerk userId doesn't match any User record`)
-      console.log(`💡 [${requestTimestamp}] Possible causes:`)
-      console.log(`   - User record creation via webhook is still pending`)
-      console.log(`   - Clerk userId format mismatch with database User.id`)
-      console.log(`   - Database transaction rollback occurred`)
-
-      // Check if any similar User records exist (for debugging)
-      try {
-        const recentUsers = await prisma.user.findMany({
-          select: { id: true, createdAt: true },
-          orderBy: { createdAt: 'desc' },
-          take: 3
-        })
-        console.log(`📊 [${requestTimestamp}] Recent users in database:`, recentUsers.map(u => `${u.id} (${u.createdAt})`).join(', '))
-      } catch (debugError) {
-        console.log(`⚠️ [${requestTimestamp}] Could not fetch debug user info:`, debugError)
-      }
+    } catch (jitError) {
+      console.error(`❌ [${requestTimestamp}] JIT provisioning failed for userId: ${userId}`, jitError)
 
       return NextResponse.json(
         {
           success: false,
-          error: 'Not found',
-          message: 'User not found',
+          error: 'User provisioning failed',
+          message: 'Could not create or retrieve user account',
           timestamp: requestTimestamp,
           path: '/api/user/credits',
           debug: {
             clerkUserId: userId,
-            step: 'database_lookup',
-            possibleCauses: [
-              'webhook_pending',
-              'userid_mismatch',
-              'transaction_rollback'
-            ]
+            step: 'jit_provisioning',
+            error: jitError instanceof Error ? jitError.message : 'Unknown JIT error'
           }
         },
-        { status: 404 }
+        { status: 500 }
       )
     }
 
-    console.log(`✅ [${requestTimestamp}] User found in database:`, {
+    console.log(`✅ [${requestTimestamp}] JIT: User ready for credits calculation:`, {
       id: user.id,
       stars: user.stars,
       coins: user.coins,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateReferralCode } from '@/lib/utils/referrals'
 import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
+import { ensureUserExists } from '@/lib/utils/jit-user'
 
 // Force dynamic rendering for database access
 export const dynamic = 'force-dynamic'
@@ -38,27 +39,42 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // PHASE 1: Validate User existence before processing referral
-    const targetUser = await prisma.user.findUnique({
-      where: { id: newUserId }
-    })
+    // PHASE 1: Ensure User exists using JIT provisioning (eliminates webhook dependency)
+    console.log(`🔧 JIT: Ensuring user ${newUserId} exists via JIT provisioning...`)
 
-    if (!targetUser) {
-      console.log(`⏳ User sync pending for ID: ${newUserId}. User record not found in database. Clerk webhook may be delayed.`)
-      console.log(`📊 Timing check: Request received at ${new Date().toISOString()}`)
+    let jitResult
+    try {
+      jitResult = await ensureUserExists(newUserId)
+      const targetUser = jitResult.user
+
+      if (jitResult.wasCreated) {
+        console.log(`✅ JIT: Created new user ${newUserId} via JIT provisioning`)
+      } else {
+        console.log(`✅ JIT: User ${newUserId} already existed in database`)
+      }
+
+      console.log(`📊 JIT: User ready for referral processing:`, {
+        userId: targetUser.id,
+        email: targetUser.email,
+        name: targetUser.name,
+        stars: targetUser.stars,
+        freePoint: targetUser.freePoint
+      })
+
+    } catch (jitError) {
+      console.error(`❌ JIT: Failed to ensure user exists for ${newUserId}:`, jitError)
 
       return NextResponse.json(
         {
-          error: 'User account is still being set up. Please try again in a moment.',
-          code: 'USER_SYNC_PENDING',
-          retryAfter: 8, // Increased from 3 to 8 seconds to account for webhook delays
+          error: 'Failed to process user account. Please try again.',
+          code: 'JIT_PROVISIONING_FAILED',
           debug: {
             userId: newUserId,
             timestamp: new Date().toISOString(),
-            reason: 'clerk_webhook_delay'
+            error: jitError instanceof Error ? jitError.message : 'Unknown JIT error'
           }
         },
-        { status: 202 } // Accepted but processing not complete
+        { status: 500 }
       )
     }
 
@@ -81,17 +97,8 @@ export async function POST(request: NextRequest) {
 
     // Process referral with enhanced error handling
     await prisma.$transaction(async (tx) => {
-      // Double-check user existence within transaction for safety
-      const userInTransaction = await tx.user.findUnique({
-        where: { id: newUserId }
-      })
-
-      if (!userInTransaction) {
-        console.error(`❌ CRITICAL: User ${newUserId} disappeared during transaction. Database race condition detected.`)
-        throw new Error(`USER_NOT_FOUND: User ${newUserId} not found in database during referral processing`)
-      }
-
-      console.log(`✅ User ${newUserId} confirmed in transaction. Proceeding with referral creation.`)
+      // User existence guaranteed by JIT provisioning above
+      console.log(`✅ JIT: Proceeding with referral creation for user ${newUserId} (JIT provisioned)`)
       // Create referral record for new user
       await tx.referralCode.create({
         data: {
@@ -148,41 +155,23 @@ export async function POST(request: NextRequest) {
 
     // Enhanced error handling with specific error types
     if (error instanceof Error) {
-      // Handle specific user not found errors
-      if (error.message.includes('USER_NOT_FOUND')) {
-        console.log(`⚠️ User sync issue during referral processing: ${error.message}`)
-        console.log(`🔍 Debugging: Clerk webhook might be delayed. Check webhook processing timing.`)
-        return NextResponse.json(
-          {
-            error: 'User account setup incomplete. Please try again shortly.',
-            code: 'USER_SYNC_ERROR',
-            retryAfter: 10, // Increased retry delay
-            debug: {
-              error: 'user_transaction_race_condition',
-              timestamp: new Date().toISOString()
-            }
-          },
-          { status: 202 }
-        )
-      }
+      // JIT provisioning should eliminate user not found errors
+      // If we still get foreign key errors, it's a different issue
+      if (error.message.includes('referral_codes_userId_fkey') || error.message.includes('USER_NOT_FOUND')) {
+        console.error(`🚨 JIT: Unexpected user reference error after JIT provisioning: ${error.message}`)
+        console.error(`🔍 JIT: This suggests a critical issue with JIT user creation`)
 
-      // Handle foreign key constraint violations specifically
-      if (error.message.includes('referral_codes_userId_fkey')) {
-        console.log(`🚨 Foreign key constraint violation - User not found in database during referral processing`)
-        console.log(`🔍 Debugging: This suggests Clerk webhook hasn't created User record yet`)
-        console.log(`📋 Recommended: Check /api/webhooks/clerk endpoint and webhook configuration`)
         return NextResponse.json(
           {
-            error: 'Account verification in progress. Please wait a moment and try again.',
-            code: 'DATABASE_SYNC_ERROR',
-            retryAfter: 12, // Increased retry delay for webhook processing
+            error: 'User account processing error. Please contact support if this persists.',
+            code: 'JIT_USER_REFERENCE_ERROR',
             debug: {
-              constraint: 'referral_codes_userId_fkey',
-              error: 'clerk_webhook_timing_issue',
-              timestamp: new Date().toISOString()
+              error: 'post_jit_user_error',
+              timestamp: new Date().toISOString(),
+              message: error.message
             }
           },
-          { status: 202 }
+          { status: 500 }
         )
       }
     }
