@@ -68,7 +68,10 @@ export default function HomePage() {
   );
 
   const processReferral = useCallback(
-    async (code: string, newUserId: string) => {
+    async (code: string, newUserId: string, retryCount: number = 0) => {
+      const MAX_RETRIES = 3;
+      const RETRY_DELAYS = [3000, 6000, 10000]; // 3s, 6s, 10s
+
       try {
         const response = await fetch("/api/referrals/process", {
           method: "POST",
@@ -76,30 +79,87 @@ export default function HomePage() {
           body: JSON.stringify({ referralCode: code, newUserId }),
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            addToast({
-              type: "success",
-              title: "🎁 Welcome!",
-              message: "You received referral bonus rewards!",
-            });
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem("pendingReferral");
-            }
-          } else {
-            console.error("Referral processing failed:", data.error);
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem("pendingReferral");
-            }
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          addToast({
+            type: "success",
+            title: "🎁 Welcome!",
+            message: "You received referral bonus rewards!",
+          });
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem("pendingReferral");
           }
-        } else {
-          console.error("Referral processing failed");
-          localStorage.removeItem("pendingReferral");
+          return;
+        }
+
+        // Handle specific retry cases (202 status with sync pending)
+        if (response.status === 202 && (data.code === 'USER_SYNC_PENDING' || data.code === 'DATABASE_SYNC_ERROR')) {
+          if (retryCount < MAX_RETRIES) {
+            const delay = data.retryAfter ? data.retryAfter * 1000 : RETRY_DELAYS[retryCount];
+            console.log(`User sync pending, retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+
+            addToast({
+              type: "info",
+              title: "⏳ Setting up your account...",
+              message: `Please wait, we're preparing your referral bonus (${retryCount + 1}/${MAX_RETRIES})`,
+            });
+
+            setTimeout(() => {
+              processReferral(code, newUserId, retryCount + 1);
+            }, delay);
+            return;
+          } else {
+            // Max retries reached
+            console.error("Max retries reached for referral processing");
+            addToast({
+              type: "warning",
+              title: "⚠️ Account Setup Delayed",
+              message: "Your referral bonus will be processed shortly. Please refresh the page in a moment.",
+            });
+          }
+        } else if (!response.ok) {
+          console.error("Referral processing failed:", data.error || response.statusText);
+          addToast({
+            type: "error",
+            title: "❌ Referral Failed",
+            message: data.error || "Failed to process referral bonus",
+          });
+        }
+
+        // Clean up pending referral for non-retry cases
+        if (response.status !== 202) {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem("pendingReferral");
+          }
         }
       } catch (error) {
-        console.error("Referral processing error:", error);
-        localStorage.removeItem("pendingReferral");
+        console.error("Error processing referral:", error);
+
+        // Retry on network errors
+        if (retryCount < MAX_RETRIES) {
+          const delay = RETRY_DELAYS[retryCount];
+          console.log(`Network error, retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+
+          addToast({
+            type: "info",
+            title: "🔄 Connection Issue",
+            message: `Retrying referral processing (${retryCount + 1}/${MAX_RETRIES})...`,
+          });
+
+          setTimeout(() => {
+            processReferral(code, newUserId, retryCount + 1);
+          }, delay);
+        } else {
+          addToast({
+            type: "error",
+            title: "❌ Connection Failed",
+            message: "Unable to process referral. Please try refreshing the page.",
+          });
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem("pendingReferral");
+          }
+        }
       }
     },
     [addToast]
