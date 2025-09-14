@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { seedWithSafetyChecks } from '../src/lib/database-seed';
+import { createSeedPrismaClient } from '../src/lib/database-seed';
 
 // User IDs to seed
 const USER_IDS = [
@@ -400,11 +400,21 @@ async function main(prisma: PrismaClient) {
   }
 }
 
-// Run with safety checks
-seedWithSafetyChecks(async (prisma) => {
-  await main(prisma);
-}, 'Main Seed Script')
-  .catch((e) => {
-    console.error(e);
+// Run seed script
+async function runSeed() {
+  const prisma = createSeedPrismaClient();
+
+  try {
+    console.log('🚀 Starting Main Seed Script...');
+    await main(prisma);
+    console.log('✅ Main Seed Script completed successfully');
+  } catch (error) {
+    console.error('❌ Main Seed Script failed:', error);
     process.exit(1);
-  });
+  } finally {
+    await prisma.$disconnect();
+    console.log('🔌 Database connection closed');
+  }
+}
+
+runSeed();

@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { seedWithSafetyChecks } from '../src/lib/database-seed'
+import { createSeedPrismaClient } from '../src/lib/database-seed'
 
 const defaultPackages = [
   {
@@ -97,11 +97,21 @@ async function main(prisma: PrismaClient) {
   console.log('\n✅ Seeding finished successfully!')
 }
 
-// Run with safety checks
-seedWithSafetyChecks(async (prisma) => {
-  await main(prisma);
-}, 'Package Seed Script')
-  .catch((e) => {
-    console.error(e);
+// Run package seeding script
+async function runPackageSeed() {
+  const prisma = createSeedPrismaClient();
+
+  try {
+    console.log('🚀 Starting Package Seed Script...');
+    await main(prisma);
+    console.log('✅ Package Seed Script completed successfully');
+  } catch (error) {
+    console.error('❌ Package Seed Script failed:', error);
     process.exit(1);
-  });
+  } finally {
+    await prisma.$disconnect();
+    console.log('🔌 Database connection closed');
+  }
+}
+
+runPackageSeed();
