@@ -69,8 +69,8 @@ export default function HomePage() {
 
   const processReferral = useCallback(
     async (code: string, newUserId: string, retryCount: number = 0) => {
-      const MAX_RETRIES = 3;
-      const RETRY_DELAYS = [3000, 6000, 10000]; // 3s, 6s, 10s
+      const MAX_RETRIES = 5; // Increased from 3 to 5 retries
+      const RETRY_DELAYS = [5000, 10000, 20000, 30000, 45000]; // 5s, 10s, 20s, 30s, 45s - account for slow webhook
 
       try {
         const response = await fetch("/api/referrals/process", {
@@ -97,12 +97,23 @@ export default function HomePage() {
         if (response.status === 202 && (data.code === 'USER_SYNC_PENDING' || data.code === 'DATABASE_SYNC_ERROR')) {
           if (retryCount < MAX_RETRIES) {
             const delay = data.retryAfter ? data.retryAfter * 1000 : RETRY_DELAYS[retryCount];
-            console.log(`User sync pending, retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+            const delayInSeconds = Math.round(delay / 1000);
+            console.log(`User sync pending, retrying in ${delayInSeconds}s (attempt ${retryCount + 1}/${MAX_RETRIES}). User ID: ${newUserId}`);
+
+            // More detailed user feedback based on retry attempt
+            let message = '';
+            if (retryCount === 0) {
+              message = `Setting up your account... (${delayInSeconds}s)`;
+            } else if (retryCount < 3) {
+              message = `Still processing your account setup... (${delayInSeconds}s)`;
+            } else {
+              message = `Almost ready! Final account verification... (${delayInSeconds}s)`;
+            }
 
             addToast({
               type: "info",
-              title: "⏳ Setting up your account...",
-              message: `Please wait, we're preparing your referral bonus (${retryCount + 1}/${MAX_RETRIES})`,
+              title: "⏳ Account Setup in Progress",
+              message: `${message} (${retryCount + 1}/${MAX_RETRIES})`,
             });
 
             setTimeout(() => {
@@ -110,12 +121,24 @@ export default function HomePage() {
             }, delay);
             return;
           } else {
-            // Max retries reached
-            console.error("Max retries reached for referral processing");
+            // Max retries reached - store for later processing
+            console.error(`Max retries (${MAX_RETRIES}) reached for user ${newUserId}. Storing for later processing.`);
+
+            // Store pending referral for later processing
+            if (typeof window !== 'undefined') {
+              const pendingReferral = {
+                code,
+                newUserId,
+                timestamp: Date.now(),
+                attempts: MAX_RETRIES
+              };
+              localStorage.setItem('delayedReferral', JSON.stringify(pendingReferral));
+            }
+
             addToast({
               type: "warning",
-              title: "⚠️ Account Setup Delayed",
-              message: "Your referral bonus will be processed shortly. Please refresh the page in a moment.",
+              title: "⏰ Setup Taking Longer Than Expected",
+              message: "Don't worry! Your referral bonus is saved and will be processed automatically. You can continue using the app.",
             });
           }
         } else if (!response.ok) {
@@ -136,29 +159,41 @@ export default function HomePage() {
       } catch (error) {
         console.error("Error processing referral:", error);
 
-        // Retry on network errors
+        // Retry on network errors with increased delays
         if (retryCount < MAX_RETRIES) {
           const delay = RETRY_DELAYS[retryCount];
-          console.log(`Network error, retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          const delayInSeconds = Math.round(delay / 1000);
+          console.log(`Network error, retrying in ${delayInSeconds}s (attempt ${retryCount + 1}/${MAX_RETRIES}). User: ${newUserId}`);
 
           addToast({
             type: "info",
             title: "🔄 Connection Issue",
-            message: `Retrying referral processing (${retryCount + 1}/${MAX_RETRIES})...`,
+            message: `Retrying in ${delayInSeconds}s (${retryCount + 1}/${MAX_RETRIES})...`,
           });
 
           setTimeout(() => {
             processReferral(code, newUserId, retryCount + 1);
           }, delay);
         } else {
-          addToast({
-            type: "error",
-            title: "❌ Connection Failed",
-            message: "Unable to process referral. Please try refreshing the page.",
-          });
+          console.error(`All retry attempts failed for user ${newUserId}. Storing for later processing.`);
+
+          // Store for later processing even on network errors
           if (typeof window !== 'undefined') {
-            localStorage.removeItem("pendingReferral");
+            const pendingReferral = {
+              code,
+              newUserId,
+              timestamp: Date.now(),
+              error: 'network_error',
+              attempts: MAX_RETRIES
+            };
+            localStorage.setItem('delayedReferral', JSON.stringify(pendingReferral));
           }
+
+          addToast({
+            type: "warning",
+            title: "⚠️ Connection Issues",
+            message: "Your referral is saved and will be processed when connection improves.",
+          });
         }
       }
     },

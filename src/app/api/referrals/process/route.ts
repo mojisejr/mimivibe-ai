@@ -44,12 +44,19 @@ export async function POST(request: NextRequest) {
     })
 
     if (!targetUser) {
-      console.log(`User sync pending for ID: ${newUserId}. User record not found in database.`)
+      console.log(`⏳ User sync pending for ID: ${newUserId}. User record not found in database. Clerk webhook may be delayed.`)
+      console.log(`📊 Timing check: Request received at ${new Date().toISOString()}`)
+
       return NextResponse.json(
         {
           error: 'User account is still being set up. Please try again in a moment.',
           code: 'USER_SYNC_PENDING',
-          retryAfter: 3 // seconds
+          retryAfter: 8, // Increased from 3 to 8 seconds to account for webhook delays
+          debug: {
+            userId: newUserId,
+            timestamp: new Date().toISOString(),
+            reason: 'clerk_webhook_delay'
+          }
         },
         { status: 202 } // Accepted but processing not complete
       )
@@ -80,8 +87,11 @@ export async function POST(request: NextRequest) {
       })
 
       if (!userInTransaction) {
+        console.error(`❌ CRITICAL: User ${newUserId} disappeared during transaction. Database race condition detected.`)
         throw new Error(`USER_NOT_FOUND: User ${newUserId} not found in database during referral processing`)
       }
+
+      console.log(`✅ User ${newUserId} confirmed in transaction. Proceeding with referral creation.`)
       // Create referral record for new user
       await tx.referralCode.create({
         data: {
@@ -140,12 +150,17 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error) {
       // Handle specific user not found errors
       if (error.message.includes('USER_NOT_FOUND')) {
-        console.log(`User sync issue during referral processing: ${error.message}`)
+        console.log(`⚠️ User sync issue during referral processing: ${error.message}`)
+        console.log(`🔍 Debugging: Clerk webhook might be delayed. Check webhook processing timing.`)
         return NextResponse.json(
           {
             error: 'User account setup incomplete. Please try again shortly.',
             code: 'USER_SYNC_ERROR',
-            retryAfter: 5
+            retryAfter: 10, // Increased retry delay
+            debug: {
+              error: 'user_transaction_race_condition',
+              timestamp: new Date().toISOString()
+            }
           },
           { status: 202 }
         )
@@ -153,12 +168,19 @@ export async function POST(request: NextRequest) {
 
       // Handle foreign key constraint violations specifically
       if (error.message.includes('referral_codes_userId_fkey')) {
-        console.log(`Foreign key constraint violation - User not found in database during referral processing`)
+        console.log(`🚨 Foreign key constraint violation - User not found in database during referral processing`)
+        console.log(`🔍 Debugging: This suggests Clerk webhook hasn't created User record yet`)
+        console.log(`📋 Recommended: Check /api/webhooks/clerk endpoint and webhook configuration`)
         return NextResponse.json(
           {
             error: 'Account verification in progress. Please wait a moment and try again.',
             code: 'DATABASE_SYNC_ERROR',
-            retryAfter: 8
+            retryAfter: 12, // Increased retry delay for webhook processing
+            debug: {
+              constraint: 'referral_codes_userId_fkey',
+              error: 'clerk_webhook_timing_issue',
+              timestamp: new Date().toISOString()
+            }
           },
           { status: 202 }
         )
