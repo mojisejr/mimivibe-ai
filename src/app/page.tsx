@@ -685,7 +685,6 @@ export default function HomePage() {
   );
 
 
-
   // Handle referral code from URL and process after login
   useEffect(() => {
     const refCode = searchParams.get("ref");

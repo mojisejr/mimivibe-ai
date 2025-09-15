@@ -165,6 +165,7 @@ export async function POST(request: NextRequest) {
           data: {
             exp: { increment: referredReward.exp },
             coins: { increment: referredReward.coins },
+
             stars: { increment: referredReward.stars },
             freePoint: { increment: referredReward.freePoint || 0 }
           }
