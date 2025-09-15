@@ -198,8 +198,9 @@ export function validateTarotQuestion(question: string): {
   }
   
   // Check for question marks or question words (English and Thai)
+  // Note: Thai doesn't use word boundaries like English, so we don't use \b for Thai patterns
   const hasQuestionIndicator = /\?|\b(what|how|when|where|why|will|should|can|could|would|is|are|am|do|does|did)\b/i.test(question) ||
-    /\b(อะไร|ยังไง|เมื่อไหร่|ที่ไหน|ทำไม|จะ|ควร|สามารถ|น่าจะ|เป็น|คือ|มี|ได้|ไหม|มั้ย|รึ|หรือ|ดี|ไม่|จะเป็น|จะมี|จะได้)\b/i.test(question)
+    /(อะไร|ยังไง|เมื่อไหร่|ที่ไหน|ทำไม|จะ|ควร|สามารถ|น่าจะ|เป็น|คือ|มี|ได้|ไหม|มั้ย|รึ|หรือ|ดี|ไม่|อย่างไร|เป็นไง|ดีไหม|ได้ไหม|จะเป็น|จะมี|จะได้)/i.test(question)
   if (!hasQuestionIndicator) {
     issues.push('Input should be formatted as a question')
   }
