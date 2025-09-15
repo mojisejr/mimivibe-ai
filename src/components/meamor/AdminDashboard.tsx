@@ -6,6 +6,7 @@ import { Card, CardBody } from '@/components/ui/Card';
 import { PaymentHistorySection } from './PaymentHistorySection';
 import { UserManagementSection } from './UserManagementSection';
 import { AdvancedAnalyticsSection } from './AdvancedAnalyticsSection';
+import SecurityDashboard from '@/components/admin/SecurityDashboard';
 
 interface UserStats {
   totalMembers: number;
@@ -31,7 +32,7 @@ interface AdminDashboardProps {
   className?: string;
 }
 
-type TabType = 'overview' | 'users' | 'payments' | 'analytics';
+type TabType = 'overview' | 'users' | 'payments' | 'analytics' | 'security';
 
 export function AdminDashboard({ className = '' }: AdminDashboardProps) {
   const { user } = useUser();
@@ -230,6 +231,8 @@ export function AdminDashboard({ className = '' }: AdminDashboardProps) {
         return <PaymentHistorySection />;
       case 'analytics':
         return <AdvancedAnalyticsSection />;
+      case 'security':
+        return <SecurityDashboard />;
       default:
         return null;
     }
@@ -274,6 +277,12 @@ export function AdminDashboard({ className = '' }: AdminDashboardProps) {
             onClick={() => setActiveTab('analytics')}
           >
             📈 Analytics
+          </button>
+          <button
+            className={`tab ${activeTab === 'security' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('security')}
+          >
+            🔒 Security
           </button>
         </div>
 

@@ -3,7 +3,7 @@
 
 **Project Name**: MiMiVibes - AI-Powered Tarot Reading Platform
 
-**Repository**: https://github.com/mojisejr/mimivibe-ai.git
+**Repository**: https://github.com/mojisejr/mimivibe-ai 
 
 **Description**: แพลตฟอร์มดูไพ่ทาโรต์ออนไลน์ที่ขับเคลื่อนด้วย AI ให้บริการการทำนายแบบส่วนตัวผ่าน "แม่หมอมีมี่" ผู้เชี่ยวชาญด้านไพ่ทาโรต์ AI ระบบใช้เทคโนโลยี Multi-LLM (OpenAI GPT-4 + Google Gemini) ร่วมกับ LangGraph workflow เพื่อสร้างการทำนายที่มีคุณภาพสูงและเป็นธรรมชาติ
 

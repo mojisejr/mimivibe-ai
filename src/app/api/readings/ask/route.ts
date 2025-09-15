@@ -6,6 +6,13 @@ import { generateTarotReading } from '@/lib/langgraph/workflow-with-db'
 import type { ReadingResponse, ReadingError } from '@/types/reading'
 import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
 import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
+import { rateLimit, aiReadingRateLimitConfig, aiAbuseRateLimitConfig } from '@/lib/rate-limiter'
+import { 
+  validateTarotQuestion, 
+  logSecurityEvent, 
+  SecurityEventType, 
+  checkAIAbusePattern 
+} from '@/lib/security/ai-protection'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -24,6 +31,55 @@ export async function POST(request: NextRequest) {
       } as ReadingError, { status: 401 })
     }
 
+    // Check for AI abuse patterns
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                    request.headers.get('x-real-ip') || 'unknown'
+    const abuseCheck = checkAIAbusePattern(userId, clientIP)
+    
+    if (abuseCheck.isAbuser) {
+      // Log security event
+      logSecurityEvent(
+        SecurityEventType.AI_ABUSE_DETECTED,
+        abuseCheck.riskLevel === 'high' ? 'critical' : 'high',
+        request,
+        {
+          endpoint: '/api/readings/ask',
+          metadata: {
+            userId,
+            riskLevel: abuseCheck.riskLevel,
+            reason: abuseCheck.reason
+          }
+        },
+        true
+      )
+      
+      // Apply abuse rate limiting
+      const abuseRateLimit = await rateLimit(request, aiAbuseRateLimitConfig)
+      if (abuseRateLimit) {
+        return abuseRateLimit
+      }
+    } else {
+      // Apply normal AI reading rate limiting
+      const readingRateLimit = await rateLimit(request, aiReadingRateLimitConfig)
+      if (readingRateLimit) {
+        // Log rate limit exceeded event
+        logSecurityEvent(
+          SecurityEventType.RATE_LIMIT_EXCEEDED,
+          'medium',
+          request,
+          {
+            endpoint: '/api/readings/ask',
+            metadata: {
+              userId,
+              rateLimitType: 'ai_reading'
+            }
+          },
+          true
+        )
+        return readingRateLimit
+      }
+    }
+
     const body = await request.json()
     const { question, language = 'th' } = body
 
@@ -31,18 +87,80 @@ export async function POST(request: NextRequest) {
     if (!question || typeof question !== 'string') {
       return NextResponse.json({
         success: false,
-        error: 'Bad request',
-        message: 'Question is required',
+        error: 'Invalid question',
+        message: 'Question is required and must be a string',
         timestamp: new Date().toISOString(),
         path: '/api/readings/ask'
       } as ReadingError, { status: 400 })
     }
 
-    if (question.length < 10 || question.length > 500) {
+    // Enhanced security validation for tarot question
+    const questionValidation = validateTarotQuestion(question)
+    
+    if (questionValidation.blocked) {
+      // Log security event for blocked question
+      logSecurityEvent(
+        SecurityEventType.MALICIOUS_INPUT,
+        'high',
+        request,
+        {
+          input: question.substring(0, 100), // Log first 100 chars only
+          endpoint: '/api/readings/ask',
+          metadata: {
+            userId,
+            issues: questionValidation.issues,
+            blocked: true
+          }
+        },
+        true
+      )
+      
       return NextResponse.json({
         success: false,
-        error: 'Bad request',
-        message: 'Question must be between 10-500 characters',
+        error: 'Invalid question content',
+        message: 'Question contains inappropriate or potentially harmful content',
+        timestamp: new Date().toISOString(),
+        path: '/api/readings/ask'
+      } as ReadingError, { status: 400 })
+    }
+    
+    if (!questionValidation.isValid) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid question',
+        message: questionValidation.issues.join(', '),
+        timestamp: new Date().toISOString(),
+        path: '/api/readings/ask'
+      } as ReadingError, { status: 400 })
+    }
+    
+    // Log suspicious patterns (non-blocking)
+    if (questionValidation.issues.length > 0) {
+      logSecurityEvent(
+        SecurityEventType.SUSPICIOUS_PATTERN,
+        'low',
+        request,
+        {
+          input: question.substring(0, 100),
+          endpoint: '/api/readings/ask',
+          metadata: {
+            userId,
+            issues: questionValidation.issues,
+            blocked: false
+          }
+        },
+        false
+      )
+    }
+    
+    // Use sanitized question for processing
+    const sanitizedQuestion = questionValidation.sanitized
+    
+    if (sanitizedQuestion.length < 10 || sanitizedQuestion.length > 500) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid question length',
+        message: 'Question must be between 10 and 500 characters',
         timestamp: new Date().toISOString(),
         path: '/api/readings/ask'
       } as ReadingError, { status: 400 })
@@ -86,7 +204,7 @@ export async function POST(request: NextRequest) {
     // Generate reading using LangGraph workflow
     let workflowResult
     try {
-      workflowResult = await generateTarotReading(question, userId)
+      workflowResult = await generateTarotReading(sanitizedQuestion, userId)
       
       // Check if workflow returned an error
       if (workflowResult.error) {
@@ -196,7 +314,7 @@ export async function POST(request: NextRequest) {
     // Return reading data without saving to database
     const readingResult = {
       readingId: temporaryReadingId,
-      question: question.trim(),
+      question: sanitizedQuestion.trim(),
       questionAnalysis: workflowResult.questionAnalysis,
       cards: workflowResult.reading.cards_reading, // Full card objects for display
       reading: workflowResult.reading, // Complete reading structure

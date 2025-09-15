@@ -165,3 +165,36 @@ export const adminRateLimitConfig: RateLimitConfig = {
   maxRequests: 10, // Max 10 admin requests per minute
   keyGenerator: (req) => getClientIdentifier(req)
 }
+
+// AI-specific rate limiting configurations
+export const aiReadingRateLimitConfig: RateLimitConfig = {
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 5, // Max 5 AI readings per minute per user
+  keyGenerator: (req) => getClientIdentifier(req)
+}
+
+export const aiPromptRateLimitConfig: RateLimitConfig = {
+  windowMs: 10 * 1000, // 10 seconds
+  maxRequests: 3, // Max 3 prompt requests per 10 seconds
+  keyGenerator: (req) => getClientIdentifier(req)
+}
+
+// Aggressive rate limiting for suspected AI abuse
+export const aiAbuseRateLimitConfig: RateLimitConfig = {
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  maxRequests: 1, // Max 1 request per 5 minutes for flagged users
+  keyGenerator: (req) => {
+    const identifier = getClientIdentifier(req)
+    return `abuse:${identifier}`
+  }
+}
+
+// Rate limiting for AI model switching/fallback
+export const aiModelSwitchRateLimitConfig: RateLimitConfig = {
+  windowMs: 30 * 1000, // 30 seconds
+  maxRequests: 2, // Max 2 model switches per 30 seconds
+  keyGenerator: (req) => {
+    const identifier = getClientIdentifier(req)
+    return `model-switch:${identifier}`
+  }
+}
