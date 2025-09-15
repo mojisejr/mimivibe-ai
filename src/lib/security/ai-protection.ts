@@ -197,8 +197,9 @@ export function validateTarotQuestion(question: string): {
     issues.push('Question is too long (maximum 500 characters)')
   }
   
-  // Check for question marks or question words
-  const hasQuestionIndicator = /\?|\b(what|how|when|where|why|will|should|can|could|would|is|are|am|do|does|did)\b/i.test(question)
+  // Check for question marks or question words (English and Thai)
+  const hasQuestionIndicator = /\?|\b(what|how|when|where|why|will|should|can|could|would|is|are|am|do|does|did)\b/i.test(question) ||
+    /\b(อะไร|ยังไง|เมื่อไหร่|ที่ไหน|ทำไม|จะ|ควร|สามารถ|น่าจะ|เป็น|คือ|มี|ได้|ไหม|มั้ย|รึ|หรือ|ดี|ไม่|จะเป็น|จะมี|จะได้)\b/i.test(question)
   if (!hasQuestionIndicator) {
     issues.push('Input should be formatted as a question')
   }
