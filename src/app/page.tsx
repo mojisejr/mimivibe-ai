@@ -19,6 +19,57 @@ export default function HomePage() {
   const [hasProcessedReferral, setHasProcessedReferral] = useState(false)
   const [isProcessingReferral, setIsProcessingReferral] = useState(false);
 
+  // Helper functions for user-specific referral storage
+  const getPendingReferralForUser = useCallback((currentUserId: string) => {
+    // Find the most recent valid pending referral
+    const pendingReferralKeys = Object.keys(localStorage).filter(key => 
+      key.startsWith('pendingReferral_')
+    );
+    
+    let mostRecentReferral = null;
+    let mostRecentTimestamp = 0;
+    
+    for (const key of pendingReferralKeys) {
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          // Check if referral is valid and not expired (24 hours)
+          if (parsed.timestamp > mostRecentTimestamp && 
+              Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000 &&
+              parsed.referrerUserId !== currentUserId) {
+            mostRecentReferral = parsed;
+            mostRecentTimestamp = parsed.timestamp;
+          }
+        }
+      } catch {
+        // Remove invalid entries
+        localStorage.removeItem(key);
+      }
+    }
+    
+    return mostRecentReferral;
+  }, []);
+  
+  const clearPendingReferrals = useCallback(() => {
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('pendingReferral_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  }, []);
+  
+  const getLegacyPendingReferral = useCallback(() => {
+    // Check for old format referral and migrate if needed
+    const legacyReferral = localStorage.getItem('pendingReferral');
+    if (legacyReferral && typeof legacyReferral === 'string' && !legacyReferral.startsWith('{')) {
+      // Old format: just the code string
+      localStorage.removeItem('pendingReferral');
+      return legacyReferral;
+    }
+    return null;
+  }, []);
+
   const handleReferralCode = useCallback(
     async (code: string) => {
       try {
@@ -350,52 +401,58 @@ export default function HomePage() {
   const [hasProcessedReferral, setHasProcessedReferral] = useState(false);
   const [isProcessingReferral, setIsProcessingReferral] = useState(false);
 
-  // Keep referral functionality
-  const handleReferralCode = useCallback(
-    async (code: string) => {
+  // Helper functions for user-specific referral storage
+  const getPendingReferralForUser = useCallback((currentUserId: string) => {
+    // Find the most recent valid pending referral
+    const pendingReferralKeys = Object.keys(localStorage).filter(key => 
+      key.startsWith('pendingReferral_')
+    );
+    
+    let mostRecentReferral = null;
+    let mostRecentTimestamp = 0;
+    
+    for (const key of pendingReferralKeys) {
       try {
-        const response = await fetch("/api/referrals/validate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ referralCode: code }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            localStorage.setItem("pendingReferral", code);
-            setReferralCode(code);
-            addToast({
-              type: "success",
-              title: "🎉 Referral code valid!",
-              message: "You'll receive bonus rewards when you sign up!",
-            });
-          } else {
-            addToast({
-              type: "error",
-              title: "❌ Invalid referral code",
-              message: "Please check your referral link and try again.",
-            });
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          // Check if referral is valid and not expired (24 hours)
+          if (parsed.timestamp > mostRecentTimestamp && 
+              Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000 &&
+              parsed.referrerUserId !== currentUserId) {
+            mostRecentReferral = parsed;
+            mostRecentTimestamp = parsed.timestamp;
           }
-        } else {
-          addToast({
-            type: "error",
-            title: "❌ Invalid referral code",
-            message: "Please check your referral link and try again.",
-          });
         }
-      } catch (error) {
-        console.error("Referral validation error:", error);
-        addToast({
-          type: "error",
-          title: "❌ Error validating referral code",
-          message: "Please try again later.",
-        });
+      } catch {
+        // Remove invalid entries
+        localStorage.removeItem(key);
       }
-    },
-    [addToast]
-  );
+    }
+    
+    return mostRecentReferral;
+  }, []);
+  
+  const clearPendingReferrals = useCallback(() => {
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('pendingReferral_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  }, []);
+  
+  const getLegacyPendingReferral = useCallback(() => {
+    // Check for old format referral and migrate if needed
+    const legacyReferral = localStorage.getItem('pendingReferral');
+    if (legacyReferral && typeof legacyReferral === 'string' && !legacyReferral.startsWith('{')) {
+      // Old format: just the code string
+      localStorage.removeItem('pendingReferral');
+      return legacyReferral;
+    }
+    return null;
+  }, []);
 
+  // Process referral with ownership validation
   const processReferral = useCallback(
     async (code: string, newUserId: string) => {
       // Prevent multiple simultaneous processing
@@ -413,6 +470,25 @@ export default function HomePage() {
           console.log('🔄 Referral was processed recently, skipping...');
           return;
         }
+      }
+
+      // Validate referral ownership before processing
+      const pendingReferralData = getPendingReferralForUser(newUserId);
+      if (!pendingReferralData) {
+        console.log('❌ No valid pending referral found for user');
+        return;
+      }
+
+      // Additional ownership validation: prevent users from processing their own referral codes
+      if (pendingReferralData.referrerUserId === newUserId) {
+        console.log('❌ User attempting to use their own referral code, clearing invalid referral');
+        clearPendingReferrals();
+        addToast({
+          type: 'error',
+          title: 'Invalid referral',
+          message: 'You cannot use your own referral code.',
+        });
+        return;
       }
 
       setIsProcessingReferral(true);
@@ -452,7 +528,7 @@ export default function HomePage() {
 
             // Mark as processed and clear stored referral code
             localStorage.setItem(processedKey, Date.now().toString());
-            localStorage.removeItem('pendingReferral');
+            clearPendingReferrals();
             setReferralCode(null);
             setHasProcessedReferral(true);
             return;
@@ -467,7 +543,7 @@ export default function HomePage() {
               message: 'This referral code has already been used.',
             });
             localStorage.setItem(processedKey, Date.now().toString());
-            localStorage.removeItem('pendingReferral');
+            clearPendingReferrals();
             setReferralCode(null);
             setHasProcessedReferral(true);
             return;
@@ -480,7 +556,7 @@ export default function HomePage() {
               title: 'Invalid referral code',
               message: 'The referral code is not valid.',
             });
-            localStorage.removeItem('pendingReferral');
+            clearPendingReferrals();
             setReferralCode(null);
             return;
           }
@@ -531,8 +607,83 @@ export default function HomePage() {
 
       await attemptProcess();
     },
-    [addToast, isProcessingReferral]
+    [addToast, isProcessingReferral, getPendingReferralForUser, clearPendingReferrals]
   );
+
+  // Keep referral functionality with user-specific storage
+  const handleReferralCode = useCallback(
+    async (code: string) => {
+      try {
+        const response = await fetch("/api/referrals/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ referralCode: code }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            // Store referral with session-specific key to prevent cross-user contamination
+            const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+            const pendingReferralKey = `pendingReferral_${sessionId}`;
+            
+            localStorage.setItem(pendingReferralKey, JSON.stringify({
+              code,
+              sessionId,
+              timestamp: Date.now(),
+              referrerUserId: data.data?.referrerUserId || null
+            }));
+            
+            // Clean up old pending referrals to prevent storage bloat
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('pendingReferral_') && key !== pendingReferralKey) {
+                const stored = localStorage.getItem(key);
+                if (stored) {
+                  try {
+                    const parsed = JSON.parse(stored);
+                    // Remove referrals older than 24 hours
+                    if (Date.now() - parsed.timestamp > 24 * 60 * 60 * 1000) {
+                      localStorage.removeItem(key);
+                    }
+                  } catch {
+                    localStorage.removeItem(key);
+                  }
+                }
+              }
+            });
+            
+            setReferralCode(code);
+            addToast({
+              type: "success",
+              title: "🎉 Referral code valid!",
+              message: "You'll receive bonus rewards when you sign up!",
+            });
+          } else {
+            addToast({
+              type: "error",
+              title: "❌ Invalid referral code",
+              message: "Please check your referral link and try again.",
+            });
+          }
+        } else {
+          addToast({
+            type: "error",
+            title: "❌ Invalid referral code",
+            message: "Please check your referral link and try again.",
+          });
+        }
+      } catch (error) {
+        console.error("Referral validation error:", error);
+        addToast({
+          type: "error",
+          title: "❌ Error validating referral code",
+          message: "Please try again later.",
+        });
+      }
+    },
+    [addToast]
+  );
+
 
   // Handle referral code from URL and process after login
   useEffect(() => {
@@ -545,18 +696,31 @@ export default function HomePage() {
     
     // Process referral after login with delay to prevent double calls
     if (isSignedIn && userId && !hasProcessedReferral) {
-      const storedReferralCode = localStorage.getItem("pendingReferral");
-      if (storedReferralCode) {
+      // Check for legacy referral format first
+      const legacyReferral = getLegacyPendingReferral();
+      if (legacyReferral) {
+        console.log('🔄 Found legacy referral, migrating to new format');
+        // Process legacy referral immediately to maintain backward compatibility
+        const timer = setTimeout(() => {
+          processReferral(legacyReferral, userId);
+          setHasProcessedReferral(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+      
+      // Check for new format referrals
+      const pendingReferralData = getPendingReferralForUser(userId);
+      if (pendingReferralData) {
         // Add delay to ensure Clerk context is stable and prevent race conditions
         const timer = setTimeout(() => {
-          processReferral(storedReferralCode, userId);
+          processReferral(pendingReferralData.code, userId);
           setHasProcessedReferral(true);
         }, 1500);
         
         return () => clearTimeout(timer);
       }
     }
-  }, [searchParams, referralCode, handleReferralCode, isSignedIn, userId, hasProcessedReferral, processReferral]);
+  }, [searchParams, referralCode, handleReferralCode, isSignedIn, userId, hasProcessedReferral, processReferral, getLegacyPendingReferral, getPendingReferralForUser]);
 
   // Animation variants
   const fadeInUp = {

@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
       data: {
         referralCode: referral.code,
         referrerName: referral.user.name,
+        referrerUserId: referral.userId,
         rewards: {
           stars: 1,
           coins: 5,

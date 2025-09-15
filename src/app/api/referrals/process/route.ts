@@ -165,7 +165,9 @@ export async function POST(request: NextRequest) {
           data: {
             exp: { increment: referredReward.exp },
             coins: { increment: referredReward.coins },
-            stars: { increment: referredReward.stars }
+
+            stars: { increment: referredReward.stars },
+            freePoint: { increment: referredReward.freePoint || 0 }
           }
         })
 
@@ -179,7 +181,11 @@ export async function POST(request: NextRequest) {
             deltaPoint: referredReward.stars,
             deltaCoins: referredReward.coins,
             deltaExp: referredReward.exp,
-            metadata: { referredBy: referral.userId, rewardType: 'signup_bonus' }
+            metadata: { 
+              referredBy: referral.userId, 
+              rewardType: 'signup_bonus',
+              freePointAwarded: referredReward.freePoint || 0
+            }
           }
         })
         

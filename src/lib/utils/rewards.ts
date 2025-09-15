@@ -113,11 +113,13 @@ export async function getNewUserRewards(): Promise<RewardData> {
 
 /**
  * Convert reward data to legacy format for backward compatibility
+ * Note: freePoint is handled separately as it's not part of the legacy format
  */
 export function toLegacyRewardFormat(rewards: RewardData) {
   return {
     exp: rewards.exp || 0,
     coins: rewards.coins || 0,
-    stars: rewards.stars || 0, // Only use actual stars, not freePoint
+    stars: rewards.stars || 0,
+    freePoint: rewards.freePoint || 0, // Include freePoint for proper reward processing
   };
 }
