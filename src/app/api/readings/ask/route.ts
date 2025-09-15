@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { generateTarotReading } from '@/lib/langgraph/workflow-with-db'
 import type { ReadingResponse, ReadingError } from '@/types/reading'
 import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
+import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -224,9 +225,9 @@ export async function POST(request: NextRequest) {
         })
         
         if (referralCode?.referredBy) {
-          // Give referrer reward
-          // Referral rewards removed during gamification refactor
-    const referrerReward = { exp: 25, coins: 0, stars: 1 }
+          // Fetch dynamic referral rewards from RewardConfiguration
+          const rewardConfig = await getReferralRewards()
+          const referrerReward = toLegacyRewardFormat(rewardConfig.inviter)
           
           await prisma.$transaction(async (tx) => {
             await tx.user.update({
@@ -234,7 +235,8 @@ export async function POST(request: NextRequest) {
               data: {
                 exp: { increment: referrerReward.exp },
                 coins: { increment: referrerReward.coins },
-                stars: { increment: referrerReward.stars }
+                stars: { increment: referrerReward.stars },
+                freePoint: { increment: referrerReward.freePoint || 0 }
               }
             })
             
@@ -249,7 +251,8 @@ export async function POST(request: NextRequest) {
                 metadata: { 
                   referredUserId: userId,
                   readingId: readingResult.readingId,
-                  rewardType: 'first_reading_completion'
+                  rewardType: 'first_reading_completion',
+                  freePointAwarded: referrerReward.freePoint || 0
                 }
               }
             })

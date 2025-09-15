@@ -33,7 +33,7 @@ async function seedRewards() {
         role: 'invited'
       },
       rewards: {
-        freePoint: 3
+        stars: 1
       }
     },
 

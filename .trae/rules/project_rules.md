@@ -16,6 +16,33 @@
 
 ---
 
+### Development Guidelines
+
+**⚠️ CRITICAL: Synchronize Time Before Any File Operations**
+
+Before creating a new file or saving any timestamps, you **MUST** use the following command to retrieve the current date and time from the system:
+
+```bash
+date +"%Y-%m-%d %H:%M:%S"
+```
+
+This ensures accurate timestamp synchronization with the system clock and prevents time-related inconsistencies.
+
+#### File Naming Conventions
+
+- **Retrospective Files**: `session-YYYY-MM-DD-[description].md`
+- **Log Files**: `YYYY-MM-DD-[type].log`
+- **Backup Files**: `backup-YYYY-MM-DD-HHMM.sql`
+
+#### Important Notes
+
+- **ALL timestamps** in documentation, logs, and file names must use Thailand timezone
+- **Year format** must always be Christian Era (ค.ศ.) not Buddhist Era (พ.ศ.)
+- **Development sessions** should reference Thailand local time
+- **Retrospective files** must use correct Thailand date in filename
+
+---
+
 ## Architecture Overview
 
 ### Core Structure
@@ -194,7 +221,23 @@ These commands are standard across all projects and streamline our communication
 
 - **`=fcs > [message]`**: Updates the `current-focus.md` file on the local machine and creates a **GitHub Context Issue** with the specified `[message]` as the title. **WARNING**: This command will only work if there are no open GitHub issues. If there are, the agent will alert you to clear the backlog before you can save a new context. To bypass this check, use the command `=fcs -f > [message]`.
 
-- **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. The agent will use all the information from the `current-focus.md` file and previous conversations to create this Issue. If an open Task Issue already exists, the agent will **update** that Issue with the latest information instead of creating a new one.
+- **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. **ENHANCED WITH CODEBASE ANALYSIS** - The agent will:
+
+  1. **Codebase Analysis Phase**: For non-new feature implementations (fixes, refactors, modifications):
+
+     - Search and analyze all relevant code components and dependencies
+     - Identify side effects and interconnected systems
+     - Review existing patterns, conventions, and architectural decisions
+     - Map data flow and component relationships
+     - Assess impact on related functionality
+
+  2. **Plan Creation Phase**: Use all gathered information including:
+     - Current focus context from `current-focus.md`
+     - Previous conversation history
+     - Comprehensive codebase analysis results
+     - Identified dependencies and side effects
+
+  If an open Task Issue already exists, the agent will **update** that Issue with the latest information instead of creating a new one.
 
 - **`=impl > [message]`**: **ENHANCED WITH AUTOMATED WORKFLOW** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
 
@@ -217,6 +260,35 @@ These commands are standard across all projects and streamline our communication
 - **Never create new issues**: For ongoing multi-phase work, always update the existing plan issue (#20 for current system refactor)
 - **Retrospective issues**: Only create retrospective issues for session summaries, not for plan updates
 
+### 🎯 Enhanced Implementation Workflows
+
+#### Multi-Phase Implementation Strategy
+
+**Proven 5-Phase Approach** (15-34 minute sessions):
+
+1. **Analysis & Preparation** (5-8 min): Component analysis, dependency mapping
+2. **Core Implementation** (8-15 min): Primary changes, API updates
+3. **Integration & Testing** (3-8 min): Build validation, error resolution
+4. **Documentation & PR** (2-5 min): Commits, pull requests
+5. **Cleanup & Review** (1-2 min): Final validation
+
+#### Reference Pattern Implementation
+
+- **56% efficiency improvement** when following proven patterns
+- Use `/docs/retrospective/` files as implementation guides
+- Adapt existing solutions rather than creating from scratch
+
+#### Branch Management Excellence
+
+- **ALWAYS** create feature branches: `feature/[issue-number]-[description]`
+- **NEVER** work directly on main branch
+- **Workflow**: Analysis → Branch → Implementation → Build → Commit → PR → Updates
+
+#### TodoWrite Integration Patterns
+
+**High-Impact Usage**: Complex refactoring (3+ files), multi-phase implementations, large system changes
+**Best Practices**: 5-8 specific todos, exactly ONE in_progress, complete immediately after finishing
+
 ### 🌿 Automated Workflow Implementation
 
 **ENHANCED AUTOMATION**: All development workflows now include full automation to ensure consistent adherence to project guidelines.
@@ -237,6 +309,50 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 5. Auto-PR Creation → Comprehensive PR with issue linking
 6. Issue Updates → Update plan issue with PR link and completion status
 7. User Notification → Provide PR URL for review and approval
+```
+
+##### TodoWrite Integration Enhancement
+
+**Performance Impact from Retrospectives**: 56% faster implementations when TodoWrite is integrated
+
+**Enhanced Implementation Flow with TodoWrite:**
+
+```
+1. Parse GitHub Task Issue → Extract requirements and scope
+2. Initialize TodoWrite → Create 5-8 specific, actionable todos
+3. Auto-Branch Creation → feature/[issue-number]-[sanitized-description]
+4. Implementation Phase → Execute with real-time todo tracking
+   ├─ Mark exactly ONE todo as 'in_progress' at a time
+   ├─ Complete todos immediately after finishing each step
+   ├─ Update progress visibility for stakeholders
+   └─ Ensure accountability for all implementation steps
+5. Auto-Commit & Push → Descriptive commits with proper formatting
+6. Auto-PR Creation → Comprehensive PR with issue linking
+7. Issue Updates → Update plan issue with PR link and completion status
+8. TodoWrite Completion → Mark all todos as completed
+9. User Notification → Provide PR URL for review and approval
+```
+
+**TodoWrite Performance Benefits:**
+
+- **Visibility**: Real-time progress tracking for stakeholders
+- **Accountability**: Prevents skipping critical implementation steps
+- **Focus**: Reduces context switching during complex implementations
+- **Efficiency**: Proven 15-minute implementations vs 34-minute baseline
+- **Documentation**: Creates audit trail of implementation progress
+
+**High-Impact TodoWrite Usage Patterns:**
+
+```markdown
+✅ Complex multi-component refactoring (3+ files)
+✅ Full-stack implementations (API + Frontend)
+✅ Multi-phase system changes (Database + Application)
+✅ Pattern replication following proven approaches
+✅ Large refactoring with dependency management
+
+❌ Single file edits or trivial changes
+❌ Simple documentation updates
+❌ Quick bug fixes without multiple steps
 ```
 
 ##### Branch Naming Convention
@@ -299,6 +415,200 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 
 ---
 
+## 🛡️ Security Implementation Methodology
+
+_Based on comprehensive security audit sessions documented in retrospectives_
+
+### Systematic Security Audit Approach
+
+**8-Phase Security Audit Process** (31-minute comprehensive audits):
+
+1. **Infrastructure Analysis** (2-3 min): Environment variables, database schema, authentication
+2. **Core Endpoint Analysis** (5-8 min): Input validation, rate limiting, error handling, authorization
+3. **Data Integrity Analysis** (3-5 min): Transaction security, data flow assessment, logging
+4. **Compliance Assessment** (3-5 min): PCI DSS, GDPR, industry standards
+5. **Vulnerability Testing** (5-8 min): Injection prevention, authentication bypass, authorization
+6. **Security Implementation** (8-12 min): Rate limiting, input validation, error hardening
+7. **Build Validation** (2-3 min): TypeScript compilation, dependency validation
+8. **Documentation & Reporting** (3-5 min): Security audit report, compliance metrics
+
+### Enterprise-Grade Security Measures
+
+#### Critical Security Implementations
+
+- **Rate Limiting**: 15-minute windows, configurable limits per endpoint
+- **Input Validation**: Comprehensive Zod schemas for all API endpoints
+- **Secure Error Handling**: Generic error responses prevent information disclosure
+- **Webhook Security**: Signature validation with timestamp-based replay protection
+
+### Security Compliance Metrics
+
+**Measurable Improvements from Security Audits**:
+
+- **PCI DSS Compliance**: 65% → 85% improvement documented
+- **Critical Vulnerabilities**: 5 critical issues → 0 critical issues
+- **High-Priority Issues**: 8 high-priority → 2 high-priority resolved
+- **Security Score**: Significant improvement in enterprise security standards
+
+### Security Best Practices from Retrospectives
+
+**Key Security Areas**:
+
+- **Webhook Security**: Validate signatures, prevent replay attacks, never log secrets
+- **Payment System**: Server-side validation, discount verification, transaction integrity
+- **Error Handling**: Generic error responses, sanitized logging
+
+---
+
+## 🎨 UI/UX Design Integration Guidelines
+
+_Based on style refactoring and accessibility improvement sessions_
+
+### Visual Design Validation Requirements
+
+**CRITICAL**: Visual design quality is equally important as functional implementation, especially for customer-facing features.
+
+#### Pre-Implementation Design Checklist
+
+```markdown
+✅ Color contrast validation (WCAG 2.1 AA compliance)
+✅ Accessibility standards verification
+✅ Responsive design across device sizes
+✅ Typography hierarchy consistency
+✅ Animation performance optimization
+✅ Reduced motion preference support
+```
+
+#### Design Quality Assurance Process
+
+**3-Phase Approach**:
+
+1. **Design System Integration**: Follow component patterns, centralized utilities (60% duplication reduction)
+2. **Accessibility Implementation**: WCAG 2.1 AA compliance (4.5:1 contrast), keyboard navigation, screen reader support, reduced motion
+3. **Performance Optimization**: 60fps animations, bundle size monitoring, critical CSS, responsive images
+
+### Centralized Styling Architecture
+
+- **Utility-Based System**: Centralized styling utilities in `src/utils/campaignStyles.ts`
+- **TypeScript Interfaces**: Proper typing for styling configurations
+- **Accessibility Integration**: Built-in WCAG compliance and reduced motion support
+- **60% Duplication Reduction**: Proven efficiency through centralized approach
+
+### Marketing Component Requirements
+
+**Campaign Elements**: High visual impact, enhanced contrast for promotional text, clear visual hierarchy, A/B testing ready
+
+### Design Review Integration
+
+**Visual Review Steps**: Browser preview, contrast analysis, multi-device testing, accessibility testing, motion testing
+
+**Common Pitfalls to Avoid**: Poor color choices, inconsistent spacing, animation overuse, desktop-only thinking, accessibility afterthoughts
+
+---
+
+## ⚡ Efficiency Patterns & Performance Optimization
+
+_Based on documented performance improvements from retrospective analysis_
+
+### 🏃‍♂️ 15-Minute Implementation Strategy
+
+**Results**: 15-minute implementations vs 34+ minute baseline
+
+**Prerequisites**: Reference pattern, TodoWrite initialized, component structure analyzed, integration points identified
+
+**Speed Optimization Techniques**:
+
+1. **Pattern Recognition**: 56% faster when following proven patterns from `/docs/retrospective/`
+2. **MultiEdit**: Batch multiple edits instead of sequential single edits
+3. **Systematic Analysis**: 2-3 minute analysis of target areas and integration points
+4. **Build Validation**: `npm run build` after major changes, `npx tsc --noEmit` for type checking
+
+### 📊 Performance Benchmarks
+
+#### Implementation Time Comparisons
+
+| Task Type             | First Implementation | Pattern Replication | Improvement |
+| --------------------- | -------------------- | ------------------- | ----------- |
+| UI Consolidation      | 34 minutes           | 15 minutes          | 56% faster  |
+| Component Refactoring | 45 minutes           | 20 minutes          | 56% faster  |
+| API Migration         | 135 minutes          | 75 minutes          | 44% faster  |
+| Database Debugging    | 45 minutes           | 25 minutes          | 44% faster  |
+| Security Audit        | 60+ minutes          | 31 minutes          | 48% faster  |
+| Style Refactoring     | 70+ minutes          | 55 minutes          | 21% faster  |
+
+#### Efficiency Factor Analysis
+
+**High Efficiency Sessions** (15-20 minutes):
+
+- ✅ TodoWrite usage for progress tracking
+- ✅ Reference pattern available
+- ✅ Clear component structure understanding
+- ✅ Systematic 5-phase approach
+- ✅ Proactive build validation
+
+**Low Efficiency Sessions** (45+ minutes):
+
+- ❌ No reference pattern
+- ❌ Schema assumptions without verification
+- ❌ Working directly on main branch
+- ❌ Build testing only at end
+- ❌ Complex dependency analysis needed
+
+### 🎯 High-Impact Optimization Areas
+
+#### 1. TodoWrite Integration ROI
+
+- **Setup Time**: 2-3 minutes
+- **Visibility Benefit**: Real-time progress tracking
+- **Accountability**: Prevents skipping critical steps
+- **Stakeholder Communication**: Clear progress indicators
+- **Proven Results**: 56% faster implementations documented
+
+#### 2. Reference Pattern Utilization
+
+- **Pattern Documentation**: Create detailed retrospectives
+- **Pattern Library**: Maintain `/docs/retrospective/` as reference
+- **Systematic Replication**: Follow proven approaches exactly
+- **Context Adaptation**: Modify only necessary elements
+
+#### 3. Tool Optimization
+
+- **Efficient Pattern**: Read (targeted) → MultiEdit (batch) → Build (validation)
+- **Avoid**: Multiple single Edits → Multiple Reads → Late build testing
+
+#### 4. Workflow Adherence
+
+- **Branch Management**: Always create feature branches
+- **Incremental Testing**: Build validation at each phase
+- **Documentation Standards**: Comprehensive PR descriptions
+- **Issue Tracking**: Real-time GitHub issue updates
+
+### 🔄 Continuous Improvement Framework
+
+**Session Performance Tracking**: Track implementation time, document efficiency factors, identify workflow violations, measure pattern success rates
+
+**Pattern Development Lifecycle**: Novel Implementation → Pattern Recognition → Pattern Refinement → Pattern Maturation (sub-20-minute implementations)
+
+### 📈 Success Metrics & Performance Indicators
+
+#### Key Performance Indicators (KPIs)
+
+- **Implementation Speed**: Target <20 minutes for standard refactoring tasks
+- **Pattern Replication Success**: 56% time reduction when following proven patterns
+- **Build Success Rate**: 100% successful builds after implementation
+- **TodoWrite Utilization**: 100% usage for complex multi-phase tasks
+- **Security Compliance**: 85%+ PCI DSS compliance maintenance
+- **Code Quality**: Zero TypeScript errors in final implementations
+
+#### Session Quality Assessment
+
+- **Excellent (9-10/10)**: <20 min, pattern replication, zero issues
+- **Good (7-8/10)**: 20-35 min, some iterations, minor issues
+- **Average (5-6/10)**: 35-60 min, multiple iterations, troubleshooting
+- **Below Average (<5/10)**: >60 min, major blockers, incomplete
+
+---
+
 ## 🛠️ Development Commands
 
 ### Core Development
@@ -355,55 +665,147 @@ npm run prompt:analyze
 
 When you use the `=rrr` command, the agent will create a file and an Issue with the following sections and details:
 
-### Session Retrospective
+### Retrospective Structure
 
-**Session Date**: [Date]
-**Start Time**: [Start Time]
-**End Time**: [End Time]
-**Duration**: ~X minutes
-**Primary Focus**: [Main Focus]
-**Current Issue**: #XXX
-**Last PR**: #XXX
+**Required Sections**:
 
-### Session Summary
+- **Session Details**: Date (YYYY-MM-DD Thailand timezone), Duration, Focus, Issue/PR references
+- **Session Summary**: Overall work accomplished
+- **Timeline**: Key events with Thailand timestamps (Asia/Bangkok, UTC+7)
+- **📝 AI Diary** (MANDATORY): First-person reflection on approach and decisions
+- **💭 Honest Feedback** (MANDATORY): Performance assessment and improvement suggestions
+- **What Went Well**: Successes achieved
+- **What Could Improve**: Areas for enhancement
+- **Blockers & Resolutions**: Obstacles and solutions
+- **Lessons Learned**: Patterns, mistakes, and discoveries
 
-[Overall summary of the work done today]
+**File Naming**: `session-YYYY-MM-DD-[description].md` with Thailand date
 
-### Timeline
+---
 
-- HH:MM - Start, review issue #XXX
-- HH:MM - [Event]
-- HH:MM - [Event]
-- HH:MM - Work completed
+## 📚 Best Practices from Retrospectives
 
-### 📝 AI Diary (REQUIRED - DO NOT SKIP)
+_Lessons from 10+ development sessions in `/docs/retrospective/`_
 
-**⚠️ MANDATORY**: The agent must write this section in the first person.
-[Record initial understanding, how the approach changed, confusing or clarifying points, decisions made, and their reasoning.]
+### 🎯 TodoWrite Integration Best Practices
 
-### 💭 Honest Feedback (REQUIRED - DO NOT SKIP)
+**Results**: **15-minute implementations** vs 34+ minute sessions
 
-**⚠️ MANDATORY**: The agent must honestly evaluate its performance in this section.
-[Assess the session's overall efficiency, tools and their limitations, clarity of communication, and suggestions for improvement.]
+**When to Use**: Complex multi-step tasks (3+ phases), multi-component refactoring, full-stack implementations, large refactoring projects, security audits, campaign development, database migrations
 
-### What Went Well
+**Workflow Pattern**:
 
-- The successes that occurred
+1. Break into 5-12 manageable todos
+2. Mark exactly ONE todo in_progress → completed
+3. Provides real-time visibility and accountability
+4. Enables accurate time estimation
 
-### What Could Improve
+**Proven Benefits**: 56% faster implementation, reduces context switching, prevents missing steps, ensures comprehensive testing
 
-- Areas that could be made better
+#### Advanced TodoWrite Patterns
 
-### Blockers & Resolutions
+- **Security Implementations**: 8-phase systematic approach (31-minute completion)
 
-- **Blocker**: Description of the obstacle
-  **Resolution**: The solution implemented
+  - Phases 1-2: Infrastructure & Core Endpoint Analysis
+  - Phases 3-4: Data Integrity & Compliance Assessment
+  - Phases 5-6: Vulnerability Testing & Security Implementation
+  - Phases 7-8: Build Validation & Documentation
 
-### Lessons Learned
+- **UI/UX Refactoring**: 4-phase centralized styling development
+  - WCAG compliance audit → Centralized utilities → Component integration → Performance optimization
 
-- **Pattern**: [Pattern discovered] - [Reason why it's important]
-- **Mistake**: [Mistake made] - [How to avoid it]
-- **Discovery**: [New finding] - [How to apply it]
+### 🔄 Pattern Replication Strategy
+
+#### Reference Implementation Approach
+
+1. **Document Successful Patterns**: Create detailed retrospectives for reusable approaches
+2. **Systematic Replication**: Use previous session files as implementation guides
+3. **Adapt, Don't Recreate**: Modify proven patterns for new contexts
+4. **Measure Efficiency**: Track implementation time improvements
+
+#### Proven Pattern Examples
+
+- **UI Consolidation**: Reward card → chip integration (achieved 56% speed improvement)
+- **Component Refactoring**: Systematic removal and integration approaches
+- **API Updates**: Phase-by-phase endpoint migration strategies
+
+### ⚡ Build Validation Checkpoints
+
+#### Critical Validation Points
+
+- **Schema Changes**: `npm run build && npx tsc --noEmit`
+- **API Modifications**: `npm run build 2>&1 | grep -A 5 "error"`
+- **Large Refactoring**: `npx prisma generate && npm run build`
+
+#### Proactive Testing Strategy
+
+- **Incremental Builds**: Test builds after each major change, not just at the end
+- **TypeScript Validation**: Run `npx tsc --noEmit` for pure type checking
+- **Dependency Verification**: Check imports and exports after file restructuring
+- **Database Sync**: Verify `npx prisma generate` after schema changes
+
+### 🗄️ Schema Investigation Protocol
+
+#### Before Implementation Checklist
+
+1. **Verify Database Schema**: Always check actual Prisma schema definitions
+2. **Trace Data Structures**: Follow interface definitions through the codebase
+3. **Validate Field Names**: Don't assume field naming conventions
+4. **Check Relationships**: Understand model relationships before querying
+
+#### Common Schema Pitfalls
+
+- **Assumption Errors**: Making assumptions about field names/structures
+- **Interface Misalignment**: Frontend interfaces not matching database schema
+- **Relationship Complexity**: Not understanding foreign key relationships
+- **Type Mismatches**: TypeScript interfaces not reflecting actual data structures
+
+### 🔧 Multi-Phase Implementation Approach
+
+#### Systematic Phase Breakdown
+
+- **Phase 1**: Analysis & Preparation (10-15%)
+- **Phase 2**: Core Implementation (40-50%)
+- **Phase 3**: Integration & Testing (25-30%)
+- **Phase 4**: Documentation & Cleanup (10-15%)
+
+#### Phase Management Best Practices
+
+- **Clear Phase Objectives**: Define specific deliverables for each phase
+- **Dependency Mapping**: Identify cross-phase dependencies upfront
+- **Progress Checkpoints**: Validate phase completion before proceeding
+- **Issue Tracking**: Update GitHub issues after each phase completion
+
+### 🛡️ Database Best Practices
+
+#### PostgreSQL Sequence Management
+
+- **Check Sequence**: `SELECT last_value FROM "TableName_id_seq";`
+- **Reset Sequence**: `SELECT setval('"TableName_id_seq"', COALESCE(MAX(id), 0) + 1) FROM "TableName";`
+- **Common Issue**: Auto-increment sequences become desynchronized after manual insertions
+
+#### Debugging Strategy
+
+1. **Temporary Scripts**: Create debugging scripts instead of modifying main code
+2. **Isolation Testing**: Test specific database operations in isolation
+3. **Sequence Verification**: Check auto-increment sequences after data manipulation
+4. **Transaction Safety**: Use transactions for multi-step database operations
+
+### 📝 Documentation Standards
+
+#### PR Description Requirements
+
+- **Implementation Summary**: Clear overview of changes made
+- **Technical Details**: Specific technical implementation notes
+- **Before/After Analysis**: Impact assessment and improvement metrics
+- **Testing Validation**: Build success and functionality verification
+
+#### Retrospective Documentation
+
+- **AI Diary**: First-person reflection on approach and decision-making
+- **Honest Feedback**: Critical assessment of session efficiency and quality
+- **Pattern Recognition**: Identification of reusable patterns and approaches
+- **Lessons Learned**: Specific insights for future implementation improvement
 
 ---
 
@@ -437,6 +839,48 @@ npx prisma db pull
 # Regenerate Prisma client
 npx prisma generate
 ```
+
+#### PostgreSQL Sequence Issues
+
+_From retrospective: "Auto-increment sequences can become desynchronized in PostgreSQL"_
+
+**Common symptoms:**
+
+- Unique constraint violations on primary key fields during seeding
+- Database insertion failures with "duplicate key value violates unique constraint"
+- Auto-increment sequence out of sync with actual data
+
+**Diagnosis and Resolution:**
+
+- Check sequence: `SELECT last_value FROM "TableName_id_seq";`
+- Check max ID: `SELECT MAX(id) FROM "TableName";`
+- Reset sequence: `SELECT setval('"TableName_id_seq"', COALESCE(MAX(id), 0) + 1) FROM "TableName";`
+
+**Prevention strategies:**
+
+- Always reset sequences after manual data insertion
+- Use `COALESCE(MAX(id), 0) + 1` to handle empty tables
+- Check sequence synchronization after database migrations
+- Create debugging scripts for complex sequence issues
+
+#### TypeScript Compilation Errors
+
+_From retrospective: "Schema investigation prevents TypeScript errors"_
+
+**Common Interface Misalignments:**
+
+- **Schema Check**: `cat prisma/schema.prisma | grep -A 10 "model ModelName"`
+- **Type Validation**: `npx tsc --noEmit --strict`
+- **Fresh Types**: `npx prisma generate && npx tsc --noEmit`
+
+**Schema Investigation Protocol:**
+
+1. **Never assume field names** - Always check actual schema definitions
+2. **Trace data structures** - Follow interfaces through `useProfile` hooks and API responses
+3. **Verify relationships** - Check foreign key relationships in Prisma schema
+4. **Test incremental changes** - Run type checking after each interface modification
+
+**Common pitfalls**: Assuming field names without verification, interface mismatches between API and frontend
 
 #### AI System Issues
 
@@ -475,6 +919,82 @@ stripe listen --forward-to localhost:3000/api/payments/webhook
 echo $STRIPE_SECRET_KEY | head -c 10
 echo $STRIPE_WEBHOOK_SECRET | head -c 10
 ```
+
+#### Security Implementation Issues
+
+_From comprehensive security audit retrospectives_
+
+**Rate Limiting Configuration Missing:**
+
+- Check patterns in `src/middleware/rate-limiter.ts`
+- API config: `{ windowMs: 15 * 60 * 1000, max: 100 }`
+- Admin config: `{ windowMs: 15 * 60 * 1000, max: 20 }`
+
+**Webhook Security Hardening:**
+
+- Never log webhook secrets in error messages
+- Use generic error responses to prevent information disclosure
+- Implement timestamp-based replay protection (5-minute window)
+- Use `stripe.webhooks.constructEvent()` for signature validation
+
+**Input Validation Enhancement:**
+
+- Implement comprehensive Zod schemas for all API endpoints
+- Example: Payment validation with amount limits, currency restrictions, UUID validation
+
+#### System Integration Issues
+
+_From reward configuration and campaign implementation sessions_
+
+**RewardConfiguration Integration:**
+
+- Always check existing database records first: `npx prisma studio --port 5555`
+- Create temporary validation scripts for testing database operations
+- Use `PrismaClient` for isolated testing of specific queries
+
+**Campaign System Testing:**
+
+- Test campaign eligibility detection
+- Verify PaymentHistory queries for first payment detection
+- Validate campaign discount application in Stripe integration
+- Debug with API calls to campaign endpoints
+
+#### Visual Design and Accessibility Issues
+
+_From UI/UX refactoring sessions_
+
+**Color Contrast and Accessibility Problems:**
+
+- Use automated contrast checking tools
+- Validate WCAG 2.1 AA compliance (4.5:1 ratio minimum)
+- Test with screen readers when possible
+- Check banner text readability and promotional element contrast
+- Test reduced motion preferences
+
+**Styling System Conflicts:**
+
+- Avoid duplication with centralized utilities
+- Implement proper TypeScript interfaces for styling configs
+- Follow existing component patterns and design tokens
+- Use `src/utils/campaignStyles.ts` and `src/components/common/`
+
+#### Database Migration and Schema Issues
+
+_From database migration and system reset sessions_
+
+**Migration Safety Protocol:**
+
+- Always create comprehensive backups before major changes
+- Preserve critical data (Card and Prompt tables)
+- Use timestamped backup files: `backup-$(date +%Y-%m-%d-%H%M).db`
+- Use `npx prisma db seed` for critical data restoration
+
+**Schema Assumptions Prevention:**
+
+- Never assume field names without verification
+- Always check actual Prisma schema definitions
+- Trace data structures through the entire codebase
+- Use `grep` commands to trace field usage across codebase
 
 ### Performance Monitoring
 

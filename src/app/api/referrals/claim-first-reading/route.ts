@@ -77,13 +77,14 @@ export async function POST(request: NextRequest) {
 
     // Give referrer reward for first reading completion
     await prisma.$transaction(async (tx) => {
-      // Update referrer's rewards
+      // Update referrer's rewards (including freePoint)
       await tx.user.update({
         where: { id: referralCode.referredBy! },
         data: {
           exp: { increment: referrerReward.exp },
           coins: { increment: referrerReward.coins },
-          stars: { increment: referrerReward.stars }
+          stars: { increment: referrerReward.stars },
+          freePoint: { increment: referrerReward.freePoint || 0 }
         }
       })
 
@@ -99,7 +100,8 @@ export async function POST(request: NextRequest) {
           metadata: { 
             referredUserId: userId,
             readingId,
-            rewardType: 'first_reading_completion'
+            rewardType: 'first_reading_completion',
+            freePointAwarded: referrerReward.freePoint || 0
           }
         }
       })

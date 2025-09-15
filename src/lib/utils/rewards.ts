@@ -7,6 +7,15 @@ interface RewardData {
   exp?: number;
 }
 
+// Internal interface for database reward records (may use 'coin' singular)
+interface DatabaseRewardData {
+  stars?: number;
+  coin?: number;    // Database might use 'coin' singular
+  coins?: number;   // Or 'coins' plural
+  freePoint?: number;
+  exp?: number;
+}
+
 export interface ReferralRewards {
   inviter: RewardData;
   invited: RewardData;
@@ -36,12 +45,20 @@ export async function getReferralRewards(): Promise<ReferralRewards> {
     const fallbackInviter: RewardData = { stars: 1, exp: 25, coins: 0 };
     const fallbackInvited: RewardData = { stars: 1, coins: 5, exp: 0 };
 
+    // Normalize database rewards to handle both 'coin' and 'coins' field names
+    const normalizeRewards = (dbRewards: DatabaseRewardData): RewardData => ({
+      stars: dbRewards.stars || 0,
+      coins: dbRewards.coin || dbRewards.coins || 0, // Handle both coin/coins
+      freePoint: dbRewards.freePoint || 0,
+      exp: dbRewards.exp || 0
+    });
+
     const inviterRewards = inviterConfig?.isActive
-      ? (inviterConfig.rewards as RewardData)
+      ? normalizeRewards(inviterConfig.rewards as DatabaseRewardData)
       : fallbackInviter;
 
     const invitedRewards = invitedConfig?.isActive
-      ? (invitedConfig.rewards as RewardData)
+      ? normalizeRewards(invitedConfig.rewards as DatabaseRewardData)
       : fallbackInvited;
 
     return {
@@ -75,7 +92,14 @@ export async function getNewUserRewards(): Promise<RewardData> {
     const fallbackRewards: RewardData = { stars: 0, freePoint: 3 };
 
     if (config?.isActive) {
-      return config.rewards as RewardData;
+      // Normalize database rewards to handle both 'coin' and 'coins' field names
+      const dbRewards = config.rewards as DatabaseRewardData;
+      return {
+        stars: dbRewards.stars || 0,
+        coins: dbRewards.coin || dbRewards.coins || 0, // Handle both coin/coins
+        freePoint: dbRewards.freePoint || 0,
+        exp: dbRewards.exp || 0
+      };
     }
 
     return fallbackRewards;
@@ -89,11 +113,13 @@ export async function getNewUserRewards(): Promise<RewardData> {
 
 /**
  * Convert reward data to legacy format for backward compatibility
+ * Note: freePoint is handled separately as it's not part of the legacy format
  */
 export function toLegacyRewardFormat(rewards: RewardData) {
   return {
     exp: rewards.exp || 0,
     coins: rewards.coins || 0,
-    stars: rewards.stars || rewards.freePoint || 0, // Map freePoint to stars for compatibility
+    stars: rewards.stars || 0,
+    freePoint: rewards.freePoint || 0, // Include freePoint for proper reward processing
   };
 }

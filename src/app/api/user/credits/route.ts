@@ -1,50 +1,82 @@
 import { auth } from '@clerk/nextjs'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getOrCreateUser } from '@/lib/utils/jit-user'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
+  const requestTimestamp = new Date().toISOString()
+  console.log(`🔍 [${requestTimestamp}] Credits API called - Starting authentication check`)
+
   try {
     const { userId } = auth()
-    
+    console.log(`🔑 [${requestTimestamp}] Clerk auth result - userId: ${userId ? userId : 'null/undefined'}`)
+
     if (!userId) {
+      console.log(`❌ [${requestTimestamp}] Authentication failed - no userId from Clerk auth()`)
       return NextResponse.json(
-        { 
+        {
           success: false,
           error: 'Unauthorized',
           message: 'Authentication required',
-          timestamp: new Date().toISOString(),
-          path: '/api/user/credits'
-        }, 
+          timestamp: requestTimestamp,
+          path: '/api/user/credits',
+          debug: {
+            clerkAuth: 'no_user_id',
+            step: 'authentication_check'
+          }
+        },
         { status: 401 }
       )
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        stars: true,
-        coins: true,
-        freePoint: true,
-        level: true,
-        exp: true
-      }
-    })
+    console.log(`✅ [${requestTimestamp}] Authentication successful for userId: ${userId}`)
 
-    if (!user) {
+    console.log(`🔧 [${requestTimestamp}] Using JIT provisioning to ensure user exists for userId: ${userId}`)
+
+    let user
+    try {
+      user = await getOrCreateUser(userId)
+      console.log(`✅ [${requestTimestamp}] JIT: User ready for credits query:`, {
+        id: user.id,
+        stars: user.stars,
+        coins: user.coins,
+        freePoint: user.freePoint,
+        wasJitProvisioned: !user.createdAt || (Date.now() - user.createdAt.getTime()) < 5000 // Created within last 5 seconds
+      })
+
+    } catch (jitError) {
+      console.error(`❌ [${requestTimestamp}] JIT provisioning failed for userId: ${userId}`, jitError)
+
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: 'Not found',
-          message: 'User not found',
-          timestamp: new Date().toISOString(),
-          path: '/api/user/credits'
-        }, 
-        { status: 404 }
+          error: 'User provisioning failed',
+          message: 'Could not create or retrieve user account',
+          timestamp: requestTimestamp,
+          path: '/api/user/credits',
+          debug: {
+            clerkUserId: userId,
+            step: 'jit_provisioning',
+            error: jitError instanceof Error ? jitError.message : 'Unknown JIT error'
+          }
+        },
+        { status: 500 }
       )
     }
+
+    console.log(`✅ [${requestTimestamp}] JIT: User ready for credits calculation:`, {
+      id: user.id,
+      stars: user.stars,
+      coins: user.coins,
+      freePoint: user.freePoint,
+      level: user.level,
+      exp: user.exp,
+      createdAt: user.createdAt,
+      accountAge: Math.round((Date.now() - user.createdAt.getTime()) / 1000) + 's'
+    })
 
     // Calculate daily/monthly limits
     const now = new Date()
@@ -96,14 +128,24 @@ export async function GET() {
       }
     })
   } catch (error) {
-    console.error('Credits fetch error:', error)
+    console.error(`❌ [${requestTimestamp}] Credits fetch error:`, error)
+    console.error(`🔍 [${requestTimestamp}] Error details:`, {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      type: typeof error
+    })
+
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Internal server error',
         message: 'Failed to fetch user credits',
-        timestamp: new Date().toISOString(),
-        path: '/api/user/credits'
+        timestamp: requestTimestamp,
+        path: '/api/user/credits',
+        debug: {
+          errorType: error instanceof Error ? error.constructor.name : typeof error,
+          step: 'exception_handler'
+        }
       },
       { status: 500 }
     )
