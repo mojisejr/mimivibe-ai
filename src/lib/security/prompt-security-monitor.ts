@@ -3,11 +3,11 @@
  * Tracks all prompt access, decryption events, and potential security threats
  */
 
-import { prisma } from '@/lib/prisma';
+import { prisma } from "@/lib/prisma";
 
 export interface PromptAccessLog {
   promptName: string;
-  accessType: 'READ' | 'DECRYPT' | 'UPDATE' | 'DELETE';
+  accessType: "READ" | "DECRYPT" | "UPDATE" | "DELETE";
   userId?: string;
   ipAddress?: string;
   userAgent?: string;
@@ -18,8 +18,12 @@ export interface PromptAccessLog {
 }
 
 export interface SecurityAlert {
-  alertType: 'UNAUTHORIZED_ACCESS' | 'MULTIPLE_FAILED_ATTEMPTS' | 'SUSPICIOUS_PATTERN' | 'ENCRYPTION_FAILURE';
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  alertType:
+    | "UNAUTHORIZED_ACCESS"
+    | "MULTIPLE_FAILED_ATTEMPTS"
+    | "SUSPICIOUS_PATTERN"
+    | "ENCRYPTION_FAILURE";
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   description: string;
   userId?: string;
   ipAddress?: string;
@@ -32,7 +36,7 @@ export class PromptSecurityMonitor {
   private alertBuffer: SecurityAlert[] = [];
   private readonly BUFFER_SIZE = 100;
   private readonly FLUSH_INTERVAL = 30000; // 30 seconds
-  
+
   private constructor() {
     // Start periodic log flushing
     setInterval(() => {
@@ -81,7 +85,7 @@ export class PromptSecurityMonitor {
     this.alertBuffer.push(alertEntry);
 
     // Log critical alerts immediately
-    if (alert.severity === 'CRITICAL') {
+    if (alert.severity === "CRITICAL") {
       console.error(`🚨 CRITICAL SECURITY ALERT: ${alert.description}`, {
         type: alert.alertType,
         userId: alert.userId,
@@ -104,11 +108,11 @@ export class PromptSecurityMonitor {
     // Check for multiple failed attempts from same IP
     if (!log.success && log.ipAddress) {
       const recentFailures = await this.getRecentFailures(log.ipAddress, 300); // 5 minutes
-      
+
       if (recentFailures >= 5) {
         await this.createAlert({
-          alertType: 'MULTIPLE_FAILED_ATTEMPTS',
-          severity: 'HIGH',
+          alertType: "MULTIPLE_FAILED_ATTEMPTS",
+          severity: "HIGH",
           description: `Multiple failed prompt access attempts from IP ${log.ipAddress}`,
           ipAddress: log.ipAddress,
           metadata: {
@@ -122,11 +126,11 @@ export class PromptSecurityMonitor {
     // Check for suspicious access patterns
     if (log.promptName && log.userId) {
       const recentAccess = await this.getRecentUserAccess(log.userId, 60); // 1 minute
-      
+
       if (recentAccess >= 20) {
         await this.createAlert({
-          alertType: 'SUSPICIOUS_PATTERN',
-          severity: 'MEDIUM',
+          alertType: "SUSPICIOUS_PATTERN",
+          severity: "MEDIUM",
           description: `Unusually high prompt access rate for user ${log.userId}`,
           userId: log.userId,
           metadata: {
@@ -138,10 +142,10 @@ export class PromptSecurityMonitor {
     }
 
     // Check for encryption failures
-    if (log.accessType === 'DECRYPT' && !log.success) {
+    if (log.accessType === "DECRYPT" && !log.success) {
       await this.createAlert({
-        alertType: 'ENCRYPTION_FAILURE',
-        severity: 'HIGH',
+        alertType: "ENCRYPTION_FAILURE",
+        severity: "HIGH",
         description: `Prompt decryption failure for ${log.promptName}`,
         userId: log.userId,
         metadata: {
@@ -155,10 +159,13 @@ export class PromptSecurityMonitor {
   /**
    * Get recent failures for an IP address
    */
-  private async getRecentFailures(ipAddress: string, secondsAgo: number): Promise<number> {
+  private async getRecentFailures(
+    ipAddress: string,
+    secondsAgo: number
+  ): Promise<number> {
     try {
       const cutoffTime = new Date(Date.now() - secondsAgo * 1000);
-      
+
       const count = await prisma.promptAccessLog.count({
         where: {
           ipAddress,
@@ -171,7 +178,7 @@ export class PromptSecurityMonitor {
 
       return count;
     } catch (error) {
-      console.error('Error querying recent failures:', error);
+      console.error("Error querying recent failures:", error);
       return 0;
     }
   }
@@ -179,10 +186,13 @@ export class PromptSecurityMonitor {
   /**
    * Get recent access count for a user
    */
-  private async getRecentUserAccess(userId: string, secondsAgo: number): Promise<number> {
+  private async getRecentUserAccess(
+    userId: string,
+    secondsAgo: number
+  ): Promise<number> {
     try {
       const cutoffTime = new Date(Date.now() - secondsAgo * 1000);
-      
+
       const count = await prisma.promptAccessLog.count({
         where: {
           userId,
@@ -194,7 +204,7 @@ export class PromptSecurityMonitor {
 
       return count;
     } catch (error) {
-      console.error('Error querying recent user access:', error);
+      console.error("Error querying recent user access:", error);
       return 0;
     }
   }
@@ -210,7 +220,7 @@ export class PromptSecurityMonitor {
       this.logBuffer = [];
 
       await prisma.promptAccessLog.createMany({
-        data: logsToFlush.map(log => ({
+        data: logsToFlush.map((log) => ({
           promptName: log.promptName,
           accessType: log.accessType,
           userId: log.userId,
@@ -222,9 +232,8 @@ export class PromptSecurityMonitor {
           metadata: log.metadata as any,
         })),
       });
-
     } catch (error) {
-      console.error('Error flushing prompt access logs:', error);
+      console.error("Error flushing prompt access logs:", error);
       // Re-add logs to buffer if flush failed
       this.logBuffer.unshift(...this.logBuffer);
     }
@@ -241,7 +250,7 @@ export class PromptSecurityMonitor {
       this.alertBuffer = [];
 
       await prisma.securityAlert.createMany({
-        data: alertsToFlush.map(alert => ({
+        data: alertsToFlush.map((alert) => ({
           alertType: alert.alertType,
           severity: alert.severity,
           description: alert.description,
@@ -250,9 +259,8 @@ export class PromptSecurityMonitor {
           metadata: alert.metadata as any,
         })),
       });
-
     } catch (error) {
-      console.error('Error flushing security alerts:', error);
+      console.error("Error flushing security alerts:", error);
       // Re-add alerts to buffer if flush failed
       this.alertBuffer.unshift(...this.alertBuffer);
     }
@@ -278,45 +286,45 @@ export class PromptSecurityMonitor {
         uniqueUsers,
         uniqueIPs,
         recentAlerts,
-        topAccessedPrompts
+        topAccessedPrompts,
       ] = await Promise.all([
         prisma.promptAccessLog.count({
-          where: { createdAt: { gte: cutoffTime } }
+          where: { createdAt: { gte: cutoffTime } },
         }),
         prisma.promptAccessLog.count({
-          where: { 
+          where: {
             createdAt: { gte: cutoffTime },
-            success: false 
-          }
+            success: false,
+          },
         }),
         prisma.promptAccessLog.findMany({
-          where: { 
+          where: {
             createdAt: { gte: cutoffTime },
-            userId: { not: null }
+            userId: { not: null },
           },
           select: { userId: true },
-          distinct: ['userId'],
+          distinct: ["userId"],
         }),
         prisma.promptAccessLog.findMany({
-          where: { 
+          where: {
             createdAt: { gte: cutoffTime },
-            ipAddress: { not: null }
+            ipAddress: { not: null },
           },
           select: { ipAddress: true },
-          distinct: ['ipAddress'],
+          distinct: ["ipAddress"],
         }),
         prisma.securityAlert.findMany({
           where: { createdAt: { gte: cutoffTime } },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           take: 10,
         }),
         prisma.promptAccessLog.groupBy({
-          by: ['promptName'],
+          by: ["promptName"],
           where: { createdAt: { gte: cutoffTime } },
           _count: { promptName: true },
-          orderBy: { _count: { promptName: 'desc' } },
+          orderBy: { _count: { promptName: "desc" } },
           take: 5,
-        })
+        }),
       ]);
 
       return {
@@ -328,7 +336,7 @@ export class PromptSecurityMonitor {
         topAccessedPrompts,
       };
     } catch (error) {
-      console.error('Error generating security dashboard:', error);
+      console.error("Error generating security dashboard:", error);
       return {
         totalAccess: 0,
         failedAccess: 0,
@@ -349,16 +357,18 @@ export class PromptSecurityMonitor {
     try {
       const [deletedLogs, deletedAlerts] = await Promise.all([
         prisma.promptAccessLog.deleteMany({
-          where: { createdAt: { lt: cutoffTime } }
+          where: { createdAt: { lt: cutoffTime } },
         }),
         prisma.securityAlert.deleteMany({
-          where: { createdAt: { lt: cutoffTime } }
-        })
+          where: { createdAt: { lt: cutoffTime } },
+        }),
       ]);
 
-      console.log(`Cleaned up ${deletedLogs.count} old access logs and ${deletedAlerts.count} old alerts`);
+      console.log(
+        `Cleaned up ${deletedLogs.count} old access logs and ${deletedAlerts.count} old alerts`
+      );
     } catch (error) {
-      console.error('Error cleaning up old logs:', error);
+      console.error("Error cleaning up old logs:", error);
     }
   }
 }
@@ -370,7 +380,7 @@ export const promptSecurityMonitor = PromptSecurityMonitor.getInstance();
 export function createSecurityLogEntry(
   req: any,
   promptName: string,
-  accessType: PromptAccessLog['accessType'],
+  accessType: PromptAccessLog["accessType"],
   success: boolean,
   executionTimeMs?: number,
   errorMessage?: string
@@ -380,7 +390,7 @@ export function createSecurityLogEntry(
     accessType,
     userId: req.auth?.userId || undefined,
     ipAddress: req.ip || req.connection?.remoteAddress || undefined,
-    userAgent: req.headers?.['user-agent'] || undefined,
+    userAgent: req.headers?.["user-agent"] || undefined,
     success,
     executionTimeMs,
     errorMessage,

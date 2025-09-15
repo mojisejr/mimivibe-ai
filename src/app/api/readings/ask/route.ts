@@ -6,6 +6,9 @@ import { generateTarotReading } from '@/lib/langgraph/workflow-with-db'
 import type { ReadingResponse, ReadingError } from '@/types/reading'
 import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
 import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
+import { analyzeUserInput, validateTarotQuestion, calculateUserSuspicionLevel } from '@/lib/security/ai-protection'
+import { aiRateLimit, securityAiRateLimit } from '@/lib/rate-limiter'
+import { sanitizeString } from '@/lib/validations'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -22,6 +25,16 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString(),
         path: '/api/readings/ask'
       } as ReadingError, { status: 401 })
+    }
+
+    // Get client information for security checks
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const userAgent = request.headers.get('user-agent') || 'unknown'
+
+    // Apply AI-specific rate limiting
+    const aiRateLimitResult = await aiRateLimit(request)
+    if (aiRateLimitResult) {
+      return aiRateLimitResult
     }
 
     const body = await request.json()
@@ -47,6 +60,42 @@ export async function POST(request: NextRequest) {
         path: '/api/readings/ask'
       } as ReadingError, { status: 400 })
     }
+
+    // Perform AI security analysis
+    const securityAnalysis = analyzeUserInput(question, userAgent, clientIP)
+    
+    // Block high-risk or critical content
+     if (securityAnalysis.isBlocked) {
+       // Apply stricter rate limiting for suspicious users
+       const securityRateLimitResult = await securityAiRateLimit(request)
+       if (securityRateLimitResult) {
+         return securityRateLimitResult
+       }
+       
+       return NextResponse.json({
+         success: false,
+         error: 'Content blocked',
+         message: 'Your question contains inappropriate content. Please rephrase and try again.',
+         timestamp: new Date().toISOString(),
+         path: '/api/readings/ask'
+       } as ReadingError, { status: 400 })
+     }
+ 
+     // Validate tarot-specific content
+     const tarotValidation = validateTarotQuestion(question)
+     if (!tarotValidation.isValid) {
+       const issueMessage = tarotValidation.issues.length > 0 ? tarotValidation.issues[0] : 'Please ask a question suitable for tarot reading.'
+       return NextResponse.json({
+         success: false,
+         error: 'Invalid question',
+         message: issueMessage,
+         timestamp: new Date().toISOString(),
+         path: '/api/readings/ask'
+       } as ReadingError, { status: 400 })
+     }
+
+    // Sanitize the question
+    const sanitizedQuestion = sanitizeString(securityAnalysis.sanitizedContent, 500)
 
     // Get user and check credits
     const user = await prisma.user.findUnique({
@@ -86,7 +135,7 @@ export async function POST(request: NextRequest) {
     // Generate reading using LangGraph workflow
     let workflowResult
     try {
-      workflowResult = await generateTarotReading(question, userId)
+      workflowResult = await generateTarotReading(sanitizedQuestion, userId)
       
       // Check if workflow returned an error
       if (workflowResult.error) {
@@ -156,7 +205,12 @@ export async function POST(request: NextRequest) {
             reason: 'Tarot reading generation',
             freePointUsed: -deltaFreePoint,
             starsUsed: -deltaStars,
-            questionLength: question.length
+            questionLength: sanitizedQuestion.length,
+            securityAnalysis: {
+              riskLevel: securityAnalysis.riskLevel,
+              confidence: securityAnalysis.confidence,
+              detectedPatterns: securityAnalysis.detectedPatterns
+            }
           }
         }
       })
@@ -196,7 +250,7 @@ export async function POST(request: NextRequest) {
     // Return reading data without saving to database
     const readingResult = {
       readingId: temporaryReadingId,
-      question: question.trim(),
+      question: sanitizedQuestion,
       questionAnalysis: workflowResult.questionAnalysis,
       cards: workflowResult.reading.cards_reading, // Full card objects for display
       reading: workflowResult.reading, // Complete reading structure

@@ -165,3 +165,78 @@ export const adminRateLimitConfig: RateLimitConfig = {
   maxRequests: 10, // Max 10 admin requests per minute
   keyGenerator: (req) => getClientIdentifier(req)
 }
+
+// AI-specific rate limiting configurations for security
+export const aiReadingRateLimitConfig: RateLimitConfig = {
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 10, // Max 10 AI reading requests per minute
+  keyGenerator: (req) => getClientIdentifier(req)
+}
+
+export const aiStrictRateLimitConfig: RateLimitConfig = {
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  maxRequests: 20, // Max 20 AI requests per 5 minutes for suspicious activity
+  keyGenerator: (req) => getClientIdentifier(req)
+}
+
+export const aiAbuseRateLimitConfig: RateLimitConfig = {
+  windowMs: 60 * 60 * 1000, // 1 hour
+  maxRequests: 100, // Max 100 AI requests per hour for abuse prevention
+  keyGenerator: (req) => getClientIdentifier(req)
+}
+
+// Enhanced rate limiting for AI endpoints with user tier support
+export async function aiRateLimit(
+  request: NextRequest,
+  userTier: 'free' | 'premium' | 'admin' = 'free'
+): Promise<NextResponse | null> {
+  const tierConfigs = {
+    free: {
+      windowMs: 60 * 1000, // 1 minute
+      maxRequests: 5 // Max 5 AI requests per minute for free users
+    },
+    premium: {
+      windowMs: 60 * 1000, // 1 minute
+      maxRequests: 15 // Max 15 AI requests per minute for premium users
+    },
+    admin: {
+      windowMs: 60 * 1000, // 1 minute
+      maxRequests: 50 // Max 50 AI requests per minute for admin users
+    }
+  }
+
+  const config = {
+    ...tierConfigs[userTier],
+    keyGenerator: (req: NextRequest) => `${userTier}:${getClientIdentifier(req)}`
+  }
+
+  return rateLimit(request, config)
+}
+
+// Security-focused rate limiting for suspicious AI activity
+export async function securityAiRateLimit(
+  request: NextRequest,
+  suspicionLevel: 'low' | 'medium' | 'high' = 'low'
+): Promise<NextResponse | null> {
+  const securityConfigs = {
+    low: {
+      windowMs: 60 * 1000, // 1 minute
+      maxRequests: 10
+    },
+    medium: {
+      windowMs: 5 * 60 * 1000, // 5 minutes
+      maxRequests: 15
+    },
+    high: {
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      maxRequests: 5
+    }
+  }
+
+  const config = {
+    ...securityConfigs[suspicionLevel],
+    keyGenerator: (req: NextRequest) => `security:${suspicionLevel}:${getClientIdentifier(req)}`
+  }
+
+  return rateLimit(request, config)
+}

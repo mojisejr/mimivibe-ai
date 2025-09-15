@@ -1,4 +1,10 @@
 // Validation utilities for API requests
+import DOMPurify from 'dompurify'
+import { JSDOM } from 'jsdom'
+
+// Initialize DOMPurify for server-side usage
+const window = new JSDOM('').window
+const purify = DOMPurify(window as any)
 
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -18,7 +24,18 @@ export function isValidEventType(eventType: string): boolean {
 }
 
 export function sanitizeString(str: string, maxLength: number = 255): string {
-  return str.trim().slice(0, maxLength)
+  if (!str || typeof str !== 'string') {
+    return ''
+  }
+  
+  // Remove potential XSS attacks
+  const sanitized = purify.sanitize(str, {
+    ALLOWED_TAGS: [], // No HTML tags allowed
+    ALLOWED_ATTR: [], // No attributes allowed
+    KEEP_CONTENT: true // Keep text content
+  })
+  
+  return sanitized.trim().slice(0, maxLength)
 }
 
 export function validatePagination(page?: string, limit?: string) {
