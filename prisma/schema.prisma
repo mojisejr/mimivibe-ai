@@ -184,33 +184,30 @@ model Review {
 }
 
 model User {
-  id                    String                  @id
-  lineId                String?                 @unique
-  email                 String?                 @unique
-  name                  String?
-  tel                   String?
-  imageUrl              String?
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime
-  stars                 Int                     @default(0)
-  coins                 Int                     @default(0)
-  exp                   Int                     @default(0)
-  level                 Int                     @default(1)
-  freePoint             Int                     @default(0)
-  role                  UserRole                @default(USER)
-  prestigeLevel         Int                     @default(0)
-  prestigePoints        Int                     @default(0)
-  CoinExchange          CoinExchange[]
-  PaymentHistory        PaymentHistory[]
-  PointTransaction      PointTransaction[]
-  Review                Review[]
-
-  Reading               Reading[]
-  referredUsers         ReferralCode[]          @relation("UserReferrals")
-  ReferralCode          ReferralCode[]
+  id               String             @id
+  lineId           String?            @unique
+  email            String?            @unique
+  name             String?
+  tel              String?
+  imageUrl         String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  stars            Int                @default(0)
+  coins            Int                @default(0)
+  exp              Int                @default(0)
+  level            Int                @default(1)
+  freePoint        Int                @default(0)
+  role             UserRole           @default(USER)
+  prestigeLevel    Int                @default(0)
+  prestigePoints   Int                @default(0)
+  CoinExchange     CoinExchange[]
+  PaymentHistory   PaymentHistory[]
+  PointTransaction PointTransaction[]
+  Review           Review[]
+  Reading          Reading[]
+  referredUsers    ReferralCode[]     @relation("UserReferrals")
+  ReferralCode     ReferralCode[]
 }
-
-
 
 model PromptTemplate {
   id               Int                @id @default(autoincrement())
@@ -258,10 +255,6 @@ model PromptTestResult {
   @@index([templateId, createdAt])
   @@map("prompt_test_results")
 }
-
-
-
-
 
 model PromptAccessLog {
   id              Int      @id @default(autoincrement())
