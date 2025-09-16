@@ -6,14 +6,12 @@ import { HeroSection } from "./HeroSection";
 import { LoadingState } from "./LoadingState";
 import { AnimatedArticleDisplay } from "./AnimatedArticleDisplay";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
+import { ErrorDisplay } from "@/components/ui/ErrorDisplay";
 import { motion } from "framer-motion";
+import { mapErrorToEnhanced } from "@/lib/errors/error-mapper";
+import { EnhancedError } from "@/types/errors";
 
 type PageState = "initial" | "loading" | "result" | "error";
-
-interface ErrorState {
-  message: string;
-  canRetry: boolean;
-}
 
 export function AskPage() {
   const [pageState, setPageState] = useState<PageState>("initial");
@@ -21,7 +19,7 @@ export function AskPage() {
   const [readingData, setReadingData] = useState<
     ReadingResponse["data"] | null
   >(null);
-  const [error, setError] = useState<ErrorState | null>(null);
+  const [error, setError] = useState<EnhancedError | null>(null);
 
   const handleQuestionSubmit = async (question: string) => {
     setCurrentQuestion(question);
@@ -40,22 +38,40 @@ export function AskPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "การทำนายล้มเหลว");
+        const enhancedError = mapErrorToEnhanced(
+          data.error || "การทำนายล้มเหลว",
+          { 
+            component: "AskPage",
+            action: "handleQuestionSubmit",
+            url: "/api/readings/ask",
+            additionalData: { httpStatus: response.status }
+          }
+        );
+        setError(enhancedError);
+        setPageState("error");
+        return;
       }
 
       if (data.success) {
         setReadingData(data.data);
         setPageState("result");
       } else {
-        throw new Error(data.error || "ไม่สามารถทำนายได้");
+        const enhancedError = mapErrorToEnhanced(
+          data.error || "ไม่สามารถทำนายได้",
+          { 
+            component: "AskPage",
+            action: "handleQuestionSubmit"
+          }
+        );
+        setError(enhancedError);
+        setPageState("error");
       }
     } catch (err) {
-      console.error("Reading error:", err);
-      setError({
-        message:
-          err instanceof Error ? err.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
-        canRetry: true,
+      const enhancedError = mapErrorToEnhanced(err, {
+        component: "AskPage",
+        action: "handleQuestionSubmit"
       });
+      setError(enhancedError);
       setPageState("error");
     }
   };
@@ -79,7 +95,17 @@ export function AskPage() {
       });
 
       if (!response.ok) {
-        throw new Error("ไม่สามารถบันทึกการทำนายได้");
+        const data = await response.json();
+        const enhancedError = mapErrorToEnhanced(
+          data.error || "ไม่สามารถบันทึกการทำนายได้",
+          { 
+            component: "AskPage",
+            action: "handleSaveReading",
+            url: "/api/readings/save",
+            additionalData: { httpStatus: response.status }
+          }
+        );
+        throw enhancedError;
       }
 
       const result = await response.json();
@@ -95,9 +121,13 @@ export function AskPage() {
       // Show success feedback (could be a toast notification)
       // Reading saved successfully
     } catch (err) {
-      console.error("Save error:", err);
-      // Show error feedback
-      throw err;
+      const enhancedError = mapErrorToEnhanced(err, {
+        component: "AskPage",
+        action: "handleSaveReading"
+      });
+      setError(enhancedError);
+      setPageState("error");
+      throw enhancedError;
     }
   };
 
@@ -113,14 +143,28 @@ export function AskPage() {
       });
 
       if (!response.ok) {
-        throw new Error("ไม่สามารถลบการทำนายได้");
+        const data = await response.json();
+        const enhancedError = mapErrorToEnhanced(
+          data.error || "ไม่สามารถลบการทำนายได้",
+          { 
+            component: "AskPage",
+            action: "handleDeleteReading",
+            url: `/api/readings/${readingData.readingId}`,
+            additionalData: { httpStatus: response.status }
+          }
+        );
+        throw enhancedError;
       }
 
       // Reset to initial state
       handleAskAgain();
     } catch (err) {
-      console.error("Delete error:", err);
-      // Show error feedback
+      const enhancedError = mapErrorToEnhanced(err, {
+        component: "AskPage",
+        action: "handleDeleteReading"
+      });
+      setError(enhancedError);
+      setPageState("error");
     }
   };
 
@@ -221,64 +265,13 @@ export function AskPage() {
               />
             </div>
 
-            <div className="relative z-10 w-full max-w-md mx-auto text-center">
-              <motion.div
+            <div className="relative z-10 w-full max-w-md mx-auto">
+              <ErrorDisplay
+                error={error}
+                onRetry={handleRetry}
+                onDismiss={handleAskAgain}
                 className="mb-8"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              >
-                <div className="bg-base-100/80 backdrop-blur-sm rounded-2xl shadow-2xl border-2 border-error/20 p-8">
-                  <motion.div
-                    className="w-24 h-24 bg-error/20 rounded-full flex items-center justify-center mx-auto mb-6"
-                    animate={{
-                      scale: [1, 1.1, 1],
-                      rotate: [0, 5, -5, 0],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  >
-                    <span className="text-4xl">😞</span>
-                  </motion.div>
-                  <h2 className="text-2xl font-bold text-error mb-4">
-                    เกิดข้อผิดพลาด
-                  </h2>
-                  <p className="text-lg text-error/80 mb-8 leading-relaxed">
-                    {error.message}
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="space-y-4"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-              >
-                {error.canRetry && (
-                  <motion.button
-                    onClick={handleRetry}
-                    className="btn btn-lg w-full bg-gradient-to-r from-error to-error-focus text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <span className="text-xl mr-2">🔄</span>
-                    <span>ลองอีกครั้ง</span>
-                  </motion.button>
-                )}
-                <motion.button
-                  onClick={handleAskAgain}
-                  className="btn btn-outline btn-lg w-full border-2 border-primary/30 hover:border-primary hover:bg-primary/10"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <span className="text-lg mr-2">🏠</span>
-                  <span>เริ่มใหม่</span>
-                </motion.button>
-              </motion.div>
+              />
             </div>
           </div>
         )}

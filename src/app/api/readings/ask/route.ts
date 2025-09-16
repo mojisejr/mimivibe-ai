@@ -3,12 +3,14 @@ import { auth } from '@clerk/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateTarotReading } from '@/lib/langgraph/workflow-with-db'
-import type { ReadingResponse, ReadingError } from '@/types/reading'
+import type { ReadingResponse } from '@/types/reading'
 import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
 import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
 import { analyzeUserInput, validateTarotQuestion, calculateUserSuspicionLevel } from '@/lib/security/ai-protection'
 import { aiRateLimit, securityAiRateLimit } from '@/lib/rate-limiter'
 import { sanitizeString } from '@/lib/validations'
+import { mapErrorToEnhanced } from '@/lib/errors/error-mapper'
+import { ErrorCode } from '@/types/errors'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -18,13 +20,16 @@ export async function POST(request: NextRequest) {
     const { userId } = auth()
     
     if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Unauthorized',
-        message: 'Authentication required',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 401 })
+      const error = mapErrorToEnhanced(
+        new Error('Authentication required'),
+        {
+          component: 'ReadingAPI',
+          action: 'authentication',
+          url: '/api/readings/ask',
+          httpStatus: 401
+        }
+      )
+      return NextResponse.json(error, { status: 401 })
     }
 
     // Get client information for security checks
@@ -42,23 +47,36 @@ export async function POST(request: NextRequest) {
 
     // Validate question
     if (!question || typeof question !== 'string') {
-      return NextResponse.json({
-        success: false,
-        error: 'Bad request',
-        message: 'Question is required',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 400 })
+      const error = mapErrorToEnhanced(
+        new Error('Question is required'),
+        {
+          component: 'ReadingAPI',
+          action: 'validation',
+          url: '/api/readings/ask',
+          httpStatus: 400,
+          additionalData: { field: 'question', received: typeof question }
+        }
+      )
+      return NextResponse.json(error, { status: 400 })
     }
 
     if (question.length < 10 || question.length > 500) {
-      return NextResponse.json({
-        success: false,
-        error: 'Bad request',
-        message: 'Question must be between 10-500 characters',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 400 })
+      const error = mapErrorToEnhanced(
+        new Error('Question must be between 10-500 characters'),
+        {
+          component: 'ReadingAPI',
+          action: 'validation',
+          url: '/api/readings/ask',
+          httpStatus: 400,
+          additionalData: { 
+            field: 'question', 
+            length: question.length,
+            minLength: 10,
+            maxLength: 500
+          }
+        }
+      )
+      return NextResponse.json(error, { status: 400 })
     }
 
     // Perform AI security analysis
@@ -72,26 +90,40 @@ export async function POST(request: NextRequest) {
          return securityRateLimitResult
        }
        
-       return NextResponse.json({
-         success: false,
-         error: 'Content blocked',
-         message: 'Your question contains inappropriate content. Please rephrase and try again.',
-         timestamp: new Date().toISOString(),
-         path: '/api/readings/ask'
-       } as ReadingError, { status: 400 })
+       const error = mapErrorToEnhanced(
+         new Error('Your question contains inappropriate content. Please rephrase and try again.'),
+         {
+           component: 'ReadingAPI',
+           action: 'security_check',
+           url: '/api/readings/ask',
+           httpStatus: 400,
+           additionalData: {
+             riskLevel: securityAnalysis.riskLevel,
+             detectedPatterns: securityAnalysis.detectedPatterns
+           }
+         }
+       )
+       return NextResponse.json(error, { status: 400 })
      }
  
      // Validate tarot-specific content
      const tarotValidation = validateTarotQuestion(question)
      if (!tarotValidation.isValid) {
        const issueMessage = tarotValidation.issues.length > 0 ? tarotValidation.issues[0] : 'Please ask a question suitable for tarot reading.'
-       return NextResponse.json({
-         success: false,
-         error: 'Invalid question',
-         message: issueMessage,
-         timestamp: new Date().toISOString(),
-         path: '/api/readings/ask'
-       } as ReadingError, { status: 400 })
+       const error = mapErrorToEnhanced(
+         new Error(issueMessage),
+         {
+           component: 'ReadingAPI',
+           action: 'tarot_validation',
+           url: '/api/readings/ask',
+           httpStatus: 400,
+           additionalData: {
+             issues: tarotValidation.issues,
+             questionType: 'tarot'
+           }
+         }
+       )
+       return NextResponse.json(error, { status: 400 })
      }
 
     // Sanitize the question
@@ -111,25 +143,38 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        error: 'Not found',
-        message: 'User not found',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 404 })
+      const error = mapErrorToEnhanced(
+        new Error('User not found'),
+        {
+          component: 'ReadingAPI',
+          action: 'user_lookup',
+          url: '/api/readings/ask',
+          httpStatus: 404,
+          additionalData: { userId }
+        }
+      )
+      return NextResponse.json(error, { status: 404 })
     }
 
     // Check if user has enough credits (freePoint or stars)
     const totalCredits = user.freePoint + user.stars
     if (totalCredits < 1) {
-      return NextResponse.json({
-        success: false,
-        error: 'Insufficient credits',
-        message: 'Not enough credits for reading',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 400 })
+      const error = mapErrorToEnhanced(
+        new Error('Not enough credits for reading'),
+        {
+          component: 'ReadingAPI',
+          action: 'credit_check',
+          url: '/api/readings/ask',
+          httpStatus: 400,
+          additionalData: {
+            currentCredits: totalCredits,
+            requiredCredits: 1,
+            freePoint: user.freePoint,
+            stars: user.stars
+          }
+        }
+      )
+      return NextResponse.json(error, { status: 400 })
     }
 
     // Generate reading using LangGraph workflow
@@ -149,13 +194,20 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       // Handle timeout error - don't deduct credits
       if (error instanceof Error && error.message.includes('Reading timeout')) {
-        return NextResponse.json({
-          success: false,
-          error: 'Reading timeout',
-          message: error.message,
-          timestamp: new Date().toISOString(),
-          path: '/api/readings/ask'
-        } as ReadingError, { status: 408 }) // 408 Request Timeout
+        const enhancedError = mapErrorToEnhanced(
+          error,
+          {
+            component: 'ReadingAPI',
+            action: 'ai_generation',
+            url: '/api/readings/ask',
+            httpStatus: 408,
+            additionalData: {
+              errorType: 'timeout',
+              question: sanitizedQuestion.substring(0, 100)
+            }
+          }
+        )
+        return NextResponse.json(enhancedError, { status: 408 })
       }
       // Re-throw other errors
       throw error
@@ -326,12 +378,19 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Reading generation error:', error)
     
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      message: 'Failed to generate reading',
-      timestamp: new Date().toISOString(),
-      path: '/api/readings/ask'
-    } as ReadingError, { status: 500 })
+    const enhancedError = mapErrorToEnhanced(
+      error instanceof Error ? error : new Error('Failed to generate reading'),
+      {
+        component: 'ReadingAPI',
+        action: 'reading_generation',
+        url: '/api/readings/ask',
+        httpStatus: 500,
+        additionalData: {
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined
+        }
+      }
+    )
+    return NextResponse.json(enhancedError, { status: 500 })
   }
 }

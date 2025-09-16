@@ -1,52 +1,24 @@
 # Current Focus
 
-**Date**: 2025-09-14 23:44:11
-**Focus**: JIT User Provisioning Implementation - Eliminating Webhook Dependency for Referral System
+**Updated**: 2025-09-16 16:51:49
 
-## Current Focus
+## ปรับปรุง Error Messages ในส่วน Ask หลัก
 
-**Last Updated**: 2025-09-16 14:09:34
+เน้นการแก้ไขเฉพาะส่วนของ ask ที่เป็นส่วนหลักก่อน โดยมุ่งเน้นที่:
 
-## Current Task
-Database optimization - remove unused tables safely (scope-limited) - STRICT SCOPE: Database optimization ONLY, no additional features, UI changes, or functionality modifications. API-based testing approach for validation.
+### เป้าหมายหลัก
+- ปรับปรุง error messages ให้ชัดเจนและเป็นมิตรกับผู้ใช้
+- แทนที่ข้อความ "reading failed" ที่เป็นแบบทั่วไป
+- เพิ่ม actionable suggestions ในแต่ละ error message
+- ปรับปรุง error UI ให้แสดงข้อมูลที่เป็นประโยชน์มากขึ้น
 
-### Issue Overview
-Persistent timing issues between Clerk authentication and webhook-based User record creation causing referral system failures with `Foreign key constraint violated on the constraint: referral_codes_userId_fkey`. Previous debugging showed 10+ second gaps between authentication and User record availability.
+### ขอบเขตการทำงาน
+- มุ่งเน้นที่ `/ask` page และ API route `/api/readings/ask`
+- ปรับปรุงการจัดการ error ในส่วนหลักก่อน
+- สร้างระบบ error dictionary ที่เป็นมิตรกับผู้ใช้
+- เพิ่มการแสดง error messages ที่ชัดเจนและมีประโยชน์
 
-### Root Cause Analysis
-Webhook dependency creates timing race conditions where:
-- Clerk authentication completes instantly
-- User record creation via webhook takes 10+ seconds
-- Referral processing fails due to missing User records
-
-### Solution Strategy: Just-In-Time (JIT) User Provisioning
-**Approach**: Create User records on-demand when first API call is made, eliminating webhook dependency
-
-**Benefits**:
-- ✅ Zero timing issues - User created when needed
-- ✅ Eliminates webhook dependency entirely
-- ✅ Immediate data consistency
-- ✅ Simpler error handling
-
-### Implementation Plan
-1. Create `ensureUserExists()` utility function with Clerk API integration
-2. Implement JIT pattern in referral processing API route
-3. Update credits API to use JIT provisioning
-4. Add comprehensive error handling and logging
-5. Maintain webhook as fallback for batch operations
-
-### Files to Modify
-- `src/lib/utils/jit-user.ts` (NEW): JIT user provisioning utility
-- `src/app/api/referrals/process/route.ts`: Replace user existence check with JIT provisioning
-- `src/app/api/user/credits/route.ts`: Implement JIT pattern for user lookup
-
-### Active Work
-- **PR**: #164 - Enhanced referral system debugging
-- **Issue**: #163 - Foreign key constraint error in referral system
-
-### Goal
-Eliminate webhook timing dependency and provide instant User record availability for referral system.
-
----
-
-*Session started: 2025-09-14 23:44:11*
+### สถานะปัจจุบัน
+- วิเคราะห์ระบบ error handling ที่มีอยู่เสร็จแล้ว
+- ออกแบบ error message dictionary เสร็จแล้ว
+- พร้อมเริ่มการ implementation ในส่วนหลัก
