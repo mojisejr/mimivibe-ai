@@ -364,9 +364,11 @@ export class PromptSecurityMonitor {
         }),
       ]);
 
-      console.log(
-        `Cleaned up ${deletedLogs.count} old access logs and ${deletedAlerts.count} old alerts`
-      );
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `Cleaned up ${deletedLogs.count} old access logs and ${deletedAlerts.count} old alerts`
+        );
+      }
     } catch (error) {
       console.error("Error cleaning up old logs:", error);
     }

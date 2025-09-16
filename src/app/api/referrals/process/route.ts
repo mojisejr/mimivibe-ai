@@ -47,19 +47,21 @@ export async function POST(request: NextRequest) {
       jitResult = await ensureUserExists(newUserId)
       const targetUser = jitResult.user
 
-      if (jitResult.wasCreated) {
-        console.log(`✅ JIT: Created new user ${newUserId} via JIT provisioning`)
-      } else {
-        console.log(`✅ JIT: User ${newUserId} already existed in database`)
-      }
+      if (process.env.NODE_ENV === 'development') {
+        if (jitResult.wasCreated) {
+          console.log(`✅ JIT: Created new user ${newUserId} via JIT provisioning`)
+        } else {
+          console.log(`✅ JIT: User ${newUserId} already existed in database`)
+        }
 
-      console.log(`📊 JIT: User ready for referral processing:`, {
-        userId: targetUser.id,
-        email: targetUser.email,
-        name: targetUser.name,
-        stars: targetUser.stars,
-        freePoint: targetUser.freePoint
-      })
+        console.log(`📊 JIT: User ready for referral processing:`, {
+          userId: targetUser.id,
+          email: targetUser.email,
+          name: targetUser.name,
+          stars: targetUser.stars,
+          freePoint: targetUser.freePoint
+        })
+      }
 
     } catch (jitError) {
       console.error(`❌ JIT: Failed to ensure user exists for ${newUserId}:`, jitError)
@@ -84,7 +86,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingReferral) {
-      console.log(`ℹ️ User ${newUserId} already has referral from ${existingReferral.referredBy}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`ℹ️ User ${newUserId} already has referral from ${existingReferral.referredBy}`)
+      }
       return NextResponse.json(
         { 
           error: 'User already referred',
@@ -111,7 +115,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingTransaction) {
-      console.log(`ℹ️ Referral transaction already exists for user ${newUserId}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`ℹ️ Referral transaction already exists for user ${newUserId}`)
+      }
       return NextResponse.json(
         { 
           error: 'Referral already processed',
@@ -134,7 +140,9 @@ export async function POST(request: NextRequest) {
     try {
       await prisma.$transaction(async (tx) => {
         // User existence guaranteed by JIT provisioning above
-        console.log(`✅ JIT: Proceeding with referral creation for user ${newUserId} (JIT provisioned)`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ JIT: Proceeding with referral creation for user ${newUserId} (JIT provisioned)`)
+        }
         
         // Double-check within transaction to prevent race conditions
         const txExistingReferral = await tx.referralCode.findFirst({
@@ -189,7 +197,9 @@ export async function POST(request: NextRequest) {
           }
         })
         
-        console.log(`✅ Referral processed successfully for user ${newUserId} with transaction ${transactionId}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ Referral processed successfully for user ${newUserId} with transaction ${transactionId}`)
+        }
       })
     } catch (transactionError) {
       console.error('Transaction error during referral processing:', transactionError)

@@ -150,7 +150,9 @@ export default function HomePage() {
           if (retryCount < MAX_RETRIES) {
             const delay = data.retryAfter ? data.retryAfter * 1000 : RETRY_DELAYS[retryCount];
             const delayInSeconds = Math.round(delay / 1000);
-            console.log(`User sync pending, retrying in ${delayInSeconds}s (attempt ${retryCount + 1}/${MAX_RETRIES}). User ID: ${newUserId}`);
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`User sync pending, retrying in ${delayInSeconds}s (attempt ${retryCount + 1}/${MAX_RETRIES}). User ID: ${newUserId}`);
+            }
 
             // More detailed user feedback based on retry attempt
             let message = '';
@@ -215,7 +217,9 @@ export default function HomePage() {
         if (retryCount < MAX_RETRIES) {
           const delay = RETRY_DELAYS[retryCount];
           const delayInSeconds = Math.round(delay / 1000);
-          console.log(`Network error, retrying in ${delayInSeconds}s (attempt ${retryCount + 1}/${MAX_RETRIES}). User: ${newUserId}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Network error, retrying in ${delayInSeconds}s (attempt ${retryCount + 1}/${MAX_RETRIES}). User: ${newUserId}`);
+          }
 
           addToast({
             type: "info",
@@ -265,28 +269,35 @@ export default function HomePage() {
     if (isSignedIn && userId && !hasProcessedReferral) {
       const storedReferralCode = localStorage.getItem("pendingReferral");
       if (storedReferralCode) {
-        console.log(`🎯 Referral processing triggered for user ${userId} with code: ${storedReferralCode}`);
-        console.log(`⏰ Clerk auth state - isSignedIn: ${isSignedIn}, hasUserId: ${!!userId}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎯 Referral processing triggered for user ${userId} with code: ${storedReferralCode}`);
+          console.log(`⏰ Clerk auth state - isSignedIn: ${isSignedIn}, hasUserId: ${!!userId}`);
+        }
 
         // Add small delay to ensure Clerk authentication context is fully propagated
         // This helps prevent the credits API from returning 404 due to auth timing issues
         setTimeout(() => {
-          console.log(`🚀 Starting referral processing after auth stabilization delay`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🚀 Starting referral processing after auth stabilization delay`);
+          }
           processReferral(storedReferralCode, userId);
         }, 1500); // 1.5 second delay for Clerk auth context to stabilize
 
         setHasProcessedReferral(true);
       } else {
-        console.log(`ℹ️ No pending referral found for user ${userId}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`ℹ️ No pending referral found for user ${userId}`);
+        }
       }
     } else {
-      console.log(`⏳ Referral processing conditions not met:`, {
-        isSignedIn,
-        hasUserId: !!userId,
-        hasProcessedReferral,
-        timestamp: new Date().toISOString()
-      });
-    }
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⏳ Referral processing conditions not met:`, {
+          isSignedIn,
+          hasUserId: !!userId,
+          hasProcessedReferral,
+          timestamp: new Date().toISOString()
+        });
+      }
   }, [isSignedIn, userId, hasProcessedReferral, processReferral]);
 
   return (
@@ -457,7 +468,9 @@ export default function HomePage() {
     async (code: string, newUserId: string) => {
       // Prevent multiple simultaneous processing
       if (isProcessingReferral) {
-        console.log('🔄 Referral processing already in progress, skipping...');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 Referral processing already in progress, skipping...');
+        }
         return;
       }
 
@@ -467,7 +480,9 @@ export default function HomePage() {
       if (lastProcessed) {
         const timeSinceProcessed = Date.now() - parseInt(lastProcessed);
         if (timeSinceProcessed < 60000) { // 1 minute cooldown
-          console.log('🔄 Referral was processed recently, skipping...');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔄 Referral was processed recently, skipping...');
+          }
           return;
         }
       }
@@ -475,13 +490,17 @@ export default function HomePage() {
       // Validate referral ownership before processing
       const pendingReferralData = getPendingReferralForUser(newUserId);
       if (!pendingReferralData) {
-        console.log('❌ No valid pending referral found for user');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('❌ No valid pending referral found for user');
+        }
         return;
       }
 
       // Additional ownership validation: prevent users from processing their own referral codes
       if (pendingReferralData.referrerUserId === newUserId) {
-        console.log('❌ User attempting to use their own referral code, clearing invalid referral');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('❌ User attempting to use their own referral code, clearing invalid referral');
+        }
         clearPendingReferrals();
         addToast({
           type: 'error',
@@ -498,11 +517,13 @@ export default function HomePage() {
 
       const attemptProcess = async (): Promise<void> => {
         try {
-          console.log(`🔄 Processing referral attempt ${retryCount + 1}/${maxRetries}`, {
-            code,
-            userId: newUserId,
-            timestamp: new Date().toISOString()
-          });
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔄 Processing referral attempt ${retryCount + 1}/${maxRetries}`, {
+              code,
+              userId: newUserId,
+              timestamp: new Date().toISOString()
+            });
+          }
 
           const response = await fetch('/api/referrals/process', {
             method: 'POST',
@@ -518,7 +539,9 @@ export default function HomePage() {
           const data = await response.json();
 
           if (response.ok && data.success) {
-            console.log('✅ Referral processed successfully:', data);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ Referral processed successfully:', data);
+            }
             
             addToast({
               type: 'success',
@@ -536,7 +559,9 @@ export default function HomePage() {
 
           // Handle specific error cases
           if (response.status === 409) {
-            console.log('ℹ️ Referral already processed or user already referred');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('ℹ️ Referral already processed or user already referred');
+            }
             addToast({
               type: 'info',
               title: 'Already processed',
@@ -550,7 +575,9 @@ export default function HomePage() {
           }
 
           if (response.status === 404) {
-            console.log('❌ Invalid referral code');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('❌ Invalid referral code');
+            }
             addToast({
               type: 'error',
               title: 'Invalid referral code',
@@ -570,7 +597,9 @@ export default function HomePage() {
           retryCount++;
           
           if (retryCount < maxRetries) {
-            console.log(`🔄 Retrying in ${retryDelay}ms... (${retryCount}/${maxRetries})`);
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔄 Retrying in ${retryDelay}ms... (${retryCount}/${maxRetries})`);
+            }
             
             addToast({
               type: 'info',
@@ -699,7 +728,9 @@ export default function HomePage() {
       // Check for legacy referral format first
       const legacyReferral = getLegacyPendingReferral();
       if (legacyReferral) {
-        console.log('🔄 Found legacy referral, migrating to new format');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 Found legacy referral, migrating to new format');
+        }
         // Process legacy referral immediately to maintain backward compatibility
         const timer = setTimeout(() => {
           processReferral(legacyReferral, userId);

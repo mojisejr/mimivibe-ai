@@ -74,7 +74,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingPayment) {
-      console.log('Payment already processed by webhook:', paymentIntent.id)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Payment already processed by webhook:', paymentIntent.id);
+      }
       
       // Get current user credits
       const user = await prisma.user.findUnique({
@@ -96,7 +98,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    console.log('Processing payment via confirm endpoint (webhook may not have fired yet):', paymentIntent.id)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Processing payment via confirm endpoint (webhook may not have fired yet):', paymentIntent.id);
+    }
 
     // Payment not yet processed, process it now with duplicate protection
     const { packId, creditAmount } = paymentIntent.metadata
@@ -184,7 +188,9 @@ export async function POST(request: NextRequest) {
     } catch (transactionError: any) {
       if (transactionError.message === 'PAYMENT_ALREADY_PROCESSED') {
         // Payment was processed by webhook, return success
-        console.log('Payment processed by webhook during confirmation:', paymentIntent.id)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Payment processed by webhook during confirmation:', paymentIntent.id);
+        }
         
         const existingPayment = await prisma.paymentHistory.findUnique({
           where: { stripePaymentId: paymentIntent.id }
