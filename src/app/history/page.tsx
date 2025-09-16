@@ -16,6 +16,7 @@ import {
   SkeletonSearchFilters,
 } from "@/components/common/SkeletonLoader";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
+import { CardReading } from '@/types/reading';
 
 interface Card {
   id: number;
@@ -31,7 +32,7 @@ interface Card {
 
 interface ReadingStructure {
   header: string;
-  cards_reading: any[];
+  cards_reading: CardReading[];
   reading: string;
   suggestions: string[];
   next_questions: string[];
