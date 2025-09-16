@@ -256,6 +256,7 @@ model PromptTestResult {
   @@map("prompt_test_results")
 }
 
+
 model PromptAccessLog {
   id              Int      @id @default(autoincrement())
   promptName      String
