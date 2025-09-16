@@ -42,6 +42,16 @@ export async function POST(request: NextRequest) {
       return aiRateLimitResult
     }
 
+    // Get client information for security checks
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const userAgent = request.headers.get('user-agent') || 'unknown'
+
+    // Apply AI-specific rate limiting
+    const aiRateLimitResult = await aiRateLimit(request)
+    if (aiRateLimitResult) {
+      return aiRateLimitResult
+    }
+
     const body = await request.json()
     const { question, language = 'th' } = body
 
@@ -104,6 +114,7 @@ export async function POST(request: NextRequest) {
          }
        )
        return NextResponse.json(error, { status: 400 })
+
      }
  
      // Validate tarot-specific content
