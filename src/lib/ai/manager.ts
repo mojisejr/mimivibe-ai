@@ -23,6 +23,7 @@ export class LLMManager {
           const provider = ProviderFactory.create(type as ProviderType, providerConfig);
           this.providers.set(type as ProviderType, provider);
         } catch (error) {
+          // ignore init error to allow graceful fallback
         }
       }
     }
@@ -31,15 +32,12 @@ export class LLMManager {
   getProvider(type?: ProviderType): LLMProvider {
     const providerType = type || this.defaultProvider;
     const provider = this.providers.get(providerType);
-    
     if (!provider) {
       if (this.fallbackProvider && providerType !== this.fallbackProvider) {
-;
         return this.getProvider(this.fallbackProvider);
       }
       throw new Error(`No available provider for type: ${providerType}`);
     }
-    
     return provider;
   }
 

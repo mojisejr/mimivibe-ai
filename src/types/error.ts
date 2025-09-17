@@ -7,6 +7,7 @@ export enum ErrorCode {
   MISSING_QUESTION = 'MISSING_QUESTION',
   QUESTION_TOO_LONG = 'QUESTION_TOO_LONG',
   QUESTION_TOO_SHORT = 'QUESTION_TOO_SHORT',
+  MULTIPLE_QUESTIONS = 'MULTIPLE_QUESTIONS',
   INAPPROPRIATE_CONTENT = 'INAPPROPRIATE_CONTENT',
   SECURITY_VIOLATION = 'SECURITY_VIOLATION',
   
@@ -61,6 +62,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.MISSING_QUESTION]: 'กรุณาใส่คำถามที่ต้องการถามแม่หมอมีมี่',
   [ErrorCode.QUESTION_TOO_LONG]: 'คำถามยาวเกินไป กรุณาใส่คำถามไม่เกิน 500 ตัวอักษร',
   [ErrorCode.QUESTION_TOO_SHORT]: 'คำถามสั้นเกินไป กรุณาใส่คำถามอย่างน้อย 10 ตัวอักษร',
+  [ErrorCode.MULTIPLE_QUESTIONS]: 'กรุณาถามคำถามเพียงข้อเดียวในแต่ละครั้ง',
   [ErrorCode.INAPPROPRIATE_CONTENT]: 'เนื้อหาไม่เหมาะสม กรุณาถามคำถามที่เกี่ยวข้องกับการทำนายไพ่ทาโรต์',
   [ErrorCode.SECURITY_VIOLATION]: 'ตรวจพบการใช้งานที่ไม่ปลอดภัย กรุณาลองใหม่อีกครั้ง',
   
@@ -120,11 +122,12 @@ export function createSuccessResponse<T>(data: T): StandardizedSuccess<T> {
 
 // HTTP status code mapping for error codes
 export const ERROR_STATUS_CODES: Record<ErrorCode, number> = {
-  // 400 Bad Request
+  // Input Validation Errors (400)
   [ErrorCode.INVALID_INPUT]: 400,
   [ErrorCode.MISSING_QUESTION]: 400,
   [ErrorCode.QUESTION_TOO_LONG]: 400,
   [ErrorCode.QUESTION_TOO_SHORT]: 400,
+  [ErrorCode.MULTIPLE_QUESTIONS]: 400,
   [ErrorCode.INAPPROPRIATE_CONTENT]: 400,
   [ErrorCode.SECURITY_VIOLATION]: 400,
   

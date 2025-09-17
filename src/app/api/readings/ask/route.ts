@@ -6,14 +6,14 @@ import { generateTarotReading } from '@/lib/langgraph/workflow-with-db'
 import type { ReadingResponse, ReadingError } from '@/types/reading'
 import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
 import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
-import { analyzeUserInput, validateTarotQuestion, calculateUserSuspicionLevel } from '@/lib/security/ai-protection'
+import { analyzeUserInput, validateTarotQuestion } from '@/lib/security/ai-protection'
 import { aiRateLimit, securityAiRateLimit } from '@/lib/rate-limiter'
 import { sanitizeString } from '@/lib/validations'
 import { 
   handleAPIError, 
-  createValidationError, 
   createDatabaseError,
   createAIError,
+  createSpecificError,
   validateQuestion,
   validateCredits,
   shouldUseLegacyFormat 
@@ -50,26 +50,26 @@ export async function POST(request: NextRequest) {
     const { question, language = 'th' } = body
 
     // Validate question using standardized validation
-     const questionValidationError = validateQuestion(question, '/api/readings/ask');
-     if (questionValidationError) {
-       const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
-       const statusCode = questionValidationError.error.code === ErrorCode.INVALID_INPUT ? 400 : 422;
-       
-       if (useLegacy) {
-         return NextResponse.json(
-           {
-             success: false,
-             error: questionValidationError.error.code,
-             message: questionValidationError.error.message,
-             timestamp: questionValidationError.error.timestamp,
-             path: questionValidationError.error.path
-           },
-           { status: statusCode }
-         );
-       }
-       
-       return NextResponse.json(questionValidationError, { status: statusCode });
-     }
+    const questionValidationError = validateQuestion(question, '/api/readings/ask');
+    if (questionValidationError) {
+      const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
+      const statusCode = questionValidationError.error.code === ErrorCode.INVALID_INPUT ? 400 : 422;
+      
+      if (useLegacy) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: questionValidationError.error.code,
+            message: questionValidationError.error.message,
+            timestamp: questionValidationError.error.timestamp,
+            path: questionValidationError.error.path
+          },
+          { status: statusCode }
+        );
+      }
+      
+      return NextResponse.json(questionValidationError, { status: statusCode });
+    }
 
     // Perform AI security analysis
     const securityAnalysis = analyzeUserInput(question, userAgent, clientIP)
@@ -94,14 +94,26 @@ export async function POST(request: NextRequest) {
      // Validate tarot-specific content
      const tarotValidation = validateTarotQuestion(question)
      if (!tarotValidation.isValid) {
-       const issueMessage = tarotValidation.issues.length > 0 ? tarotValidation.issues[0] : 'Please ask a question suitable for tarot reading.'
-       return NextResponse.json({
-         success: false,
-         error: 'Invalid question',
-         message: issueMessage,
-         timestamp: new Date().toISOString(),
-         path: '/api/readings/ask'
-       } as ReadingError, { status: 400 })
+       const issues = tarotValidation.issues ?? []
+       const firstIssue = issues.length > 0 ? issues[0] : 'Invalid question format'
+       
+       // Check for specific error types
+       if (firstIssue === 'MULTIPLE_QUESTIONS') {
+         const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
+         return handleAPIError(
+           createSpecificError(ErrorCode.MULTIPLE_QUESTIONS, '/api/readings/ask'),
+           '/api/readings/ask',
+           useLegacy
+         );
+       }
+       
+       // Default to inappropriate content for other issues
+       const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
+       return handleAPIError(
+         createSpecificError(ErrorCode.INAPPROPRIATE_CONTENT, '/api/readings/ask'),
+         '/api/readings/ask',
+         useLegacy
+       );
      }
 
     // Sanitize the question
@@ -160,9 +172,16 @@ export async function POST(request: NextRequest) {
     try {
       workflowResult = await generateTarotReading(sanitizedQuestion, userId)
       
+      // Handle expected validation rejection from workflow
+      if (workflowResult && (workflowResult as any).validationError) {
+        const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
+        const vErr = (workflowResult as any).validationError;
+        return handleAPIError(vErr, '/api/readings/ask', useLegacy);
+      }
+      
       // Check if workflow returned an error
-      if (workflowResult.error) {
-        throw new Error(workflowResult.error)
+      if ((workflowResult as any).error) {
+        throw new Error((workflowResult as any).error)
       }
       
       // Validate that we have the required reading data
@@ -352,10 +371,11 @@ export async function POST(request: NextRequest) {
     } as ReadingResponse)
 
   } catch (error) {
-    console.error('Database transaction error:', error)
     const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
+    const errorResponse = createDatabaseError('/api/readings/ask', error instanceof Error ? error.message : String(error), true)
+    
     return handleAPIError(
-      createDatabaseError('/api/readings/ask', error instanceof Error ? error.message : String(error), true),
+      errorResponse,
       '/api/readings/ask',
       useLegacy
     );

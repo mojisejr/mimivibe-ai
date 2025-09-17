@@ -81,6 +81,14 @@ export interface SecurityAnalysis {
   reasons: string[]
 }
 
+// Result type for tarot question validation used across this module
+export interface TarotValidationResult {
+  isValid: boolean
+  reason?: string
+  issues?: string[]
+  sanitizedQuestion?: string
+}
+
 // Analyze user input for prompt injection and security threats
 export function analyzeUserInput(
   input: string,
@@ -180,52 +188,42 @@ export function analyzeUserInput(
 }
 
 // Validate tarot question format and content
-export function validateTarotQuestion(question: string): {
-  isValid: boolean
-  sanitizedQuestion: string
-  issues: string[]
-} {
-  const issues: string[] = []
-  
-  // Check minimum length
-  if (question.trim().length < 10) {
-    issues.push('Question is too short (minimum 10 characters)')
+export function validateTarotQuestion(question: string): TarotValidationResult {
+  // Basic length checks
+  if (typeof question !== 'string') {
+    return { isValid: false, reason: 'รูปแบบคำถามไม่ถูกต้อง', issues: ['INVALID_TYPE'], sanitizedQuestion: '' };
   }
-  
-  // Check maximum length
-  if (question.length > 500) {
-    issues.push('Question is too long (maximum 500 characters)')
+
+  const trimmed = question.trim();
+
+  if (trimmed.length < 10) {
+    return { isValid: false, reason: 'คำถามสั้นเกินไป กรุณาอธิบายให้ชัดเจนมากขึ้น', issues: ['TOO_SHORT'], sanitizedQuestion: sanitizeString(trimmed, 500) };
   }
-  
-  // Check for question marks or question words (English and Thai)
-  // Note: Thai doesn't use word boundaries like English, so we don't use \b for Thai patterns
-  const hasQuestionIndicator = /\?|\b(what|how|when|where|why|will|should|can|could|would|is|are|am|do|does|did)\b/i.test(question) ||
-    /(อะไร|ยังไง|เมื่อไหร่|ที่ไหน|ทำไม|จะ|ควร|สามารถ|น่าจะ|เป็น|คือ|มี|ได้|ไหม|มั้ย|รึ|หรือ|ดี|ไม่|อย่างไร|เป็นไง|ดีไหม|ได้ไหม|จะเป็น|จะมี|จะได้)/i.test(question)
-  if (!hasQuestionIndicator) {
-    issues.push('Input should be formatted as a question')
+
+  if (trimmed.length > 500) {
+    return { isValid: false, reason: 'คำถามยาวเกินไป กรุณาย่อให้กระชับ (ไม่เกิน 500 ตัวอักษร)', issues: ['TOO_LONG'], sanitizedQuestion: sanitizeString(trimmed, 500) };
   }
-  
-  // Check for inappropriate content
-  const inappropriatePatterns = [
-    /\b(kill|murder|suicide|death|harm|hurt|violence)\b/gi,
-    /\b(illegal|crime|criminal|steal|rob|fraud)\b/gi,
-    /\b(drug|cocaine|heroin|meth|marijuana)\b/gi
-  ]
-  
-  inappropriatePatterns.forEach(pattern => {
-    if (pattern.test(question)) {
-      issues.push('Question contains inappropriate content')
-    }
-  })
-  
-  const sanitizedQuestion = sanitizeString(question, 500)
-  const isValid = issues.length === 0
-  
-  return {
-    isValid,
-    sanitizedQuestion,
-    issues
+
+  // Must include a question indicator in Thai
+  const indicators = ['ไหม', 'หรือไม่', 'อย่างไร', 'เมื่อไหร่', 'ตอนไหน', 'ควร', 'จะ', 'ทำยังไง', 'ยังไง'];
+  const hasIndicator = indicators.some(ind => trimmed.includes(ind));
+  if (!hasIndicator) {
+    return { isValid: false, reason: 'กรุณาตั้งคำถามให้ชัดเจน (เช่น มีคำว่า "ไหม", "อย่างไร", "ควร")', issues: ['MISSING_INDICATOR'], sanitizedQuestion: sanitizeString(trimmed, 500) };
   }
+
+  // Avoid double questions
+  const questionMarks = (trimmed.match(/\?/g) || []).length;
+  if (questionMarks > 1) {
+    return { isValid: false, reason: 'กรุณาถามครั้งละหนึ่งคำถาม เพื่อให้คำทำนายชัดเจนที่สุด', issues: ['MULTIPLE_QUESTIONS'], sanitizedQuestion: sanitizeString(trimmed, 500) };
+  }
+
+  // Block inappropriate content (simplified)
+  const inappropriateKeywords = ['ฆ่า', 'ยาเสพติด', 'โป๊', 'อนาจาร'];
+  if (inappropriateKeywords.some(k => trimmed.includes(k))) {
+    return { isValid: false, reason: 'คำถามมีเนื้อหาไม่เหมาะสม ไม่สามารถทำนายได้', issues: ['INAPPROPRIATE_CONTENT'], sanitizedQuestion: sanitizeString(trimmed, 500) };
+  }
+
+  return { isValid: true, sanitizedQuestion: sanitizeString(trimmed, 500), issues: [] };
 }
 
 // Rate limiting based on user behavior patterns
@@ -284,7 +282,11 @@ export function comprehensiveSecurityCheck(
   
   // Escalate risk based on question validation issues
   if (!questionValidation.isValid) {
-    allReasons.push(...questionValidation.issues)
+    if (questionValidation.issues && questionValidation.issues.length > 0) {
+      allReasons.push(...questionValidation.issues)
+    } else if (questionValidation.reason) {
+      allReasons.push(questionValidation.reason)
+    }
     if (finalRiskLevel === RiskLevel.LOW) {
       finalRiskLevel = RiskLevel.MEDIUM
     }
@@ -306,7 +308,7 @@ export function comprehensiveSecurityCheck(
     riskLevel: finalRiskLevel,
     isBlocked: finalRiskLevel === RiskLevel.HIGH || finalRiskLevel === RiskLevel.CRITICAL,
     detectedPatterns: inputAnalysis.detectedPatterns,
-    sanitizedContent: questionValidation.sanitizedQuestion,
+    sanitizedContent: questionValidation.sanitizedQuestion || inputAnalysis.sanitizedContent,
     confidence: Math.min(finalConfidence, 100),
     reasons: allReasons
   }

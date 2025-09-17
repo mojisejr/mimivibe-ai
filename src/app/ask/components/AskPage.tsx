@@ -7,6 +7,7 @@ import { LoadingState } from "./LoadingState";
 import { AnimatedArticleDisplay } from "./AnimatedArticleDisplay";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { motion } from "framer-motion";
+import { ErrorCode } from "@/types/error";
 
 type PageState = "initial" | "loading" | "result" | "error";
 
@@ -39,21 +40,56 @@ export function AskPage() {
 
       const data = await response.json();
 
+      const extractMessage = (payload: any): string => {
+        if (payload?.error?.message) return payload.error.message;
+        if (typeof payload?.error === "string") return payload.error;
+        if (payload?.message) return payload.message;
+        return "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
+      };
+
+      const decideCanRetry = (status: number, code?: string): boolean => {
+        // Server/network or rate-limit errors -> can retry
+        if (status >= 500) return true;
+        if (status === 429) return true;
+        // Specific non-retry cases
+        if (
+          code === ErrorCode.UNAUTHORIZED ||
+          code === ErrorCode.INSUFFICIENT_CREDITS ||
+          code === ErrorCode.SECURITY_VIOLATION
+        ) {
+          return false;
+        }
+        // Validation-related errors can retry after user adjustment
+        return true;
+      };
+
       if (!response.ok) {
-        throw new Error(data.error || "การทำนายล้มเหลว");
+        const message = extractMessage(data);
+        const code: string | undefined = data?.error?.code;
+        const canRetry = decideCanRetry(response.status, code);
+        setError({ message, canRetry });
+        setPageState("error");
+        return;
       }
 
-      if (data.success) {
+      if (data?.success) {
         setReadingData(data.data);
         setPageState("result");
-      } else {
-        throw new Error(data.error || "ไม่สามารถทำนายได้");
+        return;
       }
+
+      // Handle unsuccessful success=false responses
+      const message = extractMessage(data);
+      const code: string | undefined = data?.error?.code;
+      const status = (typeof data?.error?.status === "number" ? data.error.status : 400) as number;
+      const canRetry = decideCanRetry(status, code);
+      setError({ message, canRetry });
+      setPageState("error");
     } catch (err) {
       console.error("Reading error:", err);
+      // Network or unexpected runtime error
       setError({
-        message:
-          err instanceof Error ? err.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
+        message: "เครือข่ายมีปัญหา หรือระบบไม่ตอบสนอง กรุณาลองใหม่อีกครั้ง",
         canRetry: true,
       });
       setPageState("error");

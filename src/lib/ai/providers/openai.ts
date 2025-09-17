@@ -22,16 +22,20 @@ export class OpenAIProvider implements LLMProvider {
       role: msg.role,
       content: msg.content,
     }));
-    
-    const response = await this.client.invoke(langChainMessages);
-    return {
-      content: response.content as string,
-      usage: response.usage_metadata ? {
-        promptTokens: response.usage_metadata.input_tokens,
-        completionTokens: response.usage_metadata.output_tokens,
-        totalTokens: response.usage_metadata.total_tokens,
-      } : undefined,
-    };
+
+    try {
+      const response = await this.client.invoke(langChainMessages);
+      return {
+        content: response.content as string,
+        usage: response.usage_metadata ? {
+          promptTokens: response.usage_metadata.input_tokens,
+          completionTokens: response.usage_metadata.output_tokens,
+          totalTokens: response.usage_metadata.total_tokens,
+        } : undefined,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   createWithPrompt(systemPrompt: string) {

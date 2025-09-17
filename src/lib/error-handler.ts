@@ -77,6 +77,16 @@ export function createValidationError(
   );
 }
 
+// Create error with specific error code
+export function createSpecificError(
+  code: ErrorCode,
+  path: string,
+  details?: string,
+  field?: string
+): StandardizedError {
+  return createErrorResponse(code, path, details, field);
+}
+
 // Rate limit error handler
 export function createRateLimitError(
   path: string,
@@ -216,7 +226,7 @@ export function createContentError(
 
 // Helper to check if error should use legacy format (for backward compatibility)
 export function shouldUseLegacyFormat(userAgent?: string): boolean {
-  // For now, always use new format unless specifically requested
-  // This can be expanded to check for old client versions
-  return false;
+  if (!userAgent) return false;
+  const ua = userAgent.toLowerCase();
+  return ua.includes('iphone os 15') || ua.includes('android 7') || ua.includes('android 8');
 }
