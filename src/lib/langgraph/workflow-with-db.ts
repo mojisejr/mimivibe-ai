@@ -12,6 +12,7 @@ import {
 } from "../utils/json-parser";
 import { prisma } from "../prisma";
 import { PromptManager } from "../prompt-manager";
+import { createAIError, createValidationError, APIError } from "../error-handler";
 import type { CardReading, ReadingStructure } from "../../types/reading";
 
 // Global prompt manager instance
@@ -68,9 +69,15 @@ async function questionFilterNode(state: typeof ReadingState.State) {
         parsed.error || "Unknown error"
       );
       
+      const validationError = createValidationError(
+        "question",
+        "Unable to validate question format",
+        `/api/readings/ask`
+      );
+      
       return {
         isValid: false,
-        validationReason: "Unable to validate question format",
+        validationReason: validationError.error.message,
         error: `Question filter parsing failed: ${parsed.error}`,
       };
     }
@@ -89,9 +96,15 @@ async function questionFilterNode(state: typeof ReadingState.State) {
       validationReason: result.reason || "",
     };
   } catch (error) {
+    const aiError = createAIError(
+      "generation",
+      `/api/readings/ask`,
+      error instanceof Error ? error.message : String(error)
+    );
+    
     return {
       isValid: false,
-      validationReason: "System error during validation",
+      validationReason: aiError.error.message,
       error: `Question filter failed: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
@@ -320,17 +333,18 @@ export async function executeWorkflowWithDB(
       return finalState.reading;
     } else {
       const errorMessage = finalState.error || "Unknown workflow error";
-      throw new Error(errorMessage);
+      const aiError = createAIError("generation", "/api/readings/ask", errorMessage);
+      throw new APIError(aiError.error.code, aiError.error.details);
     }
 
   } catch (error) {
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
     
-    
     const errorMessage = error instanceof Error ? error.message : String(error);
     if (errorMessage.includes('timeout')) {
-      throw new Error('คำขอใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
+      const timeoutError = createAIError("timeout", "/api/readings/ask", "คำขอใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง");
+      throw new APIError(timeoutError.error.code, timeoutError.error.details);
     }
     
     throw error;
@@ -364,8 +378,9 @@ export async function generateTarotReading(question: string, userId?: string) {
 
     // Check if workflow was successful
     if (finalState.error || !finalState.reading) {
+      const aiError = createAIError("generation", "/api/readings/ask", finalState.error || "Failed to generate reading");
       return {
-        error: finalState.error || "Failed to generate reading",
+        error: aiError.error.message,
       };
     }
 
@@ -376,8 +391,9 @@ export async function generateTarotReading(question: string, userId?: string) {
       selectedCards: finalState.selectedCards,
     };
   } catch (error) {
+    const aiError = createAIError("generation", "/api/readings/ask", error instanceof Error ? error.message : String(error));
     return {
-      error: "Failed to generate reading",
+      error: aiError.error.message,
     };
   }
 }

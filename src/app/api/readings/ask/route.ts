@@ -9,6 +9,16 @@ import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
 import { analyzeUserInput, validateTarotQuestion, calculateUserSuspicionLevel } from '@/lib/security/ai-protection'
 import { aiRateLimit, securityAiRateLimit } from '@/lib/rate-limiter'
 import { sanitizeString } from '@/lib/validations'
+import { 
+  handleAPIError, 
+  createValidationError, 
+  createDatabaseError,
+  createAIError,
+  validateQuestion,
+  validateCredits,
+  shouldUseLegacyFormat 
+} from '@/lib/error-handler'
+import { ErrorCode } from '@/types/error'
 
 // Force dynamic rendering for authentication
 export const dynamic = 'force-dynamic'
@@ -18,13 +28,12 @@ export async function POST(request: NextRequest) {
     const { userId } = auth()
     
     if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Unauthorized',
-        message: 'Authentication required',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 401 })
+      const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
+      return handleAPIError(
+        new Error('Unauthorized access'),
+        '/api/readings/ask',
+        useLegacy
+      );
     }
 
     // Get client information for security checks
@@ -40,26 +49,27 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { question, language = 'th' } = body
 
-    // Validate question
-    if (!question || typeof question !== 'string') {
-      return NextResponse.json({
-        success: false,
-        error: 'Bad request',
-        message: 'Question is required',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 400 })
-    }
-
-    if (question.length < 10 || question.length > 500) {
-      return NextResponse.json({
-        success: false,
-        error: 'Bad request',
-        message: 'Question must be between 10-500 characters',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 400 })
-    }
+    // Validate question using standardized validation
+     const questionValidationError = validateQuestion(question, '/api/readings/ask');
+     if (questionValidationError) {
+       const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
+       const statusCode = questionValidationError.error.code === ErrorCode.INVALID_INPUT ? 400 : 422;
+       
+       if (useLegacy) {
+         return NextResponse.json(
+           {
+             success: false,
+             error: questionValidationError.error.code,
+             message: questionValidationError.error.message,
+             timestamp: questionValidationError.error.timestamp,
+             path: questionValidationError.error.path
+           },
+           { status: statusCode }
+         );
+       }
+       
+       return NextResponse.json(questionValidationError, { status: statusCode });
+     }
 
     // Perform AI security analysis
     const securityAnalysis = analyzeUserInput(question, userAgent, clientIP)
@@ -120,16 +130,29 @@ export async function POST(request: NextRequest) {
       } as ReadingError, { status: 404 })
     }
 
-    // Check if user has enough credits (freePoint or stars)
-    const totalCredits = user.freePoint + user.stars
-    if (totalCredits < 1) {
-      return NextResponse.json({
-        success: false,
-        error: 'Insufficient credits',
-        message: 'Not enough credits for reading',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 400 })
+    // Check user credits using standardized validation
+    const creditsValidationError = validateCredits(
+      { stars: user.stars, freePoint: user.freePoint },
+      '/api/readings/ask'
+    );
+    if (creditsValidationError) {
+      const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
+      const statusCode = 402; // Payment Required
+      
+      if (useLegacy) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: creditsValidationError.error.code,
+            message: creditsValidationError.error.message,
+            timestamp: creditsValidationError.error.timestamp,
+            path: creditsValidationError.error.path
+          },
+          { status: statusCode }
+        );
+      }
+      
+      return NextResponse.json(creditsValidationError, { status: statusCode });
     }
 
     // Generate reading using LangGraph workflow
@@ -147,18 +170,23 @@ export async function POST(request: NextRequest) {
         throw new Error('Failed to generate reading - no reading data returned')
       }
     } catch (error) {
+      const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
+      
       // Handle timeout error - don't deduct credits
       if (error instanceof Error && error.message.includes('Reading timeout')) {
-        return NextResponse.json({
-          success: false,
-          error: 'Reading timeout',
-          message: error.message,
-          timestamp: new Date().toISOString(),
-          path: '/api/readings/ask'
-        } as ReadingError, { status: 408 }) // 408 Request Timeout
+        return handleAPIError(
+          createAIError('timeout', '/api/readings/ask', error.message),
+          '/api/readings/ask',
+          useLegacy
+        );
       }
-      // Re-throw other errors
-      throw error
+      
+      // Handle other AI errors
+      return handleAPIError(
+        createAIError('generation', '/api/readings/ask', error instanceof Error ? error.message : String(error)),
+        '/api/readings/ask',
+        useLegacy
+      );
     }
 
     // Deduct credits only after successful reading generation
@@ -324,14 +352,12 @@ export async function POST(request: NextRequest) {
     } as ReadingResponse)
 
   } catch (error) {
-    console.error('Reading generation error:', error)
-    
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      message: 'Failed to generate reading',
-      timestamp: new Date().toISOString(),
-      path: '/api/readings/ask'
-    } as ReadingError, { status: 500 })
+    console.error('Database transaction error:', error)
+    const useLegacy = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined);
+    return handleAPIError(
+      createDatabaseError('/api/readings/ask', error instanceof Error ? error.message : String(error), true),
+      '/api/readings/ask',
+      useLegacy
+    );
   }
 }

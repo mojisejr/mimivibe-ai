@@ -1,5 +1,7 @@
 // SECURITY ENHANCEMENT: Rate limiting implementation for payment APIs
 import { NextRequest, NextResponse } from 'next/server'
+import { createRateLimitError, shouldUseLegacyFormat } from './error-handler'
+import { toLegacyError } from '@/types/error'
 
 interface RateLimitStore {
   [key: string]: {
@@ -98,23 +100,27 @@ export async function rateLimit(
   const result = await rateLimiter.isAllowed(identifier, windowMs, maxRequests)
 
   if (!result.allowed) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Too many requests',
-        message: 'Rate limit exceeded. Please try again later.',
-        retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000)
-      },
-      { 
-        status: 429,
-        headers: {
-          'X-RateLimit-Limit': maxRequests.toString(),
-          'X-RateLimit-Remaining': result.remaining.toString(),
-          'X-RateLimit-Reset': Math.ceil(result.resetTime / 1000).toString(),
-          'Retry-After': Math.ceil((result.resetTime - Date.now()) / 1000).toString()
-        }
+    const retryAfter = Math.ceil((result.resetTime - Date.now()) / 1000);
+    const errorResponse = createRateLimitError(
+      request.url || '/api',
+      retryAfter,
+      'normal'
+    );
+    
+    // Use legacy format for backward compatibility if needed
+    const responseBody = shouldUseLegacyFormat(request.headers.get('user-agent') || undefined)
+      ? toLegacyError(errorResponse)
+      : errorResponse;
+    
+    return NextResponse.json(responseBody, { 
+      status: 429,
+      headers: {
+        'X-RateLimit-Limit': maxRequests.toString(),
+        'X-RateLimit-Remaining': result.remaining.toString(),
+        'X-RateLimit-Reset': Math.ceil(result.resetTime / 1000).toString(),
+        'Retry-After': retryAfter.toString()
       }
-    )
+    });
   }
 
   return null // Allow request to proceed

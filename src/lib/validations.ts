@@ -1,6 +1,8 @@
 // Validation utilities for API requests
 import * as DOMPurify from 'dompurify'
 import { JSDOM } from 'jsdom'
+import { createValidationError } from './error-handler'
+import { ErrorCode } from '@/types/error'
 
 // Initialize DOMPurify for server-side usage
 const window = new JSDOM('').window

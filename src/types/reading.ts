@@ -55,6 +55,7 @@ export interface ReadingResponse {
   };
 }
 
+// Legacy error format (maintained for backward compatibility)
 export interface ReadingError {
   success: false;
   error: string;
@@ -62,6 +63,9 @@ export interface ReadingError {
   timestamp: string;
   path: string;
 }
+
+// Import standardized error types
+export type { StandardizedError, APIResponse } from './error';
 
 // Historical reading format for display
 export interface HistoricalReading {
