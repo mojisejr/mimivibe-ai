@@ -334,7 +334,7 @@ curl -X POST http://localhost:3000/api/readings/ask \
 
 ---
 
-## 🚀 **Phase 3: ปรับปรุง ReadingError Interface** ⚡ (แก้ไขไฟล์เดิม)
+## 🚀 **Phase 3: ปรับปรุง ReadingError Interface** ⚡ (แก้ไขไฟล์เดิม) : Done
 
 **เป้าหมาย**: เพิ่ม error category fields ใน `/src/types/reading.ts`  
 **ไฟล์เป้าหมาย**: `/src/types/reading.ts`  
