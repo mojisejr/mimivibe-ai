@@ -13,6 +13,7 @@ import {
 } from "@/lib/security/ai-protection";
 import { aiRateLimit, securityAiRateLimit } from "@/lib/rate-limiter";
 import { sanitizeString } from "@/lib/validations";
+import { categorizeError, createCategorizedErrorResponse } from "@/lib/utils/error-categories";
 
 // Force dynamic rendering for authentication
 export const dynamic = "force-dynamic";
@@ -23,13 +24,7 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Unauthorized",
-          message: "Authentication required",
-          timestamp: new Date().toISOString(),
-          path: "/api/readings/ask",
-        } as ReadingError,
+        createCategorizedErrorResponse("AUTHENTICATION_REQUIRED", "/api/readings/ask"),
         { status: 401 }
       );
     }
@@ -53,26 +48,21 @@ export async function POST(request: NextRequest) {
     // Validate question
     if (!question || typeof question !== "string") {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Bad request",
-          message: "Question is required",
-          timestamp: new Date().toISOString(),
-          path: "/api/readings/ask",
-        } as ReadingError,
+        createCategorizedErrorResponse("INVALID_QUESTION_FORMAT", "/api/readings/ask", "Question is required"),
         { status: 400 }
       );
     }
 
-    if (question.length < 10 || question.length > 500) {
+    if (question.length < 10) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Bad request",
-          message: "Question must be between 10-500 characters",
-          timestamp: new Date().toISOString(),
-          path: "/api/readings/ask",
-        } as ReadingError,
+        createCategorizedErrorResponse("QUESTION_TOO_SHORT", "/api/readings/ask"),
+        { status: 400 }
+      );
+    }
+
+    if (question.length > 500) {
+      return NextResponse.json(
+        createCategorizedErrorResponse("QUESTION_TOO_LONG", "/api/readings/ask"),
         { status: 400 }
       );
     }
@@ -89,14 +79,7 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-        {
-          success: false,
-          error: "Content blocked",
-          message:
-            "Your question contains inappropriate content. Please rephrase and try again.",
-          timestamp: new Date().toISOString(),
-          path: "/api/readings/ask",
-        } as ReadingError,
+        createCategorizedErrorResponse("INAPPROPRIATE_CONTENT", "/api/readings/ask"),
         { status: 400 }
       );
     }
@@ -109,13 +92,7 @@ export async function POST(request: NextRequest) {
           ? tarotValidation.issues[0]
           : "Please ask a question suitable for tarot reading.";
       return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid question",
-          message: issueMessage,
-          timestamp: new Date().toISOString(),
-          path: "/api/readings/ask",
-        } as ReadingError,
+        createCategorizedErrorResponse("INVALID_QUESTION_FORMAT", "/api/readings/ask", issueMessage),
         { status: 400 }
       );
     }
@@ -141,13 +118,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Not found",
-          message: "User not found",
-          timestamp: new Date().toISOString(),
-          path: "/api/readings/ask",
-        } as ReadingError,
+        createCategorizedErrorResponse("AUTHENTICATION_REQUIRED", "/api/readings/ask", "User not found"),
         { status: 404 }
       );
     }
@@ -156,13 +127,7 @@ export async function POST(request: NextRequest) {
     const totalCredits = user.freePoint + user.stars;
     if (totalCredits < 1) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Insufficient credits",
-          message: "Not enough credits for reading",
-          timestamp: new Date().toISOString(),
-          path: "/api/readings/ask",
-        } as ReadingError,
+        createCategorizedErrorResponse("INSUFFICIENT_CREDITS", "/api/readings/ask"),
         { status: 400 }
       );
     }
@@ -174,75 +139,35 @@ export async function POST(request: NextRequest) {
 
       // Check if question validation failed (isValid: false)
       if (workflowResult.isValid === false) {
-        const errorResponse: ReadingError = {
-          success: false,
-          error: "Invalid question",
-          message:
-            workflowResult.validationReason || "คำถามไม่เหมาะสมสำหรับการทำนาย",
-          timestamp: new Date().toISOString(),
-          path: "/api/readings/ask",
-          validationReason: workflowResult.validationReason,
-          isValid: false,
-        };
+        const errorResponse = createCategorizedErrorResponse(
+          "INVALID_QUESTION_FORMAT", 
+          "/api/readings/ask", 
+          workflowResult.validationReason || "คำถามไม่เหมาะสมสำหรับการทำนาย"
+        );
 
         return NextResponse.json(errorResponse, { status: 200 });
       }
 
       // Check if workflow returned an actual error
       if (workflowResult.error) {
-        const errMsg: string = String(workflowResult.error);
-        const lower = errMsg.toLowerCase();
+        const errorResponse = createCategorizedErrorResponse(
+          "AI_PROCESSING_ERROR", 
+          "/api/readings/ask", 
+          workflowResult.error
+        );
 
-        // Map known workflow errors to appropriate HTTP statuses
-        let status = 502;
-        let errorKey: string = "Upstream error";
-        let message: string = errMsg;
-
-        if (
-          lower.includes("validation error") ||
-          lower.includes("invalid question") ||
-          lower.includes("multiple topics") ||
-          lower.includes("มากกว่าหนึ่งประเด็น")
-        ) {
-          status = 400;
-          errorKey = "Invalid question";
-        } else if (
-          lower.includes("card selection error") ||
-          lower.includes("question analysis error") ||
-          lower.includes("reading generation error")
-        ) {
-          status = 422;
-          errorKey = "Processing error";
-        } else if (lower.includes("timeout")) {
-          status = 504;
-          errorKey = "Gateway timeout";
-        }
-
-        const errorResponse: ReadingError = {
-          success: false,
-          error: errorKey,
-          message,
-          timestamp: new Date().toISOString(),
-          path: "/api/readings/ask",
-          validationReason: workflowResult.validationReason,
-          isValid: workflowResult.isValid,
-        };
-
-        return NextResponse.json(errorResponse, { status });
+        return NextResponse.json(errorResponse, { status: 500 });
       }
 
       // Validate that we have the required reading data
       if (!workflowResult.reading) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Upstream error",
-            message: "Failed to generate reading - no reading data returned",
-            timestamp: new Date().toISOString(),
-            path: "/api/readings/ask",
-          } as ReadingError,
-          { status: 502 }
+        const errorResponse = createCategorizedErrorResponse(
+          "TIMEOUT_ERROR", 
+          "/api/readings/ask", 
+          "คำขอใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง"
         );
+
+        return NextResponse.json(errorResponse, { status: 504 });
       }
     } catch (error) {
       // Handle timeout error - don't deduct credits
@@ -426,16 +351,14 @@ export async function POST(request: NextRequest) {
     } as ReadingResponse);
   } catch (error) {
     console.error("Reading generation error:", error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Internal server error",
-        message: "Failed to generate reading",
-        timestamp: new Date().toISOString(),
-        path: "/api/readings/ask",
-      } as ReadingError,
-      { status: 500 }
+    
+    const errorMessage = error instanceof Error ? error.message : "Failed to generate reading";
+    const errorResponse = createCategorizedErrorResponse(
+      "SYSTEM_ERROR", 
+      "/api/readings/ask", 
+      errorMessage
     );
+
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }

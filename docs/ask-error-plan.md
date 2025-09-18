@@ -10,6 +10,7 @@
 ### ✅ Current Error Handling Infrastructure
 
 **1. API Route Structure (`/src/app/api/readings/ask/route.ts`)**
+
 - ✅ มี error handling ครบถ้วน (300+ lines)
 - ✅ ใช้ `ReadingError` interface อย่างสม่ำเสมอ
 - ✅ มี error mapping สำหรับ status codes (400, 422, 504)
@@ -17,35 +18,39 @@
 - ✅ มี transaction rollback สำหรับ credit deduction
 
 **2. Type Definitions (`/src/types/reading.ts`)**
+
 - ✅ `ReadingError` interface มีโครงสร้างที่ดี
 - ✅ มี optional fields: `validationReason`, `isValid`
 - ✅ Compatible กับการเพิ่ม `category` และ `isRetryable`
 
 **3. Existing Utilities**
+
 - ✅ มี `createErrorResponse` ใน `/src/lib/auth.ts` แล้ว
 - ✅ มี error message mappings ใน `/src/lib/error-messages.ts`
 - ✅ มี validation utilities ใน `/src/lib/validations.ts`
 - ✅ มี error handling hook ใน `/src/hooks/useErrorHandler.ts`
 
 **4. Workflow Integration (`/src/lib/workflow-with-db.ts`)**
+
 - ✅ มี error handling nodes: `errorHandlerNode`, `readingAgentNode`
 - ✅ มี error state management ใน `ReadingState`
 - ✅ มี error categorization logic อยู่แล้ว
 
 ### 🔍 Compatibility Assessment
 
-| Component | Current State | Plan Compatibility | Risk Level |
-|-----------|---------------|-------------------|-----------|
-| `ReadingError` interface | ✅ Stable | 🟢 Backward compatible | Low |
-| API Route error handling | ✅ Comprehensive | 🟢 Enhancement only | Low |
-| `createErrorResponse` utility | ✅ Exists in auth.ts | 🟡 Need namespace check | Medium |
-| Error message system | ✅ Thai messages exist | 🟢 Can extend | Low |
-| Workflow error handling | ✅ Advanced system | 🟢 Can enhance | Low |
+| Component                     | Current State          | Plan Compatibility      | Risk Level |
+| ----------------------------- | ---------------------- | ----------------------- | ---------- |
+| `ReadingError` interface      | ✅ Stable              | 🟢 Backward compatible  | Low        |
+| API Route error handling      | ✅ Comprehensive       | 🟢 Enhancement only     | Low        |
+| `createErrorResponse` utility | ✅ Exists in auth.ts   | 🟡 Need namespace check | Medium     |
+| Error message system          | ✅ Thai messages exist | 🟢 Can extend           | Low        |
+| Workflow error handling       | ✅ Advanced system     | 🟢 Can enhance          | Low        |
 
 ### ⚠️ Potential Conflicts Identified
 
 1. **`createErrorResponse` Function**
-   - มีอยู่แล้วใน `/src/lib/auth.ts` 
+
+   - มีอยู่แล้วใน `/src/lib/auth.ts`
    - **Solution**: ใช้ existing function หรือ rename เป็น `createCategorizedErrorResponse`
 
 2. **Error Categories**
@@ -55,11 +60,13 @@
 ## สถานะปัจจุบัน
 
 ### ✅ สิ่งที่ทำเสร็จแล้ว
+
 - **Frontend**: `AskPage.tsx` แสดง `validationReason` โดยตรงแล้ว
 - **Workflow**: มี conditional routing และ error handler node แล้ว
 - **State Management**: มี enhanced error fields ใน `ReadingState` แล้ว
 
 ### ❌ สิ่งที่ต้องแก้ไข
+
 - **API Error Mapping**: ยังไม่มีการจัดหมวดหมู่ error อย่างชัดเจน
 - **Error Messages**: ยังใช้ generic messages ไม่เป็นมิตรกับผู้ใช้
 - **Testing**: ยังไม่มีการทดสอบครอบคลุม
@@ -72,7 +79,9 @@
 **Phase 5-6**: ค่อยๆ จัดระเบียบ folder structure ทีละไฟล์
 
 ### 🔄 **Validation Checkpoints**
+
 แต่ละ Phase จะมี checkpoint:
+
 ```bash
 npm run build    # ตรวจสอบ TypeScript errors
 npm run dev      # ตรวจสอบ runtime errors
@@ -81,13 +90,14 @@ npm run dev      # ตรวจสอบ runtime errors
 
 ---
 
-## 🚀 **Phase 1: สร้าง Error Categories Utility** ⚡ (ไม่กระทบไฟล์เดิม)
+## 🚀 **Phase 1: สร้าง Error Categories Utility** ⚡ (ไม่กระทบไฟล์เดิม) : Done
 
 **เป้าหมาย**: สร้าง error categorization system โดยไม่แก้ไขไฟล์เดิม  
 **ไฟล์ใหม่**: `/src/lib/utils/error-categories.ts`  
 **ความเสี่ยง**: **ไม่มี breaking changes** - เป็นไฟล์ใหม่ทั้งหมด
 
 ### ✅ **Success Criteria**
+
 - [ ] สร้างไฟล์ `/src/lib/utils/error-categories.ts` สำเร็จ
 - [ ] TypeScript compile ผ่าน (`npm run build`)
 - [ ] Import ได้โดยไม่มี errors
@@ -98,11 +108,11 @@ npm run dev      # ตรวจสอบ runtime errors
 
 ```typescript
 export enum ErrorCategory {
-  VALIDATION = 'validation',
-  AI_PROCESSING = 'ai_processing', 
-  RATE_LIMIT = 'rate_limit',
-  AUTHENTICATION = 'authentication',
-  SYSTEM = 'system'
+  VALIDATION = "validation",
+  AI_PROCESSING = "ai_processing",
+  RATE_LIMIT = "rate_limit",
+  AUTHENTICATION = "authentication",
+  SYSTEM = "system",
 }
 
 export interface CategorizedError {
@@ -115,71 +125,71 @@ export interface CategorizedError {
 
 export const ERROR_MAPPINGS: Record<string, CategorizedError> = {
   // Validation Errors
-  'QUESTION_TOO_SHORT': {
+  QUESTION_TOO_SHORT: {
     category: ErrorCategory.VALIDATION,
-    code: 'QUESTION_TOO_SHORT',
-    message: 'Question must be at least 10 characters',
-    userMessage: 'กรุณาใส่คำถามที่ยาวกว่า 10 ตัวอักษร',
-    isRetryable: true
+    code: "QUESTION_TOO_SHORT",
+    message: "Question must be at least 10 characters",
+    userMessage: "กรุณาใส่คำถามที่ยาวกว่า 10 ตัวอักษร",
+    isRetryable: true,
   },
-  'QUESTION_INAPPROPRIATE': {
+  QUESTION_INAPPROPRIATE: {
     category: ErrorCategory.VALIDATION,
-    code: 'QUESTION_INAPPROPRIATE',
-    message: 'Question contains inappropriate content',
-    userMessage: 'คำถามของคุณไม่เหมาะสมสำหรับการทำนาย',
-    isRetryable: true
+    code: "QUESTION_INAPPROPRIATE",
+    message: "Question contains inappropriate content",
+    userMessage: "คำถามของคุณไม่เหมาะสมสำหรับการทำนาย",
+    isRetryable: true,
   },
-  
+
   // AI Processing Errors
-  'AI_PROVIDER_ERROR': {
+  AI_PROVIDER_ERROR: {
     category: ErrorCategory.AI_PROCESSING,
-    code: 'AI_PROVIDER_ERROR',
-    message: 'AI service temporarily unavailable',
-    userMessage: 'ระบบ AI ไม่สามารถใช้งานได้ชั่วคราว กรุณาลองใหม่อีกครั้ง',
-    isRetryable: true
+    code: "AI_PROVIDER_ERROR",
+    message: "AI service temporarily unavailable",
+    userMessage: "ระบบ AI ไม่สามารถใช้งานได้ชั่วคราว กรุณาลองใหม่อีกครั้ง",
+    isRetryable: true,
   },
-  'WORKFLOW_TIMEOUT': {
+  WORKFLOW_TIMEOUT: {
     category: ErrorCategory.AI_PROCESSING,
-    code: 'WORKFLOW_TIMEOUT',
-    message: 'Reading generation timed out',
-    userMessage: 'การสร้างการทำนายใช้เวลานานเกินไป กรุณาลองใหม่',
-    isRetryable: true
+    code: "WORKFLOW_TIMEOUT",
+    message: "Reading generation timed out",
+    userMessage: "การสร้างการทำนายใช้เวลานานเกินไป กรุณาลองใหม่",
+    isRetryable: true,
   },
-  
+
   // Rate Limit Errors
-  'RATE_LIMIT_EXCEEDED': {
+  RATE_LIMIT_EXCEEDED: {
     category: ErrorCategory.RATE_LIMIT,
-    code: 'RATE_LIMIT_EXCEEDED',
-    message: 'Too many requests',
-    userMessage: 'คุณใช้งานบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่',
-    isRetryable: false
+    code: "RATE_LIMIT_EXCEEDED",
+    message: "Too many requests",
+    userMessage: "คุณใช้งานบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่",
+    isRetryable: false,
   },
-  
+
   // Authentication Errors
-  'INSUFFICIENT_CREDITS': {
+  INSUFFICIENT_CREDITS: {
     category: ErrorCategory.AUTHENTICATION,
-    code: 'INSUFFICIENT_CREDITS',
-    message: 'Not enough credits',
-    userMessage: 'เครดิตของคุณไม่เพียงพอ กรุณาเติมเครดิต',
-    isRetryable: false
+    code: "INSUFFICIENT_CREDITS",
+    message: "Not enough credits",
+    userMessage: "เครดิตของคุณไม่เพียงพอ กรุณาเติมเครดิต",
+    isRetryable: false,
   },
-  
+
   // System Errors
-  'DATABASE_ERROR': {
+  DATABASE_ERROR: {
     category: ErrorCategory.SYSTEM,
-    code: 'DATABASE_ERROR',
-    message: 'Database connection failed',
-    userMessage: 'เกิดข้อผิดพลาดของระบบ กรุณาลองใหม่อีกครั้ง',
-    isRetryable: true
-  }
+    code: "DATABASE_ERROR",
+    message: "Database connection failed",
+    userMessage: "เกิดข้อผิดพลาดของระบบ กรุณาลองใหม่อีกครั้ง",
+    isRetryable: true,
+  },
 };
 
 export function categorizeError(error: any): CategorizedError {
   // ถ้าเป็น error ที่รู้จัก
-  if (typeof error === 'string' && ERROR_MAPPINGS[error]) {
+  if (typeof error === "string" && ERROR_MAPPINGS[error]) {
     return ERROR_MAPPINGS[error];
   }
-  
+
   // ถ้าเป็น Error object
   if (error instanceof Error) {
     const errorCode = (error as any).code || error.message;
@@ -187,31 +197,38 @@ export function categorizeError(error: any): CategorizedError {
       return ERROR_MAPPINGS[errorCode];
     }
   }
-  
+
   // Default fallback
   return {
     category: ErrorCategory.SYSTEM,
-    code: 'UNKNOWN_ERROR',
-    message: error?.message || 'Unknown error occurred',
-    userMessage: 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาลองใหม่อีกครั้ง',
-    isRetryable: true
+    code: "UNKNOWN_ERROR",
+    message: error?.message || "Unknown error occurred",
+    userMessage: "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาลองใหม่อีกครั้ง",
+    isRetryable: true,
   };
 }
 
 // ใช้ชื่อใหม่เพื่อหลีกเลี่ยงความขัดแย้งกับ createErrorResponse ใน auth.ts
-export function createCategorizedErrorResponse(error: CategorizedError, statusCode: number = 500) {
-  return Response.json({
-    success: false,
-    error: error.code,
-    message: error.userMessage,
-    category: error.category,
-    isRetryable: error.isRetryable,
-    timestamp: new Date().toISOString()
-  }, { status: statusCode });
+export function createCategorizedErrorResponse(
+  error: CategorizedError,
+  statusCode: number = 500
+) {
+  return Response.json(
+    {
+      success: false,
+      error: error.code,
+      message: error.userMessage,
+      category: error.category,
+      isRetryable: error.isRetryable,
+      timestamp: new Date().toISOString(),
+    },
+    { status: statusCode }
+  );
 }
 ```
 
 ### 🔍 **Validation Checkpoint**
+
 ```bash
 # ตรวจสอบ TypeScript compilation
 npm run build
@@ -221,12 +238,14 @@ npm run lint
 ```
 
 **🧪 Manual Testing**
+
 - ✅ เริ่ม dev server: `npm run dev`
 - ✅ ทดสอบ API endpoint ผ่าน browser หรือ Postman
 - ✅ ตรวจสอบ error responses มี category และ isRetryable
 - ✅ ทดสอบ existing error cases ยังทำงานได้ปกติ
 
 ### 🔍 **Validation Checkpoint**
+
 ```bash
 # ตรวจสอบ interface compatibility
 npm run build
@@ -234,19 +253,21 @@ npm run type-check
 ```
 
 **🧪 Manual Testing**
+
 - ✅ ตรวจสอบ TypeScript IntelliSense แสดง fields ใหม่
 - ✅ ทดสอบ backward compatibility กับ existing code
 - ✅ ตรวจสอบ API responses มี optional fields
 
 ---
 
-## 🚀 **Phase 2: ปรับปรุง API Route** ⚡ (แก้ไขไฟล์เดิม)
+## 🚀 **Phase 2: ปรับปรุง API Route** ⚡ (แก้ไขไฟล์เดิม) : Done
 
 **เป้าหมาย**: ใช้ error categories ใน `/src/app/api/readings/ask/route.ts`  
 **ไฟล์เป้าหมาย**: `/src/app/api/readings/ask/route.ts`  
 **ความเสี่ยง**: **ต่ำ** - เพิ่ม import และใช้ utility functions เท่านั้น
 
 ### ✅ **Success Criteria**
+
 - [ ] Import error categories utility สำเร็จ
 - [ ] แทนที่ generic error responses ด้วย categorized errors
 - [ ] API ยังทำงานได้ปกติ (ทดสอบด้วย Postman/curl)
@@ -258,34 +279,39 @@ npm run type-check
 
 ```typescript
 // เพิ่ม import ใหม่
-import { categorizeError, createCategorizedErrorResponse } from '@/lib/utils/error-categories';
+import {
+  categorizeError,
+  createCategorizedErrorResponse,
+} from "@/lib/utils/error-categories";
 
 export async function POST(request: Request) {
   try {
     // ... existing code ...
-    
+
     const result = await workflow.invoke(initialState);
-    
+
     if (!result.success) {
       // ใช้ error categorization แทน generic response
       const categorizedError = categorizeError(result.error);
-      
-      return Response.json({
-        success: false,
-        error: categorizedError.code,
-        message: categorizedError.userMessage,
-        category: categorizedError.category,
-        validationReason: result.validationReason,
-        isValid: false,
-        isRetryable: categorizedError.isRetryable,
-        timestamp: new Date().toISOString()
-      }, { 
-        status: categorizedError.category === 'validation' ? 400 : 500
-      });
+
+      return Response.json(
+        {
+          success: false,
+          error: categorizedError.code,
+          message: categorizedError.userMessage,
+          category: categorizedError.category,
+          validationReason: result.validationReason,
+          isValid: false,
+          isRetryable: categorizedError.isRetryable,
+          timestamp: new Date().toISOString(),
+        },
+        {
+          status: categorizedError.category === "validation" ? 400 : 500,
+        }
+      );
     }
-    
+
     // ... success response ไม่เปลี่ยน ...
-    
   } catch (error) {
     // ใช้ error categorization สำหรับ system errors
     const categorizedError = categorizeError(error);
@@ -295,6 +321,7 @@ export async function POST(request: Request) {
 ```
 
 ### 🔍 **Validation Checkpoint**
+
 ```bash
 # ตรวจสอบหลัง implement
 npm run build
@@ -314,6 +341,7 @@ curl -X POST http://localhost:3000/api/readings/ask \
 **ความเสี่ยง**: **ต่ำ** - เพิ่ม optional fields เท่านั้น
 
 ### ✅ **Success Criteria**
+
 - [ ] เพิ่ม `category` และ `isRetryable` fields ใน ReadingError interface
 - [ ] ทุก existing code ยังทำงานได้ (backward compatible)
 - [ ] TypeScript compile ผ่าน (`npm run build`)
@@ -333,14 +361,20 @@ export interface ReadingError {
   path?: string;
   validationReason?: string;
   isValid: boolean;
-  
+
   // เพิ่ม fields ใหม่ (optional เพื่อ backward compatibility)
-  category?: 'validation' | 'ai_processing' | 'rate_limit' | 'authentication' | 'system';
+  category?:
+    | "validation"
+    | "ai_processing"
+    | "rate_limit"
+    | "authentication"
+    | "system";
   isRetryable?: boolean;
 }
 ```
 
 ### 🔍 **Validation Checkpoint**
+
 ```bash
 # ตรวจสอบหลัง implement
 npm run build
@@ -355,6 +389,7 @@ npm run build
 **ความเสี่ยง**: **ไม่มี** - เป็นการทดสอบเท่านั้น
 
 ### ✅ **Success Criteria**
+
 - [ ] ทดสอบ validation errors (คำถามสั้น, ไม่เหมาะสม)
 - [ ] ทดสอบ AI processing errors (timeout, provider errors)
 - [ ] ทดสอบ system errors (database, network)
@@ -386,6 +421,7 @@ curl -X POST http://localhost:3000/api/readings/ask \
 **ความเสี่ยง**: **ปานกลาง** - มี file movements แต่ทำทีละไฟล์
 
 ### ✅ **Success Criteria**
+
 - [ ] สร้าง folder structure `/src/lib/errors/`
 - [ ] ย้าย `error-categories.ts` ไป `/src/lib/errors/categories.ts`
 - [ ] ย้าย `error-messages.ts` ไป `/src/lib/errors/messages.ts`
@@ -393,6 +429,7 @@ curl -X POST http://localhost:3000/api/readings/ask \
 - [ ] ทดสอบหลังย้ายแต่ละไฟล์
 
 ### 📁 **Target Folder Structure**
+
 ```
 /src/lib/errors/
 ├── categories.ts      # จาก /src/lib/utils/error-categories.ts
@@ -412,12 +449,14 @@ curl -X POST http://localhost:3000/api/readings/ask \
 **ความเสี่ยง**: **ต่ำ** - เป็น cleanup phase
 
 ### ✅ **Success Criteria**
+
 - [ ] อัพเดท imports ทั้งหมดให้ชี้ไป `/src/lib/errors/`
 - [ ] ลบไฟล์เก่าที่ไม่ใช้แล้ว
 - [ ] ทดสอบ build และ runtime ครั้งสุดท้าย
 - [ ] อัพเดท documentation
 
 ### 🔍 **Final Validation**
+
 ```bash
 npm run build
 npm run dev
@@ -432,6 +471,7 @@ npm run dev
 ### ✅ **หลังจากทำตามแผน 6 Phase แล้ว**
 
 1. **API Response Structure ที่ชัดเจน**
+
    ```json
    {
      "success": false,
@@ -444,6 +484,7 @@ npm run dev
    ```
 
 2. **Error Categories ที่จัดระเบียบ**
+
    - `validation`: ข้อผิดพลาดจากการตรวจสอบข้อมูล
    - `ai_processing`: ข้อผิดพลาดจากการประมวลผล AI
    - `rate_limit`: ข้อผิดพลาดจากการใช้งานบ่อยเกินไป
@@ -451,11 +492,13 @@ npm run dev
    - `system`: ข้อผิดพลาดของระบบ
 
 3. **User Experience ที่ดีขึ้น**
+
    - ข้อความ error เป็นภาษาไทยที่เข้าใจง่าย
    - มี retry behavior ที่เหมาะสม
    - แสดง error categories ที่ชัดเจน
 
 4. **Developer Experience ที่ดีขึ้น**
+
    - Error handling ที่ consistent
    - ง่ายต่อการ debug และ monitor
    - Type safety ที่ดีขึ้น
@@ -473,50 +516,59 @@ npm run dev
 ### 🟢 95% Confidence Level - เหตุผล
 
 **1. Infrastructure Readiness (30%)**
+
 - ✅ Error handling system มีอยู่แล้วและทำงานได้ดี
 - ✅ `ReadingError` interface รองรับการขยาย
 - ✅ Existing utilities สามารถ integrate ได้
 
 **2. Backward Compatibility (25%)**
+
 - ✅ ทุก phase ออกแบบให้ backward compatible
 - ✅ Optional fields ใน interface
 - ✅ Additive changes เท่านั้น
 
 **3. Validation Strategy (20%)**
+
 - ✅ Validation checkpoints ทุก phase
 - ✅ Automated testing ก่อน deploy
 - ✅ Rollback plan พร้อมใช้งาน
 
 **4. Phased Approach (15%)**
+
 - ✅ แบ่งเป็น 6 phases ที่ชัดเจน
 - ✅ แต่ละ phase มี success criteria
 - ✅ สามารถหยุดได้ทุกจุด
 
 **5. Team Experience (5%)**
+
 - ✅ ทีมมีประสบการณ์กับ codebase
 - ✅ มี testing infrastructure
 
 ### ⚠️ 5% Risk Factors
 
 **1. Naming Conflicts (3%)**
+
 - `createErrorResponse` มีอยู่แล้วใน auth.ts
 - **Mitigation**: ใช้ `createCategorizedErrorResponse`
 
 **2. Integration Complexity (2%)**
+
 - Workflow error handling อาจซับซ้อน
 - **Mitigation**: Test ทีละ component
 
 ## 📋 **การติดตาม Progress**
 
 ### 🎯 **Phase Status**
+
 - [ ] **Phase 1**: สร้าง Error Categories Utility ⏳ (กำลังดำเนินการ)
 - [ ] **Phase 2**: ปรับปรุง API Route ⏳
-- [ ] **Phase 3**: ปรับปรุง ReadingError Interface ⏳  
+- [ ] **Phase 3**: ปรับปรุง ReadingError Interface ⏳
 - [ ] **Phase 4**: ทดสอบและ Validate ⏳
 - [ ] **Phase 5**: ค่อยๆ Migrate ไป Error Folder ⏳
 - [ ] **Phase 6**: Final Cleanup และ Import Updates ⏳
 
 ### 🚀 **Next Steps**
+
 1. ✅ **Codebase Analysis Complete** - พร้อมเริ่ม implementation
 2. 🚀 เริ่มต้นด้วย **Phase 1** - สร้าง `/src/lib/utils/error-categories.ts`
 3. 🧪 ทดสอบ TypeScript compilation หลังแต่ละ phase
@@ -524,6 +576,7 @@ npm run dev
 5. ✅ ใช้ validation checkpoints เพื่อตรวจสอบความถูกต้อง
 
 ### ⚠️ **Risk Mitigation Strategy**
+
 - ✅ **Backward Compatibility**: ทุก phase ไม่แตก existing code
 - ✅ **Manual Testing**: สามารถ manual test ได้หลังแต่ละ phase
 - ✅ **Build Validation**: เช็คแค่ `npm run build` และ `npm run lint` ให้ผ่าน
@@ -532,204 +585,7 @@ npm run dev
 - ✅ **No Breaking Changes**: จนถึง Phase 4 (optional migration)
 - ✅ **Naming Conflicts Resolved**: ใช้ unique function names
 - ✅ **Existing Infrastructure**: ใช้ประโยชน์จาก existing utilities
-=======
-## แผนการแก้ไขแบบ Explicit
 
-### Phase 1: API Error Categorization (ลำดับความสำคัญสูง)
-
-**เป้าหมาย**: จัดหมวดหมู่ error และ response ให้ชัดเจน  
-**ไฟล์เป้าหมาย**: `/src/app/api/readings/ask/route.ts`
-
-#### 1.1 สร้าง Error Categories Utility
-```typescript
-// สร้างไฟล์ใหม่: /src/lib/utils/error-categories.ts
-export interface ErrorCategory {
-  type: 'validation' | 'generation' | 'timeout' | 'system';
-  httpStatus: number;
-  userMessage: string;
-  canRetry: boolean;
-}
-
-export const ERROR_CATEGORIES: Record<string, ErrorCategory> = {
-  VALIDATION_FAILED: {
-    type: 'validation',
-    httpStatus: 400,
-    userMessage: 'คำถามของคุณไม่เหมาะสมสำหรับการทำนาย กรุณาปรับคำถามใหม่',
-    canRetry: false
-  },
-  CARD_SELECTION_FAILED: {
-    type: 'generation', 
-    httpStatus: 500,
-    userMessage: 'ไม่สามารถเลือกไพ่ได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง',
-    canRetry: true
-  },
-  QUESTION_ANALYSIS_FAILED: {
-    type: 'generation',
-    httpStatus: 500, 
-    userMessage: 'ไม่สามารถวิเคราะห์คำถามได้ กรุณาลองใหม่อีกครั้ง',
-    canRetry: true
-  },
-  READING_GENERATION_FAILED: {
-    type: 'generation',
-    httpStatus: 500,
-    userMessage: 'ไม่สามารถสร้างการทำนายได้ กรุณาลองใหม่อีกครั้ง', 
-    canRetry: true
-  },
-  WORKFLOW_TIMEOUT: {
-    type: 'timeout',
-    httpStatus: 408,
-    userMessage: 'การทำนายใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง',
-    canRetry: true
-  },
-  SYSTEM_ERROR: {
-    type: 'system',
-    httpStatus: 500,
-    userMessage: 'เกิดข้อผิดพลาดของระบบ กรุณาลองใหม่อีกครั้ง',
-    canRetry: true
-  }
-};
-
-export function categorizeWorkflowError(error: string): ErrorCategory {
-  const errorLower = error.toLowerCase();
-  
-  if (errorLower.includes('validation') || errorLower.includes('invalid question')) {
-    return ERROR_CATEGORIES.VALIDATION_FAILED;
-  }
-  if (errorLower.includes('card') && errorLower.includes('failed')) {
-    return ERROR_CATEGORIES.CARD_SELECTION_FAILED;
-  }
-  if (errorLower.includes('question analysis') || errorLower.includes('analyzer')) {
-    return ERROR_CATEGORIES.QUESTION_ANALYSIS_FAILED;
-  }
-  if (errorLower.includes('reading') && errorLower.includes('failed')) {
-    return ERROR_CATEGORIES.READING_GENERATION_FAILED;
-  }
-  if (errorLower.includes('timeout')) {
-    return ERROR_CATEGORIES.WORKFLOW_TIMEOUT;
-  }
-  
-  return ERROR_CATEGORIES.SYSTEM_ERROR;
-}
-```
-
-#### 1.2 ปรับปรุง API Route Error Handling
-```typescript
-// ใน /src/app/api/readings/ask/route.ts
-import { categorizeWorkflowError, ERROR_CATEGORIES } from '@/lib/utils/error-categories';
-
-// แทนที่ error handling section ปัจจุบัน
-if (workflowResult.error) {
-  const category = categorizeWorkflowError(workflowResult.error);
-  
-  const errorResponse = {
-    success: false,
-    error: category.type,
-    message: category.userMessage,
-    canRetry: category.canRetry,
-    timestamp: new Date().toISOString(),
-    path: '/api/readings/ask',
-    validationReason: workflowResult.validationReason,
-    isValid: workflowResult.isValid,
-  };
-
-  return NextResponse.json(errorResponse, { status: category.httpStatus });
-}
-```
-
-### Phase 2: Enhanced Error Response Structure (ลำดับความสำคัญสูง)
-
-**เป้าหมาย**: ปรับปรุง interface และ response structure  
-**ไฟล์เป้าหมาย**: `/src/types/reading.ts`
-
-#### 2.1 ปรับปรุง ReadingError Interface
-```typescript
-// ใน /src/types/reading.ts
-export interface ReadingError {
-  success: false;
-  error: 'validation' | 'generation' | 'timeout' | 'system';
-  message: string;
-  canRetry: boolean;
-  timestamp: string;
-  path: string;
-  validationReason?: string;
-  isValid?: boolean;
-}
-```
-
-### Phase 3: Frontend Error Handling Enhancement (ลำดับความสำคัญกลาง)
-
-**เป้าหมาย**: ปรับปรุง error display ใน frontend  
-**ไฟล์เป้าหมาย**: `/src/hooks/useErrorHandler.ts`
-
-#### 3.1 เพิ่ม Error Category Support
-```typescript
-// ใน /src/hooks/useErrorHandler.ts - เพิ่ม function ใหม่
-const processApiError = (error: any): ProcessedError => {
-  if (error.canRetry !== undefined) {
-    return {
-      message: error.message,
-      canRetry: error.canRetry,
-      isValidationError: error.error === 'validation'
-    };
-  }
-  
-  // fallback to existing logic
-  return processError(error);
-};
-```
-
-### Phase 4: Testing และ Validation (ลำดับความสำคัญกลาง)
-
-**เป้าหมาย**: ทดสอบทุก error scenarios  
-
-#### 4.1 Test Cases ที่ต้องทดสอบ
-1. **Validation Errors**: คำถามไม่เหมาะสม → แสดง validationReason
-2. **Generation Errors**: AI ล้มเหลว → แสดง retry option
-3. **Timeout Errors**: ใช้เวลานาน → แสดง timeout message
-4. **System Errors**: ข้อผิดพลาดทั่วไป → แสดง generic error
-
-#### 4.2 Manual Testing Checklist
-- [ ] ทดสอบ validation error response
-- [ ] ทดสอบ generation error response  
-- [ ] ทดสอบ timeout error response
-- [ ] ทดสอบ system error response
-- [ ] ตรวจสอบ error messages ภาษาไทย
-- [ ] ตรวจสอบ canRetry flag
-- [ ] ตรวจสอบ HTTP status codes
-
-## ลำดับการ Implementation
-
-### Step 1: สร้าง Error Categories (30 นาที)
-1. สร้างไฟล์ `/src/lib/utils/error-categories.ts`
-2. เพิ่ม error categorization logic
-
-### Step 2: ปรับปรุง API Route (20 นาที)  
-1. Import error categories
-2. แทนที่ error handling logic
-3. ทดสอบ API responses
-
-### Step 3: ปรับปรุง Types (10 นาที)
-1. อัพเดท `ReadingError` interface
-2. เพิ่ม `canRetry` field
-
-### Step 4: Testing (30 นาที)
-1. ทดสอบแต่ละ error scenario
-2. ตรวจสอบ error messages
-3. ตรวจสอบ HTTP status codes
-
-## เกณฑ์การประเมินผล
-
-### ✅ Success Criteria
-- [ ] Error messages เป็นภาษาไทยที่เข้าใจง่าย
-- [ ] HTTP status codes ถูกต้องตาม error type
-- [ ] `canRetry` flag ทำงานถูกต้อง
-- [ ] ไม่มี breaking changes กับ frontend
-- [ ] Build ผ่านไม่มี TypeScript errors
-
-### 🎯 Expected Benefits
-1. **User Experience**: ผู้ใช้เข้าใจ error messages ได้ดีขึ้น
-2. **Debugging**: ง่ายต่อการ debug และ maintenance  
-3. **Consistency**: Error handling มีมาตรฐานเดียวกัน
-4. **Reliability**: ระบบมีความเสถียรมากขึ้น
+---
 
 **หมายเหตุ**: แผนนี้เน้นการแก้ไขปัญหาที่เหลืออยู่อย่างเฉพาะเจาะจง โดยไม่ทำการเปลี่ยนแปลงใหญ่ที่อาจส่งผลกระทบต่อระบบที่ทำงานอยู่แล้ว
