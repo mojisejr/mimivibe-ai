@@ -40,21 +40,72 @@ export const ReadingState = Annotation.Root({
   }>,
   reading: Annotation<ReadingStructure>,
   error: Annotation<string>,
+  // Enhanced error tracking fields for Phase 1 conditional routing
+  workflowError: Annotation<string | null>,
+  hasError: Annotation<boolean>,
+  errorSource: Annotation<string | null>,
 });
 
 // Node 1: Question Filter - Validates if the question is appropriate (using database prompts)
 async function questionFilterNode(state: typeof ReadingState.State) {
   try {
+    // Input validation
+    if (!state.question || state.question.trim().length === 0) {
+      return {
+        isValid: false,
+        validationReason: "กรุณาใส่คำถามที่ต้องการทำนาย",
+        error: "Empty question provided",
+        hasError: true,
+        errorSource: "questionFilter",
+        workflowError: "Question validation failed: Empty question",
+      };
+    }
+
+    if (state.question.length > 500) {
+      return {
+        isValid: false,
+        validationReason: "คำถามยาวเกินไป (สูงสุด 500 ตัวอักษร)",
+        error: "Question exceeds maximum length",
+        hasError: true,
+        errorSource: "questionFilter",
+        workflowError: "Question validation failed: Question too long",
+      };
+    }
 
     // Get prompt from database
     const manager = getPromptManager();
-    const promptContent = await manager.getPrompt('questionFilter', state.userId);
-    
+    const promptContent = await manager.getPrompt(
+      "questionFilter",
+      state.userId
+    );
+
+    if (!promptContent) {
+      return {
+        isValid: false,
+        validationReason: "ไม่สามารถโหลดระบบตรวจสอบคำถามได้",
+        error: "Prompt loading failed",
+        hasError: true,
+        errorSource: "questionFilter",
+        workflowError: "Question filter failed: Prompt not available",
+      };
+    }
+
     const filterAI = createProviderWithPrompt(promptContent);
 
     const response = await filterAI.invoke([
       { role: "user", content: `Question to validate: "${state.question}"` },
     ]);
+
+    if (!response || !response.content) {
+      return {
+        isValid: false,
+        validationReason: "ระบบ AI ไม่สามารถตรวจสอบคำถามได้ในขณะนี้",
+        error: "No response from AI service",
+        hasError: true,
+        errorSource: "questionFilter",
+        workflowError: "Question filter failed: AI service error",
+      };
+    }
 
     const parsed = parseAndValidateAIResponse<{
       isValid: boolean;
@@ -67,11 +118,14 @@ async function questionFilterNode(state: typeof ReadingState.State) {
         response.content as string,
         parsed.error || "Unknown error"
       );
-      
+
       return {
         isValid: false,
-        validationReason: "Unable to validate question format",
+        validationReason: "ไม่สามารถประมวลผลคำถามได้",
         error: `Question filter parsing failed: ${parsed.error}`,
+        hasError: true,
+        errorSource: "questionFilter",
+        workflowError: `Question filter parsing error: ${parsed.error}`,
       };
     }
 
@@ -80,19 +134,34 @@ async function questionFilterNode(state: typeof ReadingState.State) {
     if (!result) {
       return {
         isValid: false,
-        validationReason: "No data returned from parsing",
+        validationReason: "ไม่สามารถตรวจสอบคำถามได้",
+        error: "Question filter returned empty result",
+        hasError: true,
+        errorSource: "questionFilter",
+        workflowError: "Question filter failed: Empty result from AI",
       };
     }
 
+    // Success case - clear any previous errors
     return {
       isValid: result.isValid,
       validationReason: result.reason || "",
+      hasError: false,
+      errorSource: null,
+      workflowError: null,
     };
   } catch (error) {
     return {
       isValid: false,
-      validationReason: "System error during validation",
-      error: `Question filter failed: ${error instanceof Error ? error.message : String(error)}`,
+      validationReason: "เกิดข้อผิดพลาดในระบบตรวจสอบคำถาม",
+      error: `Question filter failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      hasError: true,
+      errorSource: "questionFilter",
+      workflowError: `Question filter system error: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     };
   }
 }
@@ -100,22 +169,84 @@ async function questionFilterNode(state: typeof ReadingState.State) {
 // Node 2: Card Picker - Selects random cards for the reading
 async function cardPickerNode(state: typeof ReadingState.State) {
   try {
-
+    // Check if previous step failed
     if (!state.isValid) {
-      return { selectedCards: [] };
+      return {
+        selectedCards: [],
+        hasError: true,
+        errorSource: "cardPicker",
+        workflowError: "Card picker skipped: Question validation failed",
+      };
+    }
+
+    // Validate card count parameter
+    const requestedCardCount = state.cardCount || 3;
+    if (requestedCardCount < 1 || requestedCardCount > 10) {
+      return {
+        selectedCards: [],
+        error: "จำนวนไพ่ที่ขอไม่ถูกต้อง",
+        hasError: true,
+        errorSource: "cardPicker",
+        workflowError: `Card picker failed: Invalid card count ${requestedCardCount}`,
+      };
     }
 
     const cardResult = await pickRandomCards();
 
+    // Validate card selection result
+    if (
+      !cardResult ||
+      !cardResult.selectedCards ||
+      cardResult.selectedCards.length === 0
+    ) {
+      return {
+        selectedCards: [],
+        error: "ไม่สามารถเลือกไพ่ได้",
+        hasError: true,
+        errorSource: "cardPicker",
+        workflowError: "Card picker failed: No cards selected",
+      };
+    }
 
-    return { 
+    // Validate card data integrity
+    const invalidCards = cardResult.selectedCards.filter(
+      (card) =>
+        !card ||
+        !card.id ||
+        !card.name ||
+        !card.shortMeaning ||
+        !card.displayName
+    );
+
+    if (invalidCards.length > 0) {
+      return {
+        selectedCards: [],
+        error: "ข้อมูลไพ่ไม่ถูกต้อง",
+        hasError: true,
+        errorSource: "cardPicker",
+        workflowError: `Card picker failed: ${invalidCards.length} cards have invalid data`,
+      };
+    }
+
+    // Success case - clear any previous errors
+    return {
       selectedCards: cardResult.selectedCards,
-      cardCount: cardResult.cardCount
+      cardCount: cardResult.cardCount,
+      hasError: false,
+      errorSource: null,
+      workflowError: null,
     };
   } catch (error) {
     return {
       selectedCards: [],
-      error: `Card picker failed: ${error instanceof Error ? error.message : String(error)}`,
+      error: `เกิดข้อผิดพลาดในระบบเลือกไพ่: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      hasError: true,
+      errorSource: "cardPicker",
+      workflowError: `Card picker system error: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     };
   }
 }
@@ -123,15 +254,70 @@ async function cardPickerNode(state: typeof ReadingState.State) {
 // Node 3: Question Analyzer - Analyzes the question context (using database prompts)
 async function questionAnalyzerNode(state: typeof ReadingState.State) {
   try {
+    // Check if previous step failed
+    if (state.hasError) {
+      return {
+        questionAnalysis: null,
+        hasError: true,
+        errorSource: state.errorSource,
+        workflowError: state.workflowError,
+      };
+    }
 
-    if (!state.isValid || !state.selectedCards?.length) {
-      return { questionAnalysis: null };
+    // Validate prerequisites
+    if (!state.isValid) {
+      return {
+        questionAnalysis: null,
+        hasError: true,
+        errorSource: "questionAnalyzer",
+        workflowError: "Cannot analyze question: question validation failed",
+      };
+    }
+
+    if (!state.selectedCards?.length) {
+      return {
+        questionAnalysis: null,
+        hasError: true,
+        errorSource: "questionAnalyzer",
+        workflowError: "Cannot analyze question: no cards selected",
+      };
+    }
+
+    if (!state.question?.trim()) {
+      return {
+        questionAnalysis: null,
+        hasError: true,
+        errorSource: "questionAnalyzer",
+        workflowError: "Cannot analyze question: empty question",
+      };
     }
 
     // Get prompt from database
     const manager = getPromptManager();
-    const promptContent = await manager.getPrompt('questionAnalysis', state.userId);
-    
+    let promptContent: string;
+
+    try {
+      promptContent = await manager.getPrompt("questionAnalysis", state.userId);
+    } catch (error) {
+      return {
+        questionAnalysis: null,
+        hasError: true,
+        errorSource: "questionAnalyzer",
+        workflowError: `Failed to load analysis prompt: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
+
+    if (!promptContent?.trim()) {
+      return {
+        questionAnalysis: null,
+        hasError: true,
+        errorSource: "questionAnalyzer",
+        workflowError: "Analysis prompt is empty or invalid",
+      };
+    }
+
     const analyzerAI = createProviderWithPrompt(promptContent);
 
     const response = await analyzerAI.invoke([
@@ -140,6 +326,16 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
         content: `Question: "${state.question}"`,
       },
     ]);
+
+    // Validate AI response
+    if (!response?.content) {
+      return {
+        questionAnalysis: null,
+        hasError: true,
+        errorSource: "questionAnalyzer",
+        workflowError: "AI provider returned empty response",
+      };
+    }
 
     const parsed = parseAndValidateAIResponse<{
       mood: string;
@@ -161,20 +357,54 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
           topic: "ทั่วไป",
           period: "ปัจจุบัน",
         },
+        hasError: false,
+        errorSource: null,
+        workflowError: null,
       };
     }
 
     const result = parsed.data;
 
-    return { questionAnalysis: result };
+    // Validate analysis result
+    if (
+      !result ||
+      !result.mood?.trim() ||
+      !result.topic?.trim() ||
+      !result.period?.trim()
+    ) {
+      return {
+        questionAnalysis: {
+          mood: "อยากรู้",
+          topic: "ทั่วไป",
+          period: "ปัจจุบัน",
+        },
+        hasError: false,
+        errorSource: null,
+        workflowError: null,
+      };
+    }
+
+    return {
+      questionAnalysis: result,
+      hasError: false,
+      errorSource: null,
+      workflowError: null,
+    };
   } catch (error) {
     return {
       questionAnalysis: {
         mood: "อยากรู้",
-        topic: "ทั่วไป", 
+        topic: "ทั่วไป",
         period: "ปัจจุบัน",
       },
-      error: `Question analyzer failed: ${error instanceof Error ? error.message : String(error)}`,
+      error: `เกิดข้อผิดพลาดในระบบวิเคราะห์คำถาม: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      hasError: true,
+      errorSource: "questionAnalyzer",
+      workflowError: `Question analyzer system error: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     };
   }
 }
@@ -182,24 +412,108 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
 // Node 4: Reading Agent - Generates the complete tarot reading (using database prompts)
 async function readingAgentNode(state: typeof ReadingState.State) {
   try {
+    // Check if previous step failed
+    if (state.hasError) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: state.errorSource,
+        workflowError: state.workflowError,
+      };
+    }
 
-    if (
-      !state.isValid ||
-      !state.selectedCards?.length ||
-      !state.questionAnalysis
-    ) {
-      return { reading: null };
+    // Validate prerequisites
+    if (!state.isValid) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: "Cannot generate reading: question validation failed",
+      };
+    }
+
+    if (!state.selectedCards?.length) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: "Cannot generate reading: no cards selected",
+      };
+    }
+
+    if (!state.questionAnalysis) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: "Cannot generate reading: question analysis missing",
+      };
+    }
+
+    if (!state.question?.trim()) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: "Cannot generate reading: empty question",
+      };
     }
 
     // Get prompt from database
     const manager = getPromptManager();
-    const promptContent = await manager.getPrompt('readingAgent', state.userId);
+    let promptContent: string;
+
+    try {
+      promptContent = await manager.getPrompt("readingAgent", state.userId);
+    } catch (error) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: `Failed to load reading prompt: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
+
+    if (!promptContent?.trim()) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: "Reading prompt is empty or invalid",
+      };
+    }
 
     const readingAI = createProviderWithPrompt(promptContent);
 
-    // Prepare context
-    const cardsContext = formatCardsForWorkflow(state.selectedCards);
-    const cardMeanings = await getCardMeaningsContext(state.selectedCards);
+    // Prepare context with validation
+    let cardsContext: string;
+    let cardMeanings: string;
+
+    try {
+      const cardsArray = formatCardsForWorkflow(state.selectedCards);
+      cardsContext = cardsArray.join("\n");
+      cardMeanings = await getCardMeaningsContext(state.selectedCards);
+    } catch (error) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: `Failed to prepare card context: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
+
+    if (!cardsContext?.trim() || !cardMeanings?.trim()) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: "Card context or meanings are empty",
+      };
+    }
 
     const contextPrompt = `
 Question: "${state.question}"
@@ -216,10 +530,19 @@ Question Analysis:
 - Period: ${state.questionAnalysis.period}
 `;
 
-
     const response = await readingAI.invoke([
       { role: "user", content: contextPrompt },
     ]);
+
+    // Validate AI response
+    if (!response?.content) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: "AI provider returned empty response",
+      };
+    }
 
     const parsed = parseAndValidateAIResponse<ReadingStructure>(
       response.content as string,
@@ -228,60 +551,231 @@ Question Analysis:
 
     if (!parsed.success) {
       logParsingError(
-        "ReadingAgent", 
+        "ReadingAgent",
         response.content as string,
         parsed.error || "Unknown error"
       );
 
       return {
         reading: null,
-        error: `Reading generation parsing failed: ${parsed.error}`,
+        error: `ไม่สามารถประมวลผลการทำนายได้: ${parsed.error}`,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: `Failed to parse reading response: ${parsed.error}`,
       };
     }
 
     const reading = parsed.data;
 
-    return { reading };
+    // Validate reading structure
+    if (!reading || !reading.header || !reading.reading || !reading.final) {
+      return {
+        reading: null,
+        hasError: true,
+        errorSource: "readingAgent",
+        workflowError: "Generated reading is missing required fields",
+      };
+    }
+
+    return {
+      reading,
+      hasError: false,
+      errorSource: null,
+      workflowError: null,
+    };
   } catch (error) {
     return {
       reading: null,
-      error: `Reading agent failed: ${error instanceof Error ? error.message : String(error)}`,
+      error: `เกิดข้อผิดพลาดในระบบสร้างการทำนาย: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      hasError: true,
+      errorSource: "readingAgent",
+      workflowError: `Reading agent system error: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     };
   }
 }
 
-// Conditional routing function
+// Error handler node to consolidate and process all workflow errors
+async function errorHandlerNode(state: typeof ReadingState.State) {
+  try {
+    // Collect all possible error sources
+    const errors: string[] = [];
+
+    // Check for validation errors
+    // if (!state.isValid && state.validationReason) {
+    if (!state.isValid) {
+      errors.push(`ข้อผิดพลาดในการตรวจสอบ: ${state.validationReason}`);
+    }
+
+    // Check for card selection errors
+    if (!state.selectedCards || state.selectedCards.length === 0) {
+      errors.push("ข้อผิดพลาดในการเลือกไพ่: ไม่มีไพ่ที่ถูกเลือก");
+    }
+
+    // Check for question analysis errors
+    if (
+      !state.questionAnalysis ||
+      !state.questionAnalysis.mood ||
+      !state.questionAnalysis.topic
+    ) {
+      errors.push(
+        "ข้อผิดพลาดในการวิเคราะห์คำถาม: ไม่สามารถวิเคราะห์คำถามได้อย่างถูกต้อง"
+      );
+    }
+
+    // Check for reading generation errors
+    if (!state.reading || !state.reading.reading) {
+      errors.push(
+        "ข้อผิดพลาดในการสร้างการทำนาย: ไม่สามารถสร้างเนื้อหาการทำนายได้"
+      );
+    }
+
+    // Check for existing workflow errors
+    if (state.workflowError) {
+      errors.push(`ข้อผิดพลาดในระบบ: ${state.workflowError}`);
+    }
+
+    // Check for general errors
+    if (state.error) {
+      errors.push(`ข้อผิดพลาดทั่วไป: ${state.error}`);
+    }
+
+    // Consolidate all errors
+    const consolidatedError = errors.length > 0 ? errors.join("; ") : null;
+
+    return {
+      ...state,
+      hasError: errors.length > 0,
+      workflowError: consolidatedError,
+      errorSource: errors.length > 0 ? "errorHandler" : null,
+      error: consolidatedError || state.error,
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      ...state,
+      hasError: true,
+      workflowError: `ระบบจัดการข้อผิดพลาดล้มเหลว: ${errorMessage}`,
+      errorSource: "errorHandler",
+      error: errorMessage,
+    };
+  }
+}
+
+// Enhanced conditional routing function with comprehensive error detection
 function shouldContinue(state: typeof ReadingState.State) {
+  console.log("[DEBUG] shouldContinue state", state)
+  // Check for existing error flags first
+  if (state.hasError || state.workflowError) {
+    return "error";
+  }
+
+  // Check for general errors
   if (state.error) {
     return "error";
   }
-  
-  if (!state.isValid) {
-    return "invalid";
-  }
-  
-  if (!state.selectedCards?.length) {
+
+  // Check question validation (questionFilterNode)
+  // if (state.isValid === false || state.validationReason) {
+  if (state.isValid === false) {
     return "error";
   }
-  
-  if (!state.reading) {
+
+  // Check card selection (cardPickerNode)
+  if (state.cardCount === 0) {
+    // if (
+    //   state.cardCount &&
+    //   (!state.selectedCards || state.selectedCards.length === 0)
+    // ) {
     return "error";
   }
-  
-  return "success";
+
+  // Check question analysis (questionAnalyzerNode)
+  if (!state.selectedCards || state.cardCount <= 0) {
+    // if (
+    //   !state.questionAnalysis ||
+    //   !state.questionAnalysis.mood ||
+    //   !state.questionAnalysis.topic ||
+    //   !state.questionAnalysis.period
+    // ) {
+    //   return "error";
+    // }
+    return "error";
+  }
+
+  // Check reading generation (readingAgentNode)
+  if (
+    !state.questionAnalysis
+    // &&
+    // !state.questionAnalysis.mood &&
+    // !state.questionAnalysis.topic &&
+    // !state.questionAnalysis.period
+  ) {
+    return "error";
+    // if (
+    //   !state.reading ||
+    //   !state.reading.header ||
+    //   !state.reading.reading ||
+    //   !state.reading.final ||
+    //   !state.reading.end
+    // ) {
+    //   return "error";
+    // }
+  }
+
+  // Success condition - all required data is present
+  if (
+    state.reading &&
+    state.reading.header &&
+    state.reading.reading &&
+    state.reading.final &&
+    state.reading.end &&
+    state.selectedCards &&
+    state.selectedCards.length > 0 &&
+    state.questionAnalysis &&
+    state.questionAnalysis.mood &&
+    state.questionAnalysis.topic &&
+    state.questionAnalysis.period
+  ) {
+    return "success";
+  }
+
+  // Default to continue if no errors detected and workflow is in progress
+  return "continue";
 }
 
-// Create the workflow graph
+// Create the workflow graph with conditional routing
 const workflow = new StateGraph(ReadingState)
   .addNode("questionFilter", questionFilterNode)
   .addNode("cardPicker", cardPickerNode)
   .addNode("questionAnalyzer", questionAnalyzerNode)
   .addNode("readingAgent", readingAgentNode)
+  .addNode("errorHandler", errorHandlerNode)
   .addEdge(START, "questionFilter")
-  .addEdge("questionFilter", "cardPicker")
-  .addEdge("cardPicker", "questionAnalyzer")
-  .addEdge("questionAnalyzer", "readingAgent")
-  .addEdge("readingAgent", END);
+  .addConditionalEdges("questionFilter", shouldContinue, {
+    continue: "cardPicker",
+    error: "errorHandler",
+    success: END,
+  })
+  .addConditionalEdges("cardPicker", shouldContinue, {
+    continue: "questionAnalyzer",
+    error: "errorHandler",
+    success: END,
+  })
+  .addConditionalEdges("questionAnalyzer", shouldContinue, {
+    continue: "readingAgent",
+    error: "errorHandler",
+    success: END,
+  })
+  .addConditionalEdges("readingAgent", shouldContinue, {
+    continue: END,
+    error: "errorHandler",
+    success: END,
+  })
+  .addEdge("errorHandler", END);
 
 // Compile the workflow
 const app = workflow.compile();
@@ -291,48 +785,50 @@ export async function executeWorkflowWithDB(
   question: string,
   cardCount: number = 3
 ): Promise<ReadingStructure> {
-
   const startTime = Date.now();
 
   try {
     // Execute the workflow with timeout protection
     const timeoutMs = 55000; // 55 seconds timeout
-    
+
     const workflowPromise = app.invoke({
       question,
       cardCount,
     });
 
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Workflow timeout after 55 seconds')), timeoutMs)
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(
+        () => reject(new Error("Workflow timeout after 55 seconds")),
+        timeoutMs
+      )
     );
 
-    const finalState = await Promise.race([workflowPromise, timeoutPromise]) as typeof ReadingState.State;
+    const finalState = (await Promise.race([
+      workflowPromise,
+      timeoutPromise,
+    ])) as typeof ReadingState.State;
 
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
 
-
     // Handle workflow result
     const result = shouldContinue(finalState);
-    
+
     if (result === "success" && finalState.reading) {
       return finalState.reading;
     } else {
       const errorMessage = finalState.error || "Unknown workflow error";
       throw new Error(errorMessage);
     }
-
   } catch (error) {
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
-    
-    
+
     const errorMessage = error instanceof Error ? error.message : String(error);
-    if (errorMessage.includes('timeout')) {
-      throw new Error('คำขอใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
+    if (errorMessage.includes("timeout")) {
+      throw new Error("คำขอใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง");
     }
-    
+
     throw error;
   }
 }
@@ -343,7 +839,7 @@ export async function generateTarotReading(question: string, userId?: string) {
     // Execute the encrypted workflow and capture the final state
     const finalState = await app.invoke({
       question: question.trim(),
-      userId: userId || 'anonymous',
+      userId: userId || "anonymous",
       isValid: false,
       validationReason: "",
       selectedCards: [],
@@ -366,6 +862,8 @@ export async function generateTarotReading(question: string, userId?: string) {
     if (finalState.error || !finalState.reading) {
       return {
         error: finalState.error || "Failed to generate reading",
+        validationReason: finalState.validationReason || "",
+        isValid: finalState.isValid || false,
       };
     }
 
@@ -374,6 +872,8 @@ export async function generateTarotReading(question: string, userId?: string) {
       reading: finalState.reading,
       questionAnalysis: finalState.questionAnalysis,
       selectedCards: finalState.selectedCards,
+      validationReason: finalState.validationReason,
+      isValid: finalState.isValid,
     };
   } catch (error) {
     return {

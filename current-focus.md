@@ -1,52 +1,19 @@
 # Current Focus
 
-**Date**: 2025-09-14 23:44:11
-**Focus**: JIT User Provisioning Implementation - Eliminating Webhook Dependency for Referral System
-
-## Current Focus
-
-**Last Updated**: 2025-09-16 14:09:34
+**Updated**: 2025-09-18 00:20:50
 
 ## Current Task
-Database optimization - remove unused tables safely (scope-limited) - STRICT SCOPE: Database optimization ONLY, no additional features, UI changes, or functionality modifications. API-based testing approach for validation.
+Implement Phase 1: เพิ่ม Conditional Routing from `/Users/non/dev/vibes/mimi-vibes-v3/docs/ask-error-plan.md`
 
-### Issue Overview
-Persistent timing issues between Clerk authentication and webhook-based User record creation causing referral system failures with `Foreign key constraint violated on the constraint: referral_codes_userId_fkey`. Previous debugging showed 10+ second gaps between authentication and User record availability.
+## Context
+Working on enhancing the LangGraph workflow error handling system by implementing conditional routing that allows the workflow to terminate early when errors occur, rather than continuing through all nodes. This is the first phase of a comprehensive error handling improvement plan.
 
-### Root Cause Analysis
-Webhook dependency creates timing race conditions where:
-- Clerk authentication completes instantly
-- User record creation via webhook takes 10+ seconds
-- Referral processing fails due to missing User records
+## Key Implementation Areas
+- Add conditional routing logic to workflow
+- Create error handler node
+- Implement shouldContinue function
+- Update workflow graph with conditional edges
+- Ensure early termination on errors
 
-### Solution Strategy: Just-In-Time (JIT) User Provisioning
-**Approach**: Create User records on-demand when first API call is made, eliminating webhook dependency
-
-**Benefits**:
-- ✅ Zero timing issues - User created when needed
-- ✅ Eliminates webhook dependency entirely
-- ✅ Immediate data consistency
-- ✅ Simpler error handling
-
-### Implementation Plan
-1. Create `ensureUserExists()` utility function with Clerk API integration
-2. Implement JIT pattern in referral processing API route
-3. Update credits API to use JIT provisioning
-4. Add comprehensive error handling and logging
-5. Maintain webhook as fallback for batch operations
-
-### Files to Modify
-- `src/lib/utils/jit-user.ts` (NEW): JIT user provisioning utility
-- `src/app/api/referrals/process/route.ts`: Replace user existence check with JIT provisioning
-- `src/app/api/user/credits/route.ts`: Implement JIT pattern for user lookup
-
-### Active Work
-- **PR**: #164 - Enhanced referral system debugging
-- **Issue**: #163 - Foreign key constraint error in referral system
-
-### Goal
-Eliminate webhook timing dependency and provide instant User record availability for referral system.
-
----
-
-*Session started: 2025-09-14 23:44:11*
+## Reference Document
+`/Users/non/dev/vibes/mimi-vibes-v3/docs/ask-error-plan.md` - Phase 1 section

@@ -61,6 +61,8 @@ export interface ReadingError {
   message: string;
   timestamp: string;
   path: string;
+  validationReason?: string;
+  isValid?: boolean;
 }
 
 // Historical reading format for display
