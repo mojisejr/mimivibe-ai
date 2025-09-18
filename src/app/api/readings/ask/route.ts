@@ -1,164 +1,265 @@
 // Round 7A: New API format without SSE streaming
-import { auth } from '@clerk/nextjs'
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { generateTarotReading } from '@/lib/langgraph/workflow-with-db'
-import type { ReadingResponse, ReadingError } from '@/types/reading'
-import { getSafeExpValue, getSafeLevelValue } from '@/lib/feature-flags'
-import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards'
-import { analyzeUserInput, validateTarotQuestion, calculateUserSuspicionLevel } from '@/lib/security/ai-protection'
-import { aiRateLimit, securityAiRateLimit } from '@/lib/rate-limiter'
-import { sanitizeString } from '@/lib/validations'
+import { auth } from "@clerk/nextjs";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { generateTarotReading } from "@/lib/langgraph/workflow-with-db";
+import type { ReadingResponse, ReadingError } from "@/types/reading";
+import { getSafeExpValue, getSafeLevelValue } from "@/lib/feature-flags";
+import { getReferralRewards, toLegacyRewardFormat } from "@/lib/utils/rewards";
+import {
+  analyzeUserInput,
+  validateTarotQuestion,
+  calculateUserSuspicionLevel,
+} from "@/lib/security/ai-protection";
+import { aiRateLimit, securityAiRateLimit } from "@/lib/rate-limiter";
+import { sanitizeString } from "@/lib/validations";
 
 // Force dynamic rendering for authentication
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = auth()
-    
+    const { userId } = auth();
+
     if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Unauthorized',
-        message: 'Authentication required',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 401 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unauthorized",
+          message: "Authentication required",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/ask",
+        } as ReadingError,
+        { status: 401 }
+      );
     }
 
     // Get client information for security checks
-    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-    const userAgent = request.headers.get('user-agent') || 'unknown'
+    const clientIP =
+      request.headers.get("x-forwarded-for") ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+    const userAgent = request.headers.get("user-agent") || "unknown";
 
     // Apply AI-specific rate limiting
-    const aiRateLimitResult = await aiRateLimit(request)
+    const aiRateLimitResult = await aiRateLimit(request);
     if (aiRateLimitResult) {
-      return aiRateLimitResult
+      return aiRateLimitResult;
     }
 
-    const body = await request.json()
-    const { question, language = 'th' } = body
+    const body = await request.json();
+    const { question, language = "th" } = body;
 
     // Validate question
-    if (!question || typeof question !== 'string') {
-      return NextResponse.json({
-        success: false,
-        error: 'Bad request',
-        message: 'Question is required',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 400 })
+    if (!question || typeof question !== "string") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bad request",
+          message: "Question is required",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/ask",
+        } as ReadingError,
+        { status: 400 }
+      );
     }
 
     if (question.length < 10 || question.length > 500) {
-      return NextResponse.json({
-        success: false,
-        error: 'Bad request',
-        message: 'Question must be between 10-500 characters',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bad request",
+          message: "Question must be between 10-500 characters",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/ask",
+        } as ReadingError,
+        { status: 400 }
+      );
     }
 
     // Perform AI security analysis
-    const securityAnalysis = analyzeUserInput(question, userAgent, clientIP)
-    
+    const securityAnalysis = analyzeUserInput(question, userAgent, clientIP);
+
     // Block high-risk or critical content
-     if (securityAnalysis.isBlocked) {
-       // Apply stricter rate limiting for suspicious users
-       const securityRateLimitResult = await securityAiRateLimit(request)
-       if (securityRateLimitResult) {
-         return securityRateLimitResult
-       }
-       
-       return NextResponse.json({
-         success: false,
-         error: 'Content blocked',
-         message: 'Your question contains inappropriate content. Please rephrase and try again.',
-         timestamp: new Date().toISOString(),
-         path: '/api/readings/ask'
-       } as ReadingError, { status: 400 })
-     }
- 
-     // Validate tarot-specific content
-     const tarotValidation = validateTarotQuestion(question)
-     if (!tarotValidation.isValid) {
-       const issueMessage = tarotValidation.issues.length > 0 ? tarotValidation.issues[0] : 'Please ask a question suitable for tarot reading.'
-       return NextResponse.json({
-         success: false,
-         error: 'Invalid question',
-         message: issueMessage,
-         timestamp: new Date().toISOString(),
-         path: '/api/readings/ask'
-       } as ReadingError, { status: 400 })
-     }
+    if (securityAnalysis.isBlocked) {
+      // Apply stricter rate limiting for suspicious users
+      const securityRateLimitResult = await securityAiRateLimit(request);
+      if (securityRateLimitResult) {
+        return securityRateLimitResult;
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Content blocked",
+          message:
+            "Your question contains inappropriate content. Please rephrase and try again.",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/ask",
+        } as ReadingError,
+        { status: 400 }
+      );
+    }
+
+    // Validate tarot-specific content
+    const tarotValidation = validateTarotQuestion(question);
+    if (!tarotValidation.isValid) {
+      const issueMessage =
+        tarotValidation.issues.length > 0
+          ? tarotValidation.issues[0]
+          : "Please ask a question suitable for tarot reading.";
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid question",
+          message: issueMessage,
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/ask",
+        } as ReadingError,
+        { status: 400 }
+      );
+    }
 
     // Sanitize the question
-    const sanitizedQuestion = sanitizeString(securityAnalysis.sanitizedContent, 500)
+    const sanitizedQuestion = sanitizeString(
+      securityAnalysis.sanitizedContent,
+      500
+    );
 
     // Get user and check credits
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { 
+      select: {
         id: true,
-        stars: true, 
-        coins: true, 
-        exp: true, 
+        stars: true,
+        coins: true,
+        exp: true,
         level: true,
-        freePoint: true 
-      }
-    })
+        freePoint: true,
+      },
+    });
 
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        error: 'Not found',
-        message: 'User not found',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 404 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Not found",
+          message: "User not found",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/ask",
+        } as ReadingError,
+        { status: 404 }
+      );
     }
 
     // Check if user has enough credits (freePoint or stars)
-    const totalCredits = user.freePoint + user.stars
+    const totalCredits = user.freePoint + user.stars;
     if (totalCredits < 1) {
-      return NextResponse.json({
-        success: false,
-        error: 'Insufficient credits',
-        message: 'Not enough credits for reading',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/ask'
-      } as ReadingError, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Insufficient credits",
+          message: "Not enough credits for reading",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/ask",
+        } as ReadingError,
+        { status: 400 }
+      );
     }
 
     // Generate reading using LangGraph workflow
-    let workflowResult
+    let workflowResult;
     try {
-      workflowResult = await generateTarotReading(sanitizedQuestion, userId)
-      
-      // Check if workflow returned an error
-      if (workflowResult.error) {
-        throw new Error(workflowResult.error)
+      workflowResult = await generateTarotReading(sanitizedQuestion, userId);
+
+      // Check if question validation failed (isValid: false)
+      if (workflowResult.isValid === false) {
+        const errorResponse: ReadingError = {
+          success: false,
+          error: "Invalid question",
+          message:
+            workflowResult.validationReason || "คำถามไม่เหมาะสมสำหรับการทำนาย",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/ask",
+          validationReason: workflowResult.validationReason,
+          isValid: false,
+        };
+
+        return NextResponse.json(errorResponse, { status: 200 });
       }
-      
+
+      // Check if workflow returned an actual error
+      if (workflowResult.error) {
+        const errMsg: string = String(workflowResult.error);
+        const lower = errMsg.toLowerCase();
+
+        // Map known workflow errors to appropriate HTTP statuses
+        let status = 502;
+        let errorKey: string = "Upstream error";
+        let message: string = errMsg;
+
+        if (
+          lower.includes("validation error") ||
+          lower.includes("invalid question") ||
+          lower.includes("multiple topics") ||
+          lower.includes("มากกว่าหนึ่งประเด็น")
+        ) {
+          status = 400;
+          errorKey = "Invalid question";
+        } else if (
+          lower.includes("card selection error") ||
+          lower.includes("question analysis error") ||
+          lower.includes("reading generation error")
+        ) {
+          status = 422;
+          errorKey = "Processing error";
+        } else if (lower.includes("timeout")) {
+          status = 504;
+          errorKey = "Gateway timeout";
+        }
+
+        const errorResponse: ReadingError = {
+          success: false,
+          error: errorKey,
+          message,
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/ask",
+          validationReason: workflowResult.validationReason,
+          isValid: workflowResult.isValid,
+        };
+
+        return NextResponse.json(errorResponse, { status });
+      }
+
       // Validate that we have the required reading data
       if (!workflowResult.reading) {
-        throw new Error('Failed to generate reading - no reading data returned')
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Upstream error",
+            message: "Failed to generate reading - no reading data returned",
+            timestamp: new Date().toISOString(),
+            path: "/api/readings/ask",
+          } as ReadingError,
+          { status: 502 }
+        );
       }
     } catch (error) {
       // Handle timeout error - don't deduct credits
-      if (error instanceof Error && error.message.includes('Reading timeout')) {
-        return NextResponse.json({
-          success: false,
-          error: 'Reading timeout',
-          message: error.message,
-          timestamp: new Date().toISOString(),
-          path: '/api/readings/ask'
-        } as ReadingError, { status: 408 }) // 408 Request Timeout
+      if (error instanceof Error && error.message.includes("Reading timeout")) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Reading timeout",
+            message: error.message,
+            timestamp: new Date().toISOString(),
+            path: "/api/readings/ask",
+          } as ReadingError,
+          { status: 408 }
+        ); // 408 Request Timeout
       }
       // Re-throw other errors
-      throw error
+      throw error;
     }
 
     // Deduct credits only after successful reading generation
@@ -166,59 +267,59 @@ export async function POST(request: NextRequest) {
       // Get current user state again within transaction
       const currentUser = await tx.user.findUnique({
         where: { id: userId },
-        select: { 
-          stars: true, 
-          coins: true, 
-          exp: true, 
+        select: {
+          stars: true,
+          coins: true,
+          exp: true,
           level: true,
-          freePoint: true 
-        }
-      })
+          freePoint: true,
+        },
+      });
 
       if (!currentUser) {
-        throw new Error('User not found')
+        throw new Error("User not found");
       }
 
       // Determine credit deduction (freePoint first, then stars)
-      let deltaFreePoint = 0
-      let deltaStars = 0
+      let deltaFreePoint = 0;
+      let deltaStars = 0;
 
       if (currentUser.freePoint > 0) {
-        deltaFreePoint = -1
+        deltaFreePoint = -1;
       } else if (currentUser.stars > 0) {
-        deltaStars = -1
+        deltaStars = -1;
       } else {
-        throw new Error('Insufficient credits')
+        throw new Error("Insufficient credits");
       }
 
       // Create transaction record for credit deduction (reading generation)
-      const transactionId = `txn_${Date.now()}_${userId.slice(-8)}`
+      const transactionId = `txn_${Date.now()}_${userId.slice(-8)}`;
       await tx.pointTransaction.create({
         data: {
           id: transactionId,
           userId,
-          eventType: 'READING_SPEND',
+          eventType: "READING_SPEND",
           deltaPoint: deltaStars,
           deltaCoins: 5, // Reward coins
           deltaExp: 25, // Reward EXP
           metadata: {
-            reason: 'Tarot reading generation',
+            reason: "Tarot reading generation",
             freePointUsed: -deltaFreePoint,
             starsUsed: -deltaStars,
             questionLength: sanitizedQuestion.length,
             securityAnalysis: {
               riskLevel: securityAnalysis.riskLevel,
               confidence: securityAnalysis.confidence,
-              detectedPatterns: securityAnalysis.detectedPatterns
-            }
-          }
-        }
-      })
+              detectedPatterns: securityAnalysis.detectedPatterns,
+            },
+          },
+        },
+      });
 
       // Update user credits and stats
       // TEMP_DISABLED: EXP system disabled via feature flags
-      const newExp = getSafeExpValue(currentUser.exp + 25)
-      const newLevel = getSafeLevelValue(Math.floor(newExp / 100) + 1)
+      const newExp = getSafeExpValue(currentUser.exp + 25);
+      const newLevel = getSafeLevelValue(Math.floor(newExp / 100) + 1);
 
       await tx.user.update({
         where: { id: userId },
@@ -227,26 +328,26 @@ export async function POST(request: NextRequest) {
           stars: currentUser.stars + deltaStars,
           coins: currentUser.coins + 5, // Reward coins
           exp: newExp, // Will be 0 when EXP system disabled
-          level: Math.max(currentUser.level, newLevel) // Will remain current level when disabled
-        }
-      })
+          level: Math.max(currentUser.level, newLevel), // Will remain current level when disabled
+        },
+      });
 
       return {
         transactionId,
         creditsUsed: {
           freePoint: -deltaFreePoint,
-          stars: -deltaStars
+          stars: -deltaStars,
         },
         rewards: {
           exp: 25,
-          coins: 5
-        }
-      }
-    })
+          coins: 5,
+        },
+      };
+    });
 
     // Generate temporary reading ID for frontend (not saved to database yet)
-    const temporaryReadingId = `temp_reading_${Date.now()}_${userId.slice(-8)}`
-    
+    const temporaryReadingId = `temp_reading_${Date.now()}_${userId.slice(-8)}`;
+
     // Return reading data without saving to database
     const readingResult = {
       readingId: temporaryReadingId,
@@ -258,31 +359,32 @@ export async function POST(request: NextRequest) {
       transactionId: result.transactionId,
       selectedCards: workflowResult.selectedCards, // Store for later saving
       createdAt: new Date().toISOString(),
-      isSaved: false // Indicate this reading is not saved yet
-    }
+      isSaved: false, // Indicate this reading is not saved yet
+    };
 
     // Try to claim referral reward for first reading (async, don't wait for result)
     try {
       // Check if this is the user's first reading and claim referral reward
       const userReadingCount = await prisma.reading.count({
-        where: { userId, isDeleted: false }
-      })
-      
-      if (userReadingCount === 0) { // Changed from === 1 to === 0 since we haven't saved the reading yet
+        where: { userId, isDeleted: false },
+      });
+
+      if (userReadingCount === 0) {
+        // Changed from === 1 to === 0 since we haven't saved the reading yet
         // This is first reading, try to claim referral reward
         const referralCode = await prisma.referralCode.findFirst({
-          where: { 
-            userId, 
+          where: {
+            userId,
             referredBy: { not: null },
-            isUsed: true 
-          }
-        })
-        
+            isUsed: true,
+          },
+        });
+
         if (referralCode?.referredBy) {
           // Fetch dynamic referral rewards from RewardConfiguration
-          const rewardConfig = await getReferralRewards()
-          const referrerReward = toLegacyRewardFormat(rewardConfig.inviter)
-          
+          const rewardConfig = await getReferralRewards();
+          const referrerReward = toLegacyRewardFormat(rewardConfig.inviter);
+
           await prisma.$transaction(async (tx) => {
             await tx.user.update({
               where: { id: referralCode.referredBy! },
@@ -290,27 +392,27 @@ export async function POST(request: NextRequest) {
                 exp: { increment: referrerReward.exp },
                 coins: { increment: referrerReward.coins },
                 stars: { increment: referrerReward.stars },
-                freePoint: { increment: referrerReward.freePoint || 0 }
-              }
-            })
-            
+                freePoint: { increment: referrerReward.freePoint || 0 },
+              },
+            });
+
             await tx.pointTransaction.create({
               data: {
                 id: `referral_first_reading_${referralCode.referredBy!}_${Date.now()}`,
                 userId: referralCode.referredBy!,
-                eventType: 'REFERRAL_FIRST_READING',
+                eventType: "REFERRAL_FIRST_READING",
                 deltaPoint: referrerReward.stars,
                 deltaCoins: referrerReward.coins,
                 deltaExp: referrerReward.exp,
-                metadata: { 
+                metadata: {
                   referredUserId: userId,
                   readingId: readingResult.readingId,
-                  rewardType: 'first_reading_completion',
-                  freePointAwarded: referrerReward.freePoint || 0
-                }
-              }
-            })
-          })
+                  rewardType: "first_reading_completion",
+                  freePointAwarded: referrerReward.freePoint || 0,
+                },
+              },
+            });
+          });
         }
       }
     } catch (referralError) {
@@ -320,18 +422,20 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: readingResult
-    } as ReadingResponse)
-
+      data: readingResult,
+    } as ReadingResponse);
   } catch (error) {
-    console.error('Reading generation error:', error)
-    
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      message: 'Failed to generate reading',
-      timestamp: new Date().toISOString(),
-      path: '/api/readings/ask'
-    } as ReadingError, { status: 500 })
+    console.error("Reading generation error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Internal server error",
+        message: "Failed to generate reading",
+        timestamp: new Date().toISOString(),
+        path: "/api/readings/ask",
+      } as ReadingError,
+      { status: 500 }
+    );
   }
 }

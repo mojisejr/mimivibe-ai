@@ -7,12 +7,17 @@ import { LoadingState } from "./LoadingState";
 import { AnimatedArticleDisplay } from "./AnimatedArticleDisplay";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { motion } from "framer-motion";
+import { useErrorHandler, ProcessedError } from "@/hooks/useErrorHandler";
 
 type PageState = "initial" | "loading" | "result" | "error";
 
 interface ErrorState {
+  title: string;
   message: string;
+  suggestion?: string;
   canRetry: boolean;
+  validationReason?: string;
+  isValid?: boolean;
 }
 
 export function AskPage() {
@@ -22,14 +27,16 @@ export function AskPage() {
     ReadingResponse["data"] | null
   >(null);
   const [error, setError] = useState<ErrorState | null>(null);
+  const { processReadingError } = useErrorHandler();
 
   const handleQuestionSubmit = async (question: string) => {
     setCurrentQuestion(question);
     setPageState("loading");
     setError(null);
 
+    let response: Response | undefined;
     try {
-      const response = await fetch("/api/readings/ask", {
+      response = await fetch("/api/readings/ask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,14 +54,33 @@ export function AskPage() {
         setReadingData(data.data);
         setPageState("result");
       } else {
+        // Handle validation errors separately (isValid: false)
+        if (data.isValid === false && data.validationReason) {
+          setError({
+            title: "เกิดข้อผิดพลาดของระบบ",
+            message: data.validationReason,
+            suggestion: "หากปัญหายังคงอยู่ กรุณาลองใหม่อีกครั้ง",
+            canRetry: true,
+            validationReason: data.validationReason,
+            isValid: false,
+          });
+          setPageState("error");
+          return;
+        }
+        
+        // Handle other system errors
         throw new Error(data.error || "ไม่สามารถทำนายได้");
       }
     } catch (err) {
       console.error("Reading error:", err);
+      const processedError = processReadingError(err, response);
       setError({
-        message:
-          err instanceof Error ? err.message : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
-        canRetry: true,
+        title: processedError.title,
+        message: processedError.message,
+        suggestion: processedError.suggestion,
+        canRetry: processedError.canRetry,
+        validationReason: processedError.validationReason,
+        isValid: processedError.isValid,
       });
       setPageState("error");
     }
@@ -244,11 +270,26 @@ export function AskPage() {
                     <span className="text-4xl">😞</span>
                   </motion.div>
                   <h2 className="text-2xl font-bold text-error mb-4">
-                    เกิดข้อผิดพลาด
+                    {error.title}
                   </h2>
-                  <p className="text-lg text-error/80 mb-8 leading-relaxed">
+                  <p className="text-lg text-error/80 mb-6 leading-relaxed">
                     {error.message}
                   </p>
+                  {error.isValid === false && error.validationReason && (
+                    <div className="mb-6 p-4 bg-warning/10 border border-warning/30 rounded-lg">
+                      <p className="text-sm font-medium text-warning mb-2">
+                        🔍 เหตุผลที่คำถามไม่เหมาะสม:
+                      </p>
+                      <p className="text-sm text-warning/80 leading-relaxed">
+                        {error.validationReason}
+                      </p>
+                    </div>
+                  )}
+                  {error.suggestion && (
+                    <p className="text-sm text-base-content/60 mb-8 leading-relaxed bg-base-200/50 p-3 rounded-lg">
+                      💡 {error.suggestion}
+                    </p>
+                  )}
                 </div>
               </motion.div>
 
