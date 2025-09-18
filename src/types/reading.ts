@@ -63,6 +63,10 @@ export interface ReadingError {
   path: string;
   validationReason?: string;
   isValid?: boolean;
+  
+  // เพิ่ม fields ใหม่ (optional เพื่อ backward compatibility)
+  category?: 'validation' | 'ai_processing' | 'rate_limit' | 'authentication' | 'system';
+  isRetryable?: boolean;
 }
 
 // Historical reading format for display
