@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { getErrorMessage } from '@/lib/utils/error-messages';
+import { getErrorMessage } from '@/lib/errors/messages';
 
 export interface ErrorResponse {
   success: false;
