@@ -14,12 +14,13 @@ export function BottomNavigation() {
       icon: Home,
       isActive: pathname === '/'
     },
-    {
+    // Hide Ask button on homepage to avoid overlap with Hero CTA and reduce redundancy
+    ...(pathname !== '/' ? [{
       href: '/ask',
       label: 'ถามดวง',
       icon: MessageCircle,
       isActive: pathname === '/ask'
-    },
+    }] : []),
     {
       href: '/history',
       label: 'ประวัติ',

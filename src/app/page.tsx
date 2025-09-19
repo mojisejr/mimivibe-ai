@@ -809,7 +809,7 @@ export default function HomePage() {
       </SignedOut>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
+      <section className="relative min-h-screen flex items-center justify-center px-4 xl:pt-6">
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10"></div>
 
@@ -841,7 +841,7 @@ export default function HomePage() {
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           {/* Main Title */}
           <motion.h1
-            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-relaxed"
+            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-relaxed"
             variants={fadeInUp}
             initial="initial"
             animate="animate"
@@ -869,7 +869,7 @@ export default function HomePage() {
 
           {/* Trust Indicators */}
           <motion.div
-            className="flex flex-wrap justify-center items-center gap-4 mb-8"
+            className="sm:flex flex-wrap justify-center items-center gap-4 mb-8 hidden"
             variants={fadeInUp}
             initial="initial"
             animate="animate"
@@ -900,12 +900,16 @@ export default function HomePage() {
             <SignedIn>
               <Link href="/ask">
                 <motion.button
-                  className="btn btn-lg bg-gradient-to-r from-accent to-accent-focus text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300"
+                  className="btn btn-lg bg-gradient-to-r from-primary via-primary-focus to-secondary text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 px-8 py-4 text-xl font-bold min-w-[280px] relative overflow-hidden group"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span className="text-xl mr-2">🔮</span>
-                  <span className="text-lg font-semibold">ให้แม่หมอทำนาย</span>
+                  {/* Animated background effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-accent via-accent-focus to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <span className="relative z-10 flex items-center justify-center gap-3">
+                    <span className="text-2xl">🔮</span>
+                    <span className="font-bold">ให้แม่หมอทำนาย</span>
+                  </span>
                 </motion.button>
               </Link>
             </SignedIn>
@@ -913,13 +917,15 @@ export default function HomePage() {
             <SignedOut>
               <SignInButton mode="modal">
                 <motion.button
-                  className="btn btn-lg bg-gradient-to-r from-accent to-accent-focus text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300"
+                  className="btn btn-lg bg-gradient-to-r from-primary via-primary-focus to-secondary text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 px-8 py-4 text-xl font-bold min-w-[280px] relative overflow-hidden group"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span className="text-xl mr-2">🚀</span>
-                  <span className="text-lg font-semibold">
-                    เริ่มต้นการเดินทาง
+                  {/* Animated background effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-accent via-accent-focus to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <span className="relative z-10 flex items-center justify-center gap-3">
+                    <span className="text-2xl">🚀</span>
+                    <span className="font-bold">เริ่มต้นการเดินทาง</span>
                   </span>
                 </motion.button>
               </SignInButton>
@@ -1224,7 +1230,7 @@ export default function HomePage() {
       </section>
 
       {/* Mobile Navigation */}
-      <SignedIn>
+      {/* <SignedIn>
         <div className="btm-nav mobile-only">
           <Link href="/ask" className="btm-nav-item">
             <span className="text-xs">Ask</span>
@@ -1239,7 +1245,7 @@ export default function HomePage() {
             <span className="text-xs">Credits</span>
           </Link>
         </div>
-      </SignedIn>
+      </SignedIn> */}
     </div>
   );
 }
