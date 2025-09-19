@@ -415,7 +415,7 @@ curl -X POST http://localhost:3000/api/readings/ask \
 
 ---
 
-## 🚀 **Phase 5: ค่อยๆ Migrate ไป Error Folder Structure** ⚡ (Gradual Migration)
+## 🚀 **Phase 5: ค่อยๆ Migrate ไป Error Folder Structure** ⚡ (Gradual Migration) : Done
 
 **เป้าหมาย**: ย้าย error-related files ไป `/src/lib/errors/` ทีละไฟล์  
 **ความเสี่ยง**: **ปานกลาง** - มี file movements แต่ทำทีละไฟล์
