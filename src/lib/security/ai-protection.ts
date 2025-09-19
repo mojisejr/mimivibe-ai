@@ -39,7 +39,7 @@ const PROMPT_INJECTION_PATTERNS = [
   
   // Command injection
   /\$\([^)]+\)/g, // $(command)
-  /`[^`]+`/g, // backtick commands
+  /\`[^\`]+\`/g, // backtick commands
   /\|\s*(curl|wget|nc|netcat|bash|sh|cmd)/gi,
   
   // Tarot-specific manipulation attempts
