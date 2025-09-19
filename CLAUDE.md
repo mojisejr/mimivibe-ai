@@ -201,6 +201,43 @@ You are instructed to focus **ONLY** on the task described in the assigned Issue
 
 **DO NOT** modify AI prompts or LangGraph workflow without explicit permission. The prompt system uses AES-256-GCM encryption and version control. Any changes to AI behavior must be thoroughly tested using the prompt test runner (`npm run prompt:test`).
 
+### CONFLICT PREVENTION & BRANCH SAFETY
+
+**MANDATORY MAIN BRANCH SYNC**: Before any implementation (`=impl`), you **MUST** ensure the local main branch is synchronized with remote origin. Use `git fetch origin && git checkout main && git pull origin main` to sync.
+
+**FORCE PUSH RESTRICTIONS**: Only use `git push --force-with-lease` when absolutely necessary. **NEVER** use `git push --force` as it can overwrite team members' work. Always prefer clean rebasing and conflict resolution.
+
+**HIGH-RISK FILE COORDINATION**: Files requiring team coordination include:
+- `src/app/page.tsx`, `src/app/layout.tsx` (main app structure)
+- `package.json`, `package-lock.json` (dependency management)
+- `prisma/schema.prisma` (database schema)
+- `.env.example`, configuration files
+- API route files with shared dependencies
+
+**EMERGENCY CONFLICT RESOLUTION**: If conflicts are detected during implementation:
+1. **STOP** all operations immediately
+2. **ALERT** the user about the conflict
+3. **PROVIDE** clear resolution steps
+4. **WAIT** for user approval before proceeding
+5. **DOCUMENT** the resolution in commit messages
+
+### AUTOMATED WORKFLOW SAFETY
+
+**BRANCH NAMING ENFORCEMENT**: All feature branches **MUST** follow the pattern `feature/[issue-number]-[description]` (e.g., `feature/123-user-authentication`).
+
+**COMMIT MESSAGE STANDARDS**: All commits **MUST** include:
+- Clear, descriptive subject line (max 50 characters)
+- Detailed body explaining the changes (if needed)
+- Reference to related issue number
+- Type prefix: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`
+
+**PR CREATION REQUIREMENTS**: All Pull Requests **MUST** include:
+- Comprehensive description of changes
+- Link to related GitHub issue
+- Testing instructions
+- Breaking changes documentation (if any)
+- Conflict resolution summary (if applicable)
+
 ---
 
 ## 🚀 Development Workflows
@@ -221,32 +258,51 @@ These commands are standard across all projects and streamline our communication
 
 - **`=fcs > [message]`**: Updates the `current-focus.md` file on the local machine and creates a **GitHub Context Issue** with the specified `[message]` as the title. **WARNING**: This command will only work if there are no open GitHub issues. If there are, the agent will alert you to clear the backlog before you can save a new context. To bypass this check, use the command `=fcs -f > [message]`.
 
-- **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. **ENHANCED WITH CODEBASE ANALYSIS** - The agent will:
+- **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. **ENHANCED WITH CODEBASE ANALYSIS & CONFLICT PREVENTION** - The agent will:
 
-  1. **Codebase Analysis Phase**: For non-new feature implementations (fixes, refactors, modifications):
+  1. **Pre-Planning Conflict Prevention**: 
+     - **Auto-check**: Verify main branch is up-to-date with remote
+     - **Warning**: Alert if main is behind remote origin
+     - **Mandatory Sync**: Automatically sync main before planning if needed
+     - **Branch Status**: Check for existing feature branches and potential conflicts
+
+  2. **Codebase Analysis Phase**: For non-new feature implementations (fixes, refactors, modifications):
 
      - Search and analyze all relevant code components and dependencies
      - Identify side effects and interconnected systems
      - Review existing patterns, conventions, and architectural decisions
      - Map data flow and component relationships
      - Assess impact on related functionality
+     - **File Coordination Check**: Identify high-risk files requiring team coordination
 
-  2. **Plan Creation Phase**: Use all gathered information including:
+  3. **Plan Creation Phase**: Use all gathered information including:
      - Current focus context from `current-focus.md`
      - Previous conversation history
      - Comprehensive codebase analysis results
      - Identified dependencies and side effects
+     - **Conflict Prevention Protocol**: Include automated sync steps in implementation plan
 
   If an open Task Issue already exists, the agent will **update** that Issue with the latest information instead of creating a new one.
 
-- **`=impl > [message]`**: **ENHANCED WITH AUTOMATED WORKFLOW** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
+- **`=impl > [message]`**: **ENHANCED WITH AUTOMATED WORKFLOW & CONFLICT PREVENTION** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
 
-  1. **Auto-Branch Creation**: Creates feature branch with proper naming (`feature/[issue-number]-[description]`)
-  2. **Implementation**: Executes the planned work
-  3. **Auto-Commit & Push**: Commits changes with descriptive messages and pushes to remote
-  4. **Auto-PR Creation**: Creates Pull Request with proper description and issue references
-  5. **Issue Updates**: Updates the plan issue with PR link and completion status
-  6. **User Notification**: Provides PR link for review and approval
+  1. **Pre-Implementation Conflict Prevention**:
+     - **Main Branch Sync**: Automatically sync local main with remote origin
+     - **Conflict Detection**: Check for potential conflicts before starting
+     - **Emergency Protocol**: Activate emergency resolution if conflicts detected
+     - **Branch Validation**: Ensure clean working directory before proceeding
+
+  2. **Auto-Branch Creation**: Creates feature branch with proper naming (`feature/[issue-number]-[description]`)
+  3. **Implementation**: Executes the planned work with continuous conflict monitoring
+  4. **Enhanced Commit & Push Flow**:
+     - **Pre-commit Validation**: Check for conflicts before each commit
+     - **Descriptive Commits**: Atomic commits with clear, descriptive messages
+     - **Safe Push Strategy**: Force push only when necessary with `--force-with-lease`
+     - **Conflict Resolution**: Automatic conflict detection and resolution protocols
+
+  5. **Auto-PR Creation**: Creates Pull Request with proper description and issue references
+  6. **Issue Updates**: Updates the plan issue with PR link and completion status
+  7. **User Notification**: Provides PR link for review and approval with conflict status report
 
 - **`=rrr > [message]`**: Creates a daily Retrospective file in the `docs/retrospective/` folder and creates a GitHub Issue containing a summary of the work, an AI Diary, and Honest Feedback, allowing you and the team to review the session accurately.
 
