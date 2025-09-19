@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "npm run db:seed:full",
-    "db:seed:full": "dotenv -e .env.local -- tsx scripts/seed-cards.ts && dotenv -e .env.local -- tsx prisma/seed.ts && dotenv -e .env.local -- tsx prisma/seed-rewards.ts && dotenv -e .env.local -- tsx prisma/seed-round10.ts",
+    "db:seed:full": "npx dotenv -e .env.local -- tsx scripts/seed-cards.ts && npx dotenv -e .env.local -- tsx prisma/seed.ts && npx dotenv -e .env.local -- tsx prisma/seed-rewards.ts && npx dotenv -e .env.local -- tsx prisma/seed-round10.ts",
     "db:reset": "dotenv -e .env.local -- tsx scripts/protect-prod.ts && dotenv -e .env.local -- prisma migrate dev --reset && npm run db:seed:full",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
