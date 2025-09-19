@@ -355,6 +355,82 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 ❌ Quick bug fixes without multiple steps
 ```
 
+### 🛡️ Conflict Prevention Workflow
+
+**CRITICAL ENHANCEMENT**: Automated conflict prevention integrated into all development commands.
+
+#### Enhanced =plan Command with Conflict Prevention
+
+**Pre-Planning Sync Protocol**:
+```bash
+# Automatic execution before planning
+git checkout main
+git pull --rebase origin main
+# Verify main is up-to-date before creating plans
+```
+
+#### Enhanced =impl Command with Conflict Prevention
+
+**Updated Implementation Flow with Conflict Prevention**:
+
+```
+1. Pre-Implementation Sync → Auto-sync main branch with remote
+2. Conflict Detection → Check for potential conflicts before starting
+3. Safe Branch Creation → Create feature branch from updated main
+4. Implementation Phase → Execute planned work with progress tracking
+5. Pre-Push Validation → Validate no conflicts before pushing
+6. Auto-Rebase → Rebase feature branch if main has updates
+7. Safe Push → Use --force-with-lease for safe force pushes
+8. Auto-PR Creation → Create PR with clean commit history
+```
+
+#### Conflict Prevention Rules
+
+**File Coordination Protocol**:
+- **HIGH-RISK FILES**: Coordinate before editing
+  - `src/app/page.tsx` (Landing page)
+  - `current-focus.md` (Context tracking)  
+  - `docs/ask-error-plan.md` (Error documentation)
+  - Navigation components (`src/components/navigation/`)
+
+**Branch Management Protocol**:
+- **ALWAYS** create feature branches from updated main
+- **NEVER** work directly on main branch
+- **REBASE** feature branches regularly (daily for long-running features)
+- **MERGE** PRs quickly to reduce conflict window (< 24 hours)
+
+#### Emergency Conflict Resolution
+
+**Automated Conflict Resolution Flow**:
+```bash
+# 1. Immediate Main Sync
+git checkout main && git pull --rebase origin main
+
+# 2. Feature Branch Rebase  
+git checkout [feature-branch] && git rebase main
+
+# 3. Conflict Detection
+git merge-tree $(git merge-base HEAD origin/main) HEAD origin/main
+
+# 4. Safe Force Push
+git push --force-with-lease origin [feature-branch]
+```
+
+#### Monitoring and Prevention
+
+**Daily Automated Checks**:
+- Main branch sync status verification
+- Open PR count monitoring (keep < 3)
+- Conflict-prone file change detection
+
+**Success Metrics**:
+- **Zero conflicts** in PR merges
+- **< 24 hours** PR review time  
+- **< 3 open PRs** at any time
+- **100% main sync** before feature creation
+
+**Reference Documentation**: See `/docs/enhanced-development-workflow.md` for complete conflict prevention protocols.
+
 ##### Branch Naming Convention
 
 - **Format**: `feature/[issue-number]-[sanitized-description]`
