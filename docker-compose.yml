@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: mimivibe-dev-db
+    environment:
+      POSTGRES_USER: mimi
+      POSTGRES_PASSWORD: mimi_dev
+      POSTGRES_DB: mimivibe_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - mimivibe_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mimi -d mimivibe_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  mimivibe_dev_data:
