@@ -4,7 +4,7 @@ import { SignedIn, SignedOut, SignInButton, useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { Navbar } from "@/components/layout";
 import { useEffect, useState, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useToast } from "@/components/ui/ToastContainer";
 import { motion } from "framer-motion";
 import { PricingCards } from "@/components/landing/PricingCards";
@@ -395,11 +395,14 @@ export default function HomePage() {
 // ===== NEW LANDING PAGE IMPLEMENTATION =====
 export default function HomePage() {
   const { isSignedIn, userId } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [hasProcessedReferral, setHasProcessedReferral] = useState(false);
   const [isProcessingReferral, setIsProcessingReferral] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   // Helper functions for user-specific referral storage
   const getPendingReferralForUser = useCallback((currentUserId: string) => {
@@ -764,6 +767,24 @@ export default function HomePage() {
     getLegacyPendingReferral,
     getPendingReferralForUser,
   ]);
+
+  // Auto-redirect logged-in users to /ask page
+  useEffect(() => {
+    // Only redirect if:
+    // 1. User is signed in
+    // 2. We're on the root path ("/")
+    // 3. We haven't already redirected (prevent infinite loops)
+    // 4. We're not in server-side rendering
+    if (
+      isSignedIn &&
+      pathname === "/" &&
+      !hasRedirected &&
+      typeof window !== "undefined"
+    ) {
+      setHasRedirected(true);
+      router.push("/ask");
+    }
+  }, [isSignedIn, pathname, hasRedirected, router]);
 
   // Animation variants
   const fadeInUp = {
