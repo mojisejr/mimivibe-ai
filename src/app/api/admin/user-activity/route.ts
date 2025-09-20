@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateAdminAccess } from '@/middleware/admin-auth';
 import { prisma } from '@/lib/prisma';
 
+// Force dynamic rendering for admin routes that use auth()
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Validate admin access
