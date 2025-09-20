@@ -201,6 +201,47 @@ You are instructed to focus **ONLY** on the task described in the assigned Issue
 
 **DO NOT** modify AI prompts or LangGraph workflow without explicit permission. The prompt system uses AES-256-GCM encryption and version control. Any changes to AI behavior must be thoroughly tested using the prompt test runner (`npm run prompt:test`).
 
+### CONFLICT PREVENTION & BRANCH SAFETY
+
+**MANDATORY MAIN BRANCH SYNC**: Before any implementation (`=impl`), you **MUST** ensure the local main branch is synchronized with remote origin. Use `git fetch origin && git checkout main && git pull origin main` to sync.
+
+**FORCE PUSH RESTRICTIONS**: Only use `git push --force-with-lease` when absolutely necessary. **NEVER** use `git push --force` as it can overwrite team members' work. Always prefer clean rebasing and conflict resolution.
+
+**HIGH-RISK FILE COORDINATION**: Files requiring team coordination include:
+
+- `src/app/page.tsx`, `src/app/layout.tsx` (main app structure)
+- `package.json`, `package-lock.json` (dependency management)
+- `prisma/schema.prisma` (database schema)
+- `.env.example`, configuration files
+- API route files with shared dependencies
+
+**EMERGENCY CONFLICT RESOLUTION**: If conflicts are detected during implementation:
+
+1. **STOP** all operations immediately
+2. **ALERT** the user about the conflict
+3. **PROVIDE** clear resolution steps
+4. **WAIT** for user approval before proceeding
+5. **DOCUMENT** the resolution in commit messages
+
+### AUTOMATED WORKFLOW SAFETY
+
+**BRANCH NAMING ENFORCEMENT**: All feature branches **MUST** follow the pattern `feature/[issue-number]-[description]` (e.g., `feature/123-user-authentication`).
+
+**COMMIT MESSAGE STANDARDS**: All commits **MUST** include:
+
+- Clear, descriptive subject line (max 50 characters)
+- Detailed body explaining the changes (if needed)
+- Reference to related issue number
+- Type prefix: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`
+
+**PR CREATION REQUIREMENTS**: All Pull Requests **MUST** include:
+
+- Comprehensive description of changes
+- Link to related GitHub issue
+- Testing instructions
+- Breaking changes documentation (if any)
+- Conflict resolution summary (if applicable)
+
 ---
 
 ## 🚀 Development Workflows
@@ -221,34 +262,140 @@ These commands are standard across all projects and streamline our communication
 
 - **`=fcs > [message]`**: Updates the `current-focus.md` file on the local machine and creates a **GitHub Context Issue** with the specified `[message]` as the title. **WARNING**: This command will only work if there are no open GitHub issues. If there are, the agent will alert you to clear the backlog before you can save a new context. To bypass this check, use the command `=fcs -f > [message]`.
 
-- **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. **ENHANCED WITH CODEBASE ANALYSIS** - The agent will:
+- **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. **ENHANCED WITH STAGING-FIRST WORKFLOW & CONFLICT PREVENTION** - The agent will:
 
-  1. **Codebase Analysis Phase**: For non-new feature implementations (fixes, refactors, modifications):
+  1. **Pre-Planning Conflict Prevention**:
+
+     - **Auto-check**: Verify staging branch is up-to-date with remote
+     - **Warning**: Alert if staging is behind remote origin
+     - **Mandatory Sync**: Automatically sync staging before planning if needed
+     - **Branch Status**: Check for existing feature branches and potential conflicts
+
+  2. **Codebase Analysis Phase**: For non-new feature implementations (fixes, refactors, modifications):
 
      - Search and analyze all relevant code components and dependencies
      - Identify side effects and interconnected systems
      - Review existing patterns, conventions, and architectural decisions
      - Map data flow and component relationships
      - Assess impact on related functionality
+     - **File Coordination Check**: Identify high-risk files requiring team coordination
 
-  2. **Plan Creation Phase**: Use all gathered information including:
+  3. **Plan Creation Phase**: Use all gathered information including:
      - Current focus context from `current-focus.md`
      - Previous conversation history
      - Comprehensive codebase analysis results
      - Identified dependencies and side effects
+     - **Staging Context Creation**: Include `staging-context.md` creation in implementation plan
 
   If an open Task Issue already exists, the agent will **update** that Issue with the latest information instead of creating a new one.
 
-- **`=impl > [message]`**: **ENHANCED WITH AUTOMATED WORKFLOW** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
+- **`=impl > [message]`**: **ENHANCED WITH STAGING-FIRST WORKFLOW & CONFLICT PREVENTION** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
 
-  1. **Auto-Branch Creation**: Creates feature branch with proper naming (`feature/[issue-number]-[description]`)
-  2. **Implementation**: Executes the planned work
-  3. **Auto-Commit & Push**: Commits changes with descriptive messages and pushes to remote
-  4. **Auto-PR Creation**: Creates Pull Request with proper description and issue references
-  5. **Issue Updates**: Updates the plan issue with PR link and completion status
-  6. **User Notification**: Provides PR link for review and approval
+  1. **Pre-Implementation Staging Sync**:
+
+     - **Staging Branch Sync**: Automatically sync local staging with remote origin
+     - **Conflict Detection**: Check for potential conflicts before starting
+     - **Emergency Protocol**: Activate emergency resolution if conflicts detected
+     - **Branch Validation**: Ensure clean working directory before proceeding
+
+  2. **Auto-Branch Creation**: Creates feature branch from staging with proper naming (`feature/[issue-number]-[description]`)
+  3. **Implementation**: Executes the planned work with continuous conflict monitoring
+  4. **Enhanced Commit & Push Flow**:
+
+     - **Pre-commit Validation**: Check for conflicts before each commit
+     - **Descriptive Commits**: Atomic commits with clear, descriptive messages
+     - **Safe Push Strategy**: Force push only when necessary with `--force-with-lease`
+     - **Conflict Resolution**: Automatic conflict detection and resolution protocols
+
+  5. **Staging Context Creation**: Creates `staging-context.md` with implementation details
+  6. **Auto-PR Creation**: Creates Pull Request to staging branch with proper description and issue references
+  7. **Issue Updates**: Updates the plan issue with PR link and completion status
+  8. **User Notification**: Provides PR link for review and approval with conflict status report
+
+- **`=stage > [message]`**: **STAGING DEPLOYMENT WORKFLOW** - Deploys approved changes from feature branch to staging environment:
+
+  1. **Pre-Staging Validation**:
+
+     - **Feature Branch Validation**: Ensure feature branch is ready for staging
+     - **Conflict Resolution**: Resolve any conflicts with staging branch
+     - **Test Validation**: Run automated tests before staging deployment
+
+  2. **Staging Deployment**:
+
+     - **Merge to Staging**: Merge approved feature branch to staging
+     - **Staging Context Update**: Update `staging-context.md` with deployment details
+     - **Auto-Deploy**: Trigger staging environment deployment
+     - **Health Check**: Verify staging deployment health
+
+  3. **Staging Validation**:
+
+     - **Functional Testing**: Run staging environment tests
+     - **Performance Monitoring**: Monitor staging performance metrics
+     - **User Acceptance**: Prepare for user acceptance testing
+
+  4. **Production Readiness**:
+     - **Production Context**: Create production deployment context
+     - **Rollback Plan**: Prepare rollback procedures
+     - **Notification**: Alert team of staging deployment completion
+
+- **`=prod > [message]`**: **PRODUCTION DEPLOYMENT WORKFLOW** - Deploys validated changes from staging to production:
+
+  1. **Pre-Production Validation**:
+
+     - **Staging Validation**: Ensure staging tests pass completely
+     - **Security Review**: Complete security audit checklist
+     - **Performance Baseline**: Establish performance benchmarks
+
+  2. **Production Deployment**:
+
+     - **Merge to Main**: Merge staging branch to main/production
+     - **Production Deploy**: Execute production deployment pipeline
+     - **Health Monitoring**: Monitor production health metrics
+     - **Performance Tracking**: Track production performance
+
+  3. **Post-Deployment**:
+
+     - **Cleanup Operations**: Auto-cleanup `staging-context.md`
+     - **Monitoring Setup**: Establish production monitoring
+     - **Documentation**: Update production documentation
+     - **Team Notification**: Notify team of successful production deployment
+
+  4. **Rollback Readiness**:
+     - **Rollback Procedures**: Maintain rollback capabilities
+     - **Incident Response**: Prepare incident response protocols
 
 - **`=rrr > [message]`**: Creates a daily Retrospective file in the `docs/retrospective/` folder and creates a GitHub Issue containing a summary of the work, an AI Diary, and Honest Feedback, allowing you and the team to review the session accurately.
+
+### 📋 Staging Context File Management
+
+#### Auto-Cleanup Strategy for `staging-context.md`
+
+**File Creation & Location**:
+
+- **Created during**: `=impl` command execution
+- **Location**: Project root directory (`./staging-context.md`)
+- **Content**: Implementation details, deployment context, testing notes
+
+**Lifecycle Management**:
+
+- **Creation**: Automatically generated during feature implementation
+- **Updates**: Modified during `=stage` deployment process
+- **Cleanup**: Automatically removed during `=prod` deployment completion
+- **Backup**: Context preserved in PR descriptions and commit messages
+
+**File Management Benefits**:
+
+- **Deployment Tracking**: Clear visibility of staging deployment status
+- **Context Preservation**: Implementation details available during staging phase
+- **Automatic Cleanup**: No manual file management required
+- **Conflict Prevention**: Reduces repository clutter and merge conflicts
+
+**Cleanup Triggers**:
+
+- **Successful Production Deployment**: File automatically deleted after `=prod` completion
+- **Failed Deployments**: File retained for debugging and rollback procedures
+- **Manual Cleanup**: Available via `=prod --cleanup-only` command
+- **Branch Cleanup**: Removed when feature branch is deleted
 
 ### 🔄 Plan Issue Management Guidelines
 
@@ -355,85 +502,11 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 ❌ Quick bug fixes without multiple steps
 ```
 
-### 🛡️ Conflict Prevention Workflow
-
-**CRITICAL ENHANCEMENT**: Automated conflict prevention integrated into all development commands.
-
-#### Enhanced =plan Command with Conflict Prevention
-
-**Pre-Planning Sync Protocol**:
-```bash
-# Automatic execution before planning
-git checkout main
-git pull --rebase origin main
-# Verify main is up-to-date before creating plans
-```
-
-#### Enhanced =impl Command with Conflict Prevention
-
-**Updated Implementation Flow with Conflict Prevention**:
-
-```
-1. Pre-Implementation Sync → Auto-sync main branch with remote
-2. Conflict Detection → Check for potential conflicts before starting
-3. Safe Branch Creation → Create feature branch from updated main
-4. Implementation Phase → Execute planned work with progress tracking
-5. Pre-Push Validation → Validate no conflicts before pushing
-6. Auto-Rebase → Rebase feature branch if main has updates
-7. Safe Push → Use --force-with-lease for safe force pushes
-8. Auto-PR Creation → Create PR with clean commit history
-```
-
-#### Conflict Prevention Rules
-
-**File Coordination Protocol**:
-- **HIGH-RISK FILES**: Coordinate before editing
-  - `src/app/page.tsx` (Landing page)
-  - `current-focus.md` (Context tracking)  
-  - `docs/ask-error-plan.md` (Error documentation)
-  - Navigation components (`src/components/navigation/`)
-
-**Branch Management Protocol**:
-- **ALWAYS** create feature branches from updated main
-- **NEVER** work directly on main branch
-- **REBASE** feature branches regularly (daily for long-running features)
-- **MERGE** PRs quickly to reduce conflict window (< 24 hours)
-
-#### Emergency Conflict Resolution
-
-**Automated Conflict Resolution Flow**:
-```bash
-# 1. Immediate Main Sync
-git checkout main && git pull --rebase origin main
-
-# 2. Feature Branch Rebase  
-git checkout [feature-branch] && git rebase main
-
-# 3. Conflict Detection
-git merge-tree $(git merge-base HEAD origin/main) HEAD origin/main
-
-# 4. Safe Force Push
-git push --force-with-lease origin [feature-branch]
-```
-
-#### Monitoring and Prevention
-
-**Daily Automated Checks**:
-- Main branch sync status verification
-- Open PR count monitoring (keep < 3)
-- Conflict-prone file change detection
-
-**Success Metrics**:
-- **Zero conflicts** in PR merges
-- **< 24 hours** PR review time  
-- **< 3 open PRs** at any time
-- **100% main sync** before feature creation
-
-**Reference Documentation**: See `/docs/enhanced-development-workflow.md` for complete conflict prevention protocols.
-
 ##### Branch Naming Convention
 
 - **Format**: `feature/[issue-number]-[sanitized-description]`
+- **Source**: All feature branches **MUST** be created from `staging` branch
+- **Flow**: `feature/[issue] → staging → main`
 - **Example**: `feature/27-deployment-production-implementation`
 - **Auto-sanitization**: Removes special characters, converts to kebab-case
 
@@ -445,19 +518,46 @@ git push --force-with-lease origin [feature-branch]
 
 ##### Pull Request Automation
 
-- **Title**: Auto-generated from issue title with proper formatting
-- **Description**: Includes implementation summary, changes made, and testing notes
-- **Issue Linking**: Automatic `Closes #[issue-number]` for proper tracking
-- **Labels**: Auto-applied based on implementation type and scope
+**Staging PRs** (Feature → Staging):
+
+- **Title**: `[STAGING] [Feature Title] (#[issue-number])`
+- **Description**: Implementation details, testing notes, staging deployment context
+- **Context File**: References `staging-context.md` for deployment details
+- **Issue Linking**: `Relates to #[issue-number]` (keeps issue open for production)
+
+**Production PRs** (Staging → Main):
+
+- **Title**: `[PRODUCTION] [Feature Title] (#[issue-number])`
+- **Description**: Production deployment summary, staging validation results
+- **Context File**: Includes staging validation and production readiness checklist
+- **Issue Linking**: `Closes #[issue-number]` (closes issue after production deployment)
 
 #### Workflow Safety Measures
 
-- **Branch Protection**: Prevents direct commits to main/master
-- **PR Validation**: Ensures all changes go through review process
-- **Issue Tracking**: Maintains complete audit trail of work
-- **Status Updates**: Real-time progress tracking and notifications
+**Enhanced Branch Protection**:
 
-**CRITICAL**: **NEVER** work directly on main/master branch. **ALWAYS** create PRs for review.
+- **Main Branch**: Requires 2+ approvals, status checks, up-to-date branches
+- **Staging Branch**: Requires 1+ approval, automated testing, conflict resolution
+- **Feature Branches**: Standard protection, automated conflict detection
+
+**Staging Sync Protocol**:
+
+- **Pre-Implementation**: Always sync staging with main before creating feature branches
+- **Pre-Staging**: Ensure feature branch is up-to-date with staging before PR
+- **Pre-Production**: Validate staging branch is ready for main merge
+
+**Conflict Prevention**:
+
+- **Staging-First Rule**: All features go through staging before production
+- **Sync Validation**: Automated checks for branch synchronization
+- **Emergency Protocol**: Immediate conflict resolution for critical deployments
+
+**CRITICAL RULES**:
+
+- **NEVER** work directly on main/staging branches
+- **ALWAYS** create feature branches from staging
+- **ALWAYS** deploy to staging before production
+- **ALWAYS** validate staging deployment before main PR
 
 ### Implementation Guidelines for Automated Workflow
 
@@ -477,10 +577,27 @@ git push --force-with-lease origin [feature-branch]
 
 #### Quality Assurance
 
-- **Code Review**: All PRs require manual review and approval
-- **Testing**: Automated tests run on PR creation (if configured)
-- **Documentation**: Auto-generated PR descriptions include implementation details
-- **Rollback**: Clear instructions for reverting changes if needed
+**Staging PR Requirements**:
+
+- **Reviewers**: Minimum 1 reviewer approval required
+- **Automated Checks**: Build validation, type checking, linting
+- **Context File**: Must reference `staging-context.md` with deployment details
+- **Testing**: Feature testing in staging environment
+- **Documentation**: Implementation details and staging deployment notes
+
+**Production PR Requirements**:
+
+- **Reviewers**: Minimum 2 reviewer approvals required
+- **Automated Checks**: Full test suite, security scans, performance validation
+- **Context File**: Staging validation results and production readiness checklist
+- **Testing**: Comprehensive staging validation and production deployment testing
+- **Documentation**: Production deployment summary and rollback procedures
+
+**General Quality Standards**:
+
+- **Security Review**: All PRs undergo security validation for sensitive changes
+- **Rollback Readiness**: Clear instructions for reverting changes if needed
+- **Audit Trail**: Complete documentation of changes and approval process
 
 #### Monitoring and Feedback
 
