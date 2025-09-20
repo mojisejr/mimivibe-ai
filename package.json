@@ -28,6 +28,8 @@
     "prompt:test-analysis": "tsx scripts/prompt-manager.ts test-analysis",
     "prompt:debug": "tsx scripts/prompt-manager.ts debug",
     "prompt:analyze": "tsx scripts/prompt-manager.ts analyze",
+    "db:export-production": "node scripts/export-production-data.js",
+    "db:sync-staging": "node scripts/sync-staging-data.js",
     "prompt:batch-test": "tsx scripts/prompt-manager.ts batch-test",
     "security:deploy": "tsx scripts/deploy-security-features.ts"
   },
