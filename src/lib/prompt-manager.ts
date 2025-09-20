@@ -1,10 +1,10 @@
-import { PrismaClient } from '@prisma/client';
-import { PromptEncryption } from './prompt-encryption';
-import { promptSecurityMonitor } from './security/prompt-security-monitor';
-import chalk from 'chalk';
-import figlet from 'figlet';
-import boxen from 'boxen';
-import ora from 'ora';
+import { PrismaClient } from "@prisma/client";
+import { PromptEncryption } from "./prompt-encryption";
+import { promptSecurityMonitor } from "./security/prompt-security-monitor";
+import chalk from "chalk";
+import figlet from "figlet";
+import boxen from "boxen";
+import ora from "ora";
 
 export interface PromptTestResult {
   templateId: number;
@@ -59,7 +59,7 @@ export class PromptManager {
    */
   public async initializePrompts(): Promise<void> {
     // Prompt initialization - using encrypted database prompts for security
-    
+
     const promptEntries: Array<{ name: string; content: string }> = [
       // Prompts are now loaded from encrypted database storage
       // This initialization is no longer needed for security reasons
@@ -77,13 +77,13 @@ export class PromptManager {
       const spinner = ora(`Processing ${name}...`).start();
 
       const existing = await this.prisma.promptTemplate.findUnique({
-        where: { name }
+        where: { name },
       });
-  
-        if (!existing) {
+
+      if (!existing) {
         spinner.text = `Encrypting ${name}...`;
         const encryptedContent = await PromptEncryption.encrypt(content);
-        
+
         spinner.text = `Saving ${name} to database...`;
         await this.prisma.promptTemplate.create({
           data: {
@@ -97,28 +97,34 @@ export class PromptManager {
                 version: 1,
                 encryptedContent,
                 isActive: true,
-                description: 'Initial version'
-              }
-            }
-          }
+                description: "Initial version",
+              },
+            },
+          },
         });
-        
-        spinner.succeed(chalk.green(`✅ Initialized ${name} (${content.length} chars)`));
+
+        spinner.succeed(
+          chalk.green(`✅ Initialized ${name} (${content.length} chars)`)
+        );
         initialized++;
       } else {
         spinner.succeed(chalk.yellow(`⏭️  Skipped ${name} (already exists)`));
         skipped++;
       }
     }
-    
-    console.log(chalk.blue(boxen(
-      `🔐 Prompt Initialization Complete\n\n` +
-      `✅ Initialized: ${initialized} prompts\n` +
-      `⏭️  Skipped: ${skipped} prompts\n` +
-      `📊 Total: ${initialized + skipped} prompts processed`,
-      { padding: 1, borderColor: 'blue', borderStyle: 'round' }
-    )));
-    
+
+    console.log(
+      chalk.blue(
+        boxen(
+          `🔐 Prompt Initialization Complete\n\n` +
+            `✅ Initialized: ${initialized} prompts\n` +
+            `⏭️  Skipped: ${skipped} prompts\n` +
+            `📊 Total: ${initialized + skipped} prompts processed`,
+          { padding: 1, borderColor: "blue", borderStyle: "round" }
+        )
+      )
+    );
+
     // Prompt initialization completed - all prompts encrypted in database
   }
 
@@ -132,7 +138,7 @@ export class PromptManager {
 
     try {
       const template = await this.prisma.promptTemplate.findUnique({
-        where: { name, isActive: true }
+        where: { name, isActive: true },
       });
 
       if (!template) {
@@ -140,13 +146,17 @@ export class PromptManager {
         throw new Error(errorMessage);
       }
 
-      const decryptedContent = await PromptEncryption.decrypt(template.encryptedContent);
+      const decryptedContent = await PromptEncryption.decrypt(
+        template.encryptedContent
+      );
+
+      console.log("[DEBUG] decrypted prompt content:", decryptedContent);
       success = true;
 
       // Log successful prompt access
       await promptSecurityMonitor.logPromptAccess({
         promptName: name,
-        accessType: 'READ',
+        accessType: "READ",
         userId,
         success: true,
         executionTimeMs: Date.now() - startTime,
@@ -154,12 +164,12 @@ export class PromptManager {
 
       return decryptedContent;
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+
       // Log failed prompt access
       await promptSecurityMonitor.logPromptAccess({
         promptName: name,
-        accessType: 'READ',
+        accessType: "READ",
         userId,
         success: false,
         executionTimeMs: Date.now() - startTime,
@@ -173,29 +183,34 @@ export class PromptManager {
   /**
    * Get specific version of prompt
    */
-  public async getPromptVersion(name: string, version: number): Promise<string> {
+  public async getPromptVersion(
+    name: string,
+    version: number
+  ): Promise<string> {
     const template = await this.prisma.promptTemplate.findUnique({
       where: { name },
       include: {
         versions: {
-          where: { version }
-        }
-      }
+          where: { version },
+        },
+      },
     });
 
     if (!template || template.versions.length === 0) {
       throw new Error(`Prompt template '${name}' version ${version} not found`);
     }
 
-    return await PromptEncryption.decrypt(template.versions[0].encryptedContent);
+    return await PromptEncryption.decrypt(
+      template.versions[0].encryptedContent
+    );
   }
 
   /**
    * Update prompt content (creates new version)
    */
   public async updatePrompt(
-    name: string, 
-    content: string, 
+    name: string,
+    content: string,
     description?: string
   ): Promise<number> {
     const maxRetries = 3;
@@ -204,81 +219,90 @@ export class PromptManager {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         // Use transaction to ensure atomicity and prevent race conditions
-        return await this.prisma.$transaction(async (tx) => {
-          const template = await tx.promptTemplate.findUnique({
-            where: { name },
-            include: {
-              versions: {
-                orderBy: { version: 'desc' },
-                take: 1
-              }
-            }
-          });
+        return await this.prisma.$transaction(
+          async (tx) => {
+            const template = await tx.promptTemplate.findUnique({
+              where: { name },
+              include: {
+                versions: {
+                  orderBy: { version: "desc" },
+                  take: 1,
+                },
+              },
+            });
 
-          if (!template) {
-            throw new Error(`Prompt template '${name}' not found`);
+            if (!template) {
+              throw new Error(`Prompt template '${name}' not found`);
+            }
+
+            // Use database-level MAX() query for accurate version calculation
+            const maxVersionResult = await tx.promptVersion.aggregate({
+              where: { templateId: template.id },
+              _max: { version: true },
+            });
+
+            const nextVersion = (maxVersionResult._max.version || 0) + 1;
+
+            // Double-check for duplicate version to prevent unique constraint violation
+            const existingVersion = await tx.promptVersion.findFirst({
+              where: {
+                templateId: template.id,
+                version: nextVersion,
+              },
+            });
+
+            if (existingVersion) {
+              throw new Error(
+                `Version ${nextVersion} already exists for prompt '${name}'. This indicates a race condition.`
+              );
+            }
+
+            const encryptedContent = await PromptEncryption.encrypt(content);
+
+            // Create new version with duplicate protection
+            await tx.promptVersion.create({
+              data: {
+                templateId: template.id,
+                version: nextVersion,
+                encryptedContent,
+                isActive: false,
+                description,
+              },
+            });
+
+            // Update main template
+            await tx.promptTemplate.update({
+              where: { id: template.id },
+              data: {
+                encryptedContent,
+                version: nextVersion,
+                updatedAt: new Date(),
+              },
+            });
+
+            console.log(
+              chalk.green(
+                `✅ Updated prompt '${name}' to version ${nextVersion}`
+              )
+            );
+            return nextVersion;
+          },
+          {
+            // Transaction options for better error handling
+            maxWait: 5000, // 5 seconds
+            timeout: 10000, // 10 seconds
           }
-
-          // Use database-level MAX() query for accurate version calculation
-          const maxVersionResult = await tx.promptVersion.aggregate({
-            where: { templateId: template.id },
-            _max: { version: true }
-          });
-
-          const nextVersion = (maxVersionResult._max.version || 0) + 1;
-
-          // Double-check for duplicate version to prevent unique constraint violation
-          const existingVersion = await tx.promptVersion.findFirst({
-            where: {
-              templateId: template.id,
-              version: nextVersion
-            }
-          });
-
-          if (existingVersion) {
-            throw new Error(`Version ${nextVersion} already exists for prompt '${name}'. This indicates a race condition.`);
-          }
-
-          const encryptedContent = await PromptEncryption.encrypt(content);
-
-          // Create new version with duplicate protection
-          await tx.promptVersion.create({
-            data: {
-              templateId: template.id,
-              version: nextVersion,
-              encryptedContent,
-              isActive: false,
-              description
-            }
-          });
-
-          // Update main template
-          await tx.promptTemplate.update({
-            where: { id: template.id },
-            data: {
-              encryptedContent,
-              version: nextVersion,
-              updatedAt: new Date()
-            }
-          });
-
-          console.log(chalk.green(`✅ Updated prompt '${name}' to version ${nextVersion}`));
-          return nextVersion;
-        }, {
-          // Transaction options for better error handling
-          maxWait: 5000, // 5 seconds
-          timeout: 10000, // 10 seconds
-        });
+        );
       } catch (error) {
         lastError = error as Error;
-        
+
         // Check if it's a retryable error (unique constraint, deadlock, etc.)
-        const isRetryable = error instanceof Error && (
-          error.message.includes('Unique constraint') ||
-          error.message.includes('deadlock') ||
-          error.message.includes('race condition') ||
-          error.message.includes('timeout')
-        );
+        const isRetryable =
+          error instanceof Error &&
+          (error.message.includes("Unique constraint") ||
+            error.message.includes("deadlock") ||
+            error.message.includes("race condition") ||
+            error.message.includes("timeout"));
 
         if (!isRetryable || attempt === maxRetries) {
           throw error;
@@ -286,9 +310,13 @@ export class PromptManager {
 
         // Exponential backoff: wait 100ms, 200ms, 400ms
         const delay = 100 * Math.pow(2, attempt - 1);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        
-        console.warn(chalk.yellow(`⚠️  Attempt ${attempt} failed for updatePrompt('${name}'): ${error.message}. Retrying in ${delay}ms...`));
+        await new Promise((resolve) => setTimeout(resolve, delay));
+
+        console.warn(
+          chalk.yellow(
+            `⚠️  Attempt ${attempt} failed for updatePrompt('${name}'): ${error.message}. Retrying in ${delay}ms...`
+          )
+        );
       }
     }
 
@@ -303,9 +331,9 @@ export class PromptManager {
       where: { name },
       include: {
         versions: {
-          where: { version }
-        }
-      }
+          where: { version },
+        },
+      },
     });
 
     if (!template || template.versions.length === 0) {
@@ -317,13 +345,13 @@ export class PromptManager {
     // Update all versions to inactive
     await this.prisma.promptVersion.updateMany({
       where: { templateId: template.id },
-      data: { isActive: false }
+      data: { isActive: false },
     });
 
     // Activate target version
     await this.prisma.promptVersion.update({
       where: { id: versionData.id },
-      data: { isActive: true }
+      data: { isActive: true },
     });
 
     // Update main template
@@ -332,11 +360,13 @@ export class PromptManager {
       data: {
         encryptedContent: versionData.encryptedContent,
         version: version,
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     });
-    
-    console.log(chalk.green(`✅ Activated version ${version} for prompt '${name}'`));
+
+    console.log(
+      chalk.green(`✅ Activated version ${version} for prompt '${name}'`)
+    );
   }
 
   /**
@@ -345,28 +375,29 @@ export class PromptManager {
   public async deactivatePrompt(name: string): Promise<void> {
     await this.prisma.promptTemplate.update({
       where: { name },
-      data: { isActive: false }
+      data: { isActive: false },
     });
-    
-    console.log(chalk.yellow(`⏸️  Deactivated prompt '${name}'`));
 
+    console.log(chalk.yellow(`⏸️  Deactivated prompt '${name}'`));
   }
 
   /**
    * List all prompts with versions
    */
-  public async listPrompts(includeInactive = false): Promise<PromptTemplateInfo[]> {
+  public async listPrompts(
+    includeInactive = false
+  ): Promise<PromptTemplateInfo[]> {
     const templates = await this.prisma.promptTemplate.findMany({
       where: includeInactive ? {} : { isActive: true },
       include: {
         versions: {
-          orderBy: { version: 'desc' }
-        }
+          orderBy: { version: "desc" },
+        },
       },
-      orderBy: { name: 'asc' }
+      orderBy: { name: "asc" },
     });
 
-    return templates.map(template => ({
+    return templates.map((template) => ({
       id: template.id,
       name: template.name,
       version: template.version,
@@ -375,14 +406,16 @@ export class PromptManager {
       performanceNotes: template.performanceNotes || undefined,
       createdAt: template.createdAt,
       updatedAt: template.updatedAt,
-      versions: template.versions.map(v => ({
+      versions: template.versions.map((v) => ({
         id: v.id,
         version: v.version,
         isActive: v.isActive,
         description: v.description || undefined,
-        performanceMetrics: (v.performanceMetrics as unknown as PromptPerformanceMetrics) || undefined,
-        createdAt: v.createdAt
-      }))
+        performanceMetrics:
+          (v.performanceMetrics as unknown as PromptPerformanceMetrics) ||
+          undefined,
+        createdAt: v.createdAt,
+      })),
     }));
   }
 
@@ -398,17 +431,24 @@ export class PromptManager {
         resultData: result.resultData,
         executionTimeMs: result.executionTimeMs,
         tokenUsage: result.tokenUsage,
-        aiProvider: result.aiProvider
-      }
+        aiProvider: result.aiProvider,
+      },
     });
-    
-    console.log(chalk.blue(`📊 Saved test result for template ${result.templateId} v${result.version} (${result.executionTimeMs}ms, ${result.tokenUsage} tokens)`));
+
+    console.log(
+      chalk.blue(
+        `📊 Saved test result for template ${result.templateId} v${result.version} (${result.executionTimeMs}ms, ${result.tokenUsage} tokens)`
+      )
+    );
   }
 
   /**
    * Get performance analytics for a prompt
    */
-  public async getPerformanceAnalytics(name: string, days = 7): Promise<{
+  public async getPerformanceAnalytics(
+    name: string,
+    days = 7
+  ): Promise<{
     versions: Array<{
       version: number;
       metrics: PromptPerformanceMetrics;
@@ -423,12 +463,12 @@ export class PromptManager {
         testResults: {
           where: {
             createdAt: {
-              gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000)
-            }
+              gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000),
+            },
           },
-          orderBy: { createdAt: 'desc' }
-        }
-      }
+          orderBy: { createdAt: "desc" },
+        },
+      },
     });
 
     if (!template) {
@@ -442,33 +482,53 @@ export class PromptManager {
       return acc;
     }, {} as Record<number, any[]>);
 
-    const versions = Object.entries(versionGroups).map(([version, results]) => {
-      const successful = results.filter(r => r.resultData && !r.resultData.error).length;
-      const avgTime = results.reduce((sum, r) => sum + (r.executionTimeMs || 0), 0) / results.length;
-      const avgTokens = results.reduce((sum, r) => sum + (r.tokenUsage || 0), 0) / results.length;
+    const versions = Object.entries(versionGroups)
+      .map(([version, results]) => {
+        const successful = results.filter(
+          (r) => r.resultData && !r.resultData.error
+        ).length;
+        const avgTime =
+          results.reduce((sum, r) => sum + (r.executionTimeMs || 0), 0) /
+          results.length;
+        const avgTokens =
+          results.reduce((sum, r) => sum + (r.tokenUsage || 0), 0) /
+          results.length;
 
-      return {
-        version: parseInt(version),
-        metrics: {
-          averageExecutionTime: Math.round(avgTime),
-          averageTokenUsage: Math.round(avgTokens),
-          successRate: successful / results.length,
-          totalTests: results.length
-        },
-        testResults: results
-      };
-    }).sort((a, b) => b.version - a.version);
+        return {
+          version: parseInt(version),
+          metrics: {
+            averageExecutionTime: Math.round(avgTime),
+            averageTokenUsage: Math.round(avgTokens),
+            successRate: successful / results.length,
+            totalTests: results.length,
+          },
+          testResults: results,
+        };
+      })
+      .sort((a, b) => b.version - a.version);
 
-    const bestPerforming = versions.reduce((best, current) => 
-      current.metrics.successRate > best.successRate 
-        ? { version: current.version, successRate: current.metrics.successRate }
-        : best,
+    const bestPerforming = versions.reduce(
+      (best, current) =>
+        current.metrics.successRate > best.successRate
+          ? {
+              version: current.version,
+              successRate: current.metrics.successRate,
+            }
+          : best,
       { version: 0, successRate: 0 }
     );
 
     const recommendations = this.generateRecommendations(versions);
-    
-    console.log(chalk.cyan(`📈 Performance analytics for '${name}': ${versions.length} versions analyzed, best performing: v${bestPerforming.version} (${(bestPerforming.successRate * 100).toFixed(1)}% success)`));
+
+    console.log(
+      chalk.cyan(
+        `📈 Performance analytics for '${name}': ${
+          versions.length
+        } versions analyzed, best performing: v${bestPerforming.version} (${(
+          bestPerforming.successRate * 100
+        ).toFixed(1)}% success)`
+      )
+    );
 
     return { versions, bestPerforming, recommendations };
   }
@@ -478,9 +538,11 @@ export class PromptManager {
    */
   private generateRecommendations(versions: any[]): string[] {
     const recommendations: string[] = [];
-    
+
     if (versions.length === 0) {
-      recommendations.push('No test data available. Run some tests to get recommendations.');
+      recommendations.push(
+        "No test data available. Run some tests to get recommendations."
+      );
       return recommendations;
     }
 
@@ -488,26 +550,41 @@ export class PromptManager {
     const hasOlderVersions = versions.length > 1;
 
     if (latest.metrics.successRate < 0.9) {
-      recommendations.push(`Current version has ${(latest.metrics.successRate * 100).toFixed(1)}% success rate. Consider reviewing failed tests.`);
+      recommendations.push(
+        `Current version has ${(latest.metrics.successRate * 100).toFixed(
+          1
+        )}% success rate. Consider reviewing failed tests.`
+      );
     }
 
     if (hasOlderVersions) {
       const previous = versions[1];
       if (previous.metrics.successRate > latest.metrics.successRate) {
-        recommendations.push(`Previous version (v${previous.version}) had better success rate. Consider rolling back.`);
+        recommendations.push(
+          `Previous version (v${previous.version}) had better success rate. Consider rolling back.`
+        );
       }
-      
-      if (latest.metrics.averageExecutionTime > previous.metrics.averageExecutionTime * 1.2) {
-        recommendations.push(`Performance regression detected. Current version is 20% slower than previous.`);
+
+      if (
+        latest.metrics.averageExecutionTime >
+        previous.metrics.averageExecutionTime * 1.2
+      ) {
+        recommendations.push(
+          `Performance regression detected. Current version is 20% slower than previous.`
+        );
       }
     }
 
     if (latest.metrics.averageExecutionTime > 2000) {
-      recommendations.push('Consider optimizing prompt length to reduce execution time.');
+      recommendations.push(
+        "Consider optimizing prompt length to reduce execution time."
+      );
     }
 
     if (latest.metrics.totalTests < 10) {
-      recommendations.push('Run more tests to get better performance insights.');
+      recommendations.push(
+        "Run more tests to get better performance insights."
+      );
     }
 
     return recommendations;
