@@ -150,7 +150,6 @@ export class PromptManager {
         template.encryptedContent
       );
 
-      console.log("[DEBUG] decrypted prompt content:", decryptedContent);
       success = true;
 
       // Log successful prompt access
