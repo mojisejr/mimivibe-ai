@@ -786,14 +786,14 @@ export default function HomePage() {
     }
   }, [isSignedIn, pathname, hasRedirected, router]);
 
-  // Animation variants
+  // Animation variants - Fixed structure for proper initialization
   const fadeInUp = {
     initial: { opacity: 0, y: 30 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6, ease: "easeOut" },
   };
 
   const staggerContainer = {
+    initial: {},
     animate: {
       transition: {
         staggerChildren: 0.2,
@@ -807,6 +807,10 @@ export default function HomePage() {
       transition: { duration: 0.3, ease: "easeOut" as const },
     },
   };
+
+  // Animation transition configurations
+  const defaultTransition = { duration: 0.6, ease: "easeOut" as const };
+  const delayedTransition = (delay: number) => ({ ...defaultTransition, delay });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 overflow-x-hidden">
@@ -863,9 +867,9 @@ export default function HomePage() {
           {/* Main Title */}
           <motion.h1
             className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-relaxed"
-            variants={fadeInUp}
-            initial="initial"
-            animate="animate"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={defaultTransition}
           >
             <span className="text-base-content">เปิดเผยอนาคตของคุณด้วย</span>
             <br />
@@ -879,10 +883,9 @@ export default function HomePage() {
           {/* Subtitle */}
           <motion.p
             className="text-lg md:text-xl text-neutral-content mb-8 max-w-2xl mx-auto leading-relaxed"
-            variants={fadeInUp}
-            initial="initial"
-            animate="animate"
-            transition={{ delay: 0.2 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={delayedTransition(0.2)}
           >
             เชื่อมต่อกับปัญญาภายในของคุณผ่านพลังของ AI ที่เข้าใจจิตวิญญาณ
             ค้นพบคำแนะนำที่แม่นยำและเป็นส่วนตัวสำหรับการเดินทางของคุณ
@@ -891,10 +894,9 @@ export default function HomePage() {
           {/* Trust Indicators */}
           <motion.div
             className="sm:flex flex-wrap justify-center items-center gap-4 mb-8 hidden"
-            variants={fadeInUp}
-            initial="initial"
-            animate="animate"
-            transition={{ delay: 0.4 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={delayedTransition(0.4)}
           >
             <div className="badge badge-primary gap-2 text-sm">
               <span>🔮</span>
@@ -913,10 +915,9 @@ export default function HomePage() {
           {/* CTA Buttons */}
           <motion.div
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            variants={fadeInUp}
-            initial="initial"
-            animate="animate"
-            transition={{ delay: 0.6 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={delayedTransition(0.6)}
           >
             <SignedIn>
               <Link href="/ask">
@@ -985,13 +986,20 @@ export default function HomePage() {
 
           <motion.div
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.2 }}
             viewport={{ once: true }}
           >
             {/* Feature 1: AI-Powered */}
-            <motion.div className="group" variants={cardHover}>
+            <motion.div
+              className="group"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -8 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              viewport={{ once: true }}
+            >
               <div className="card bg-gradient-to-br from-base-100 to-base-200 border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300 backdrop-blur-sm">
                 <div className="card-body text-center p-8">
                   <motion.div
@@ -1013,7 +1021,14 @@ export default function HomePage() {
             </motion.div>
 
             {/* Feature 2: Personalized */}
-            <motion.div className="group" variants={cardHover}>
+            <motion.div
+              className="group"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -8 }}
+              transition={{ duration: 0.3, ease: "easeOut", delay: 0.1 }}
+              viewport={{ once: true }}
+            >
               <div className="card bg-gradient-to-br from-base-100 to-base-200 border-2 border-secondary/20 shadow-xl hover:shadow-2xl transition-all duration-300 backdrop-blur-sm">
                 <div className="card-body text-center p-8">
                   <motion.div
@@ -1035,7 +1050,14 @@ export default function HomePage() {
             </motion.div>
 
             {/* Feature 3: 24/7 */}
-            <motion.div className="group" variants={cardHover}>
+            <motion.div
+              className="group"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -8 }}
+              transition={{ duration: 0.3, ease: "easeOut", delay: 0.2 }}
+              viewport={{ once: true }}
+            >
               <div className="card bg-gradient-to-br from-base-100 to-base-200 border-2 border-accent/20 shadow-xl hover:shadow-2xl transition-all duration-300 backdrop-blur-sm">
                 <div className="card-body text-center p-8">
                   <motion.div
@@ -1080,13 +1102,19 @@ export default function HomePage() {
 
           <motion.div
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.2 }}
             viewport={{ once: true }}
           >
             {/* Step 1 */}
-            <motion.div className="text-center" variants={fadeInUp}>
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              viewport={{ once: true }}
+            >
               <div className="relative mb-6">
                 <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shadow-lg">
                   <span className="text-2xl font-bold text-white">1</span>
@@ -1103,7 +1131,13 @@ export default function HomePage() {
             </motion.div>
 
             {/* Step 2 */}
-            <motion.div className="text-center" variants={fadeInUp}>
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+              viewport={{ once: true }}
+            >
               <div className="relative mb-6">
                 <div className="w-20 h-20 mx-auto bg-gradient-to-br from-secondary to-accent rounded-full flex items-center justify-center shadow-lg">
                   <span className="text-2xl font-bold text-white">2</span>
@@ -1122,7 +1156,13 @@ export default function HomePage() {
             </motion.div>
 
             {/* Step 3 */}
-            <motion.div className="text-center" variants={fadeInUp}>
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+              viewport={{ once: true }}
+            >
               <div className="relative mb-6">
                 <div className="w-20 h-20 mx-auto bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center shadow-lg">
                   <span className="text-2xl font-bold text-white">3</span>

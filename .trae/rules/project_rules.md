@@ -65,36 +65,6 @@ This ensures accurate timestamp synchronization with the system clock and preven
 - **File Storage**: Vercel Edge Network CDN
 - **Authentication**: Clerk with Google, Facebook, Email providers
 
-### Backend API Routes
-
-- **Reading System** (`/api/readings/`): Core tarot reading functionality
-
-  - `ask.ts`: Generate new tarot readings with AI workflow
-  - `save.ts`: Save completed readings to user history
-  - `history.ts`: Retrieve user's reading history with pagination
-
-- **User Management** (`/api/user/`): User profile and progression
-
-  - `stats.ts`: User statistics, level, and experience tracking
-  - `credits.ts`: Credit balance management (stars, coins, free points)
-  - `level-check.ts`: Level progression and prestige system
-  - `prestige.ts`: Prestige system for level 100+ users
-
-- **Payment System** (`/api/payments/`): Stripe integration
-
-  - `create-payment-intent.ts`: Stripe payment processing
-  - `webhook.ts`: Stripe webhook for payment confirmations
-  - `history.ts`: Payment transaction history
-
-- **Gamification** (`/api/achievements/`, `/api/credits/`): Achievement and reward system
-
-  - `progress.ts`: Track user achievement progress
-  - `claim.ts`: Claim earned achievements
-  - `spend.ts`: Process credit spending transactions
-
-- **Admin System** (`/api/admin/`): Administrative functions
-  - Campaign management, user analytics, system monitoring
-
 ### Frontend User Journeys
 
 - **User Journey Flows**:
@@ -147,22 +117,6 @@ This ensures accurate timestamp synchronization with the system clock and preven
 
 ---
 
-## 🎮 Gamification System
-
-### Level & Experience System
-
-- **Level Progression**: level \* 100 EXP required per level
-- **Max Level**: 100 (Prestige system available)
-- **EXP Sources**: Readings (+10), Reviews (+5), Achievements (variable)
-- **Prestige**: Reset to level 1 with permanent bonuses at level 100
-
-### Achievement System (20 Achievements)
-
-- **Reading Milestones**: FIRST_READING, READING_MASTER, ULTIMATE_MASTER
-- **Engagement**: REVIEWER, SOCIAL_BUTTERFLY, REFERRAL_MASTER
-- **Progression**: LEVEL_ACHIEVER, PRESTIGE_PIONEER
-- **Special**: EARLY_BIRD, WEEKEND_WARRIOR, NIGHT_OWL
-
 ### Exchange System
 
 - **Uniswap-style Interface**: Modern crypto-inspired design
@@ -203,7 +157,11 @@ You are instructed to focus **ONLY** on the task described in the assigned Issue
 
 ### CONFLICT PREVENTION & BRANCH SAFETY
 
-**MANDATORY MAIN BRANCH SYNC**: Before any implementation (`=impl`), you **MUST** ensure the local main branch is synchronized with remote origin. Use `git fetch origin && git checkout main && git pull origin main` to sync.
+
+**MANDATORY STAGING BRANCH SYNC**: Before any implementation (`=impl`), you **MUST** ensure the local staging branch is synchronized with remote origin. Use `git fetch origin && git checkout staging && git pull origin staging` to sync.
+
+**STAGING-FIRST WORKFLOW**: All implementations work exclusively with staging branch. **NEVER** create PRs to main branch or interact with main branch during `=impl`. The user will handle main branch merges manually.
+
 
 **FORCE PUSH RESTRICTIONS**: Only use `git push --force-with-lease` when absolutely necessary. **NEVER** use `git push --force` as it can overwrite team members' work. Always prefer clean rebasing and conflict resolution.
 
@@ -262,13 +220,18 @@ These commands are standard across all projects and streamline our communication
 
 - **`=fcs > [message]`**: Updates the `current-focus.md` file on the local machine and creates a **GitHub Context Issue** with the specified `[message]` as the title. **WARNING**: This command will only work if there are no open GitHub issues. If there are, the agent will alert you to clear the backlog before you can save a new context. To bypass this check, use the command `=fcs -f > [message]`.
 
-- **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. **ENHANCED WITH STAGING-FIRST WORKFLOW & CONFLICT PREVENTION** - The agent will:
 
-  1. **Pre-Planning Conflict Prevention**:
+- **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. **STAGING-FIRST WORKFLOW & CONFLICT PREVENTION** - The agent will:
+
+  1. **Pre-Planning Validation**:
+
 
      - **Auto-check**: Verify staging branch is up-to-date with remote
      - **Warning**: Alert if staging is behind remote origin
      - **Mandatory Sync**: Automatically sync staging before planning if needed
+
+     - **PR Status Check**: Verify no conflicting open PRs exist
+
      - **Branch Status**: Check for existing feature branches and potential conflicts
 
   2. **Codebase Analysis Phase**: For non-new feature implementations (fixes, refactors, modifications):
@@ -288,15 +251,17 @@ These commands are standard across all projects and streamline our communication
      - **Staging Context Creation**: Include `staging-context.md` creation in implementation plan
 
   If an open Task Issue already exists, the agent will **update** that Issue with the latest information instead of creating a new one.
+  
+- **`=impl > [message]`**: **STAGING-FIRST IMPLEMENTATION WORKFLOW** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
 
-- **`=impl > [message]`**: **ENHANCED WITH STAGING-FIRST WORKFLOW & CONFLICT PREVENTION** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
+  1. **Pre-Implementation Validation**:
 
-  1. **Pre-Implementation Staging Sync**:
-
-     - **Staging Branch Sync**: Automatically sync local staging with remote origin
+     - **MANDATORY**: Ensure currently on staging branch (`git checkout staging`)
+     - **MANDATORY**: Sync staging with remote origin (`git pull origin staging`)
+     - **MANDATORY**: Verify no existing open PRs that could conflict
+     - **MANDATORY**: Ensure clean working directory before proceeding
      - **Conflict Detection**: Check for potential conflicts before starting
      - **Emergency Protocol**: Activate emergency resolution if conflicts detected
-     - **Branch Validation**: Ensure clean working directory before proceeding
 
   2. **Auto-Branch Creation**: Creates feature branch from staging with proper naming (`feature/[issue-number]-[description]`)
   3. **Implementation**: Executes the planned work with continuous conflict monitoring
@@ -308,9 +273,9 @@ These commands are standard across all projects and streamline our communication
      - **Conflict Resolution**: Automatic conflict detection and resolution protocols
 
   5. **Staging Context Creation**: Creates `staging-context.md` with implementation details
-  6. **Auto-PR Creation**: Creates Pull Request to staging branch with proper description and issue references
+  6. **Auto-PR Creation**: Creates Pull Request **TO STAGING BRANCH ONLY** with proper description and issue references
   7. **Issue Updates**: Updates the plan issue with PR link and completion status
-  8. **User Notification**: Provides PR link for review and approval with conflict status report
+  8. **User Notification**: Provides PR link for review and approval - **USER HANDLES MAIN BRANCH MERGES MANUALLY**
 
 - **`=stage > [message]`**: **STAGING DEPLOYMENT WORKFLOW** - Deploys approved changes from feature branch to staging environment:
 
@@ -545,7 +510,7 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 - **Pre-Implementation**: Always sync staging with main before creating feature branches
 - **Pre-Staging**: Ensure feature branch is up-to-date with staging before PR
 - **Pre-Production**: Validate staging branch is ready for main merge
-
+- 
 **Conflict Prevention**:
 
 - **Staging-First Rule**: All features go through staging before production
@@ -716,19 +681,6 @@ _Based on documented performance improvements from retrospective analysis_
 3. **Systematic Analysis**: 2-3 minute analysis of target areas and integration points
 4. **Build Validation**: `npm run build` after major changes, `npx tsc --noEmit` for type checking
 
-### 📊 Performance Benchmarks
-
-#### Implementation Time Comparisons
-
-| Task Type             | First Implementation | Pattern Replication | Improvement |
-| --------------------- | -------------------- | ------------------- | ----------- |
-| UI Consolidation      | 34 minutes           | 15 minutes          | 56% faster  |
-| Component Refactoring | 45 minutes           | 20 minutes          | 56% faster  |
-| API Migration         | 135 minutes          | 75 minutes          | 44% faster  |
-| Database Debugging    | 45 minutes           | 25 minutes          | 44% faster  |
-| Security Audit        | 60+ minutes          | 31 minutes          | 48% faster  |
-| Style Refactoring     | 70+ minutes          | 55 minutes          | 21% faster  |
-
 #### Efficiency Factor Analysis
 
 **High Efficiency Sessions** (15-20 minutes):
@@ -781,26 +733,6 @@ _Based on documented performance improvements from retrospective analysis_
 **Session Performance Tracking**: Track implementation time, document efficiency factors, identify workflow violations, measure pattern success rates
 
 **Pattern Development Lifecycle**: Novel Implementation → Pattern Recognition → Pattern Refinement → Pattern Maturation (sub-20-minute implementations)
-
-### 📈 Success Metrics & Performance Indicators
-
-#### Key Performance Indicators (KPIs)
-
-- **Implementation Speed**: Target <20 minutes for standard refactoring tasks
-- **Pattern Replication Success**: 56% time reduction when following proven patterns
-- **Build Success Rate**: 100% successful builds after implementation
-- **TodoWrite Utilization**: 100% usage for complex multi-phase tasks
-- **Security Compliance**: 85%+ PCI DSS compliance maintenance
-- **Code Quality**: Zero TypeScript errors in final implementations
-
-#### Session Quality Assessment
-
-- **Excellent (9-10/10)**: <20 min, pattern replication, zero issues
-- **Good (7-8/10)**: 20-35 min, some iterations, minor issues
-- **Average (5-6/10)**: 35-60 min, multiple iterations, troubleshooting
-- **Below Average (<5/10)**: >60 min, major blockers, incomplete
-
----
 
 ## 🛠️ Development Commands
 
@@ -1002,117 +934,6 @@ _Lessons from 10+ development sessions in `/docs/retrospective/`_
 
 ---
 
-## 🔧 Troubleshooting
-
-### Common Issues
-
-#### Build Failures
-
-```bash
-# Check for type errors or syntax issues
-npm run build 2>&1 | grep -A 5 "error"
-
-# Clear cache and reinstall dependencies
-rm -rf node_modules .next .cache
-npm install
-
-# Reset Prisma client
-npx prisma generate
-```
-
-#### Database Issues
-
-```bash
-# Reset database connection
-npx prisma db push --force-reset
-
-# Check database connection
-npx prisma db pull
-
-# Regenerate Prisma client
-npx prisma generate
-```
-
-#### PostgreSQL Sequence Issues
-
-_From retrospective: "Auto-increment sequences can become desynchronized in PostgreSQL"_
-
-**Common symptoms:**
-
-- Unique constraint violations on primary key fields during seeding
-- Database insertion failures with "duplicate key value violates unique constraint"
-- Auto-increment sequence out of sync with actual data
-
-**Diagnosis and Resolution:**
-
-- Check sequence: `SELECT last_value FROM "TableName_id_seq";`
-- Check max ID: `SELECT MAX(id) FROM "TableName";`
-- Reset sequence: `SELECT setval('"TableName_id_seq"', COALESCE(MAX(id), 0) + 1) FROM "TableName";`
-
-**Prevention strategies:**
-
-- Always reset sequences after manual data insertion
-- Use `COALESCE(MAX(id), 0) + 1` to handle empty tables
-- Check sequence synchronization after database migrations
-- Create debugging scripts for complex sequence issues
-
-#### TypeScript Compilation Errors
-
-_From retrospective: "Schema investigation prevents TypeScript errors"_
-
-**Common Interface Misalignments:**
-
-- **Schema Check**: `cat prisma/schema.prisma | grep -A 10 "model ModelName"`
-- **Type Validation**: `npx tsc --noEmit --strict`
-- **Fresh Types**: `npx prisma generate && npx tsc --noEmit`
-
-**Schema Investigation Protocol:**
-
-1. **Never assume field names** - Always check actual schema definitions
-2. **Trace data structures** - Follow interfaces through `useProfile` hooks and API responses
-3. **Verify relationships** - Check foreign key relationships in Prisma schema
-4. **Test incremental changes** - Run type checking after each interface modification
-
-**Common pitfalls**: Assuming field names without verification, interface mismatches between API and frontend
-
-#### AI System Issues
-
-```bash
-# Test AI providers
-npm run prompt:test
-
-# Check API keys
-echo $OPENAI_API_KEY | head -c 10
-echo $GOOGLE_GENERATIVE_AI_API_KEY | head -c 10
-
-# Verify prompt encryption
-npm run prompt:list
-```
-
-#### Port Conflicts
-
-```bash
-# Find the process using port 3000
-lsof -i :3000
-
-# Kill the process
-kill -9 [PID]
-
-# Use alternative port
-npm run dev -- -p 3001
-```
-
-#### Payment System Issues
-
-```bash
-# Test Stripe webhook
-stripe listen --forward-to localhost:3000/api/payments/webhook
-
-# Verify Stripe keys
-echo $STRIPE_SECRET_KEY | head -c 10
-echo $STRIPE_WEBHOOK_SECRET | head -c 10
-```
-
 #### Security Implementation Issues
 
 _From comprehensive security audit retrospectives_
@@ -1122,77 +943,3 @@ _From comprehensive security audit retrospectives_
 - Check patterns in `src/middleware/rate-limiter.ts`
 - API config: `{ windowMs: 15 * 60 * 1000, max: 100 }`
 - Admin config: `{ windowMs: 15 * 60 * 1000, max: 20 }`
-
-**Webhook Security Hardening:**
-
-- Never log webhook secrets in error messages
-- Use generic error responses to prevent information disclosure
-- Implement timestamp-based replay protection (5-minute window)
-- Use `stripe.webhooks.constructEvent()` for signature validation
-
-**Input Validation Enhancement:**
-
-- Implement comprehensive Zod schemas for all API endpoints
-- Example: Payment validation with amount limits, currency restrictions, UUID validation
-
-#### System Integration Issues
-
-_From reward configuration and campaign implementation sessions_
-
-**RewardConfiguration Integration:**
-
-- Always check existing database records first: `npx prisma studio --port 5555`
-- Create temporary validation scripts for testing database operations
-- Use `PrismaClient` for isolated testing of specific queries
-
-**Campaign System Testing:**
-
-- Test campaign eligibility detection
-- Verify PaymentHistory queries for first payment detection
-- Validate campaign discount application in Stripe integration
-- Debug with API calls to campaign endpoints
-
-#### Visual Design and Accessibility Issues
-
-_From UI/UX refactoring sessions_
-
-**Color Contrast and Accessibility Problems:**
-
-- Use automated contrast checking tools
-- Validate WCAG 2.1 AA compliance (4.5:1 ratio minimum)
-- Test with screen readers when possible
-- Check banner text readability and promotional element contrast
-- Test reduced motion preferences
-
-**Styling System Conflicts:**
-
-- Avoid duplication with centralized utilities
-- Implement proper TypeScript interfaces for styling configs
-- Follow existing component patterns and design tokens
-- Use `src/utils/campaignStyles.ts` and `src/components/common/`
-
-#### Database Migration and Schema Issues
-
-_From database migration and system reset sessions_
-
-**Migration Safety Protocol:**
-
-- Always create comprehensive backups before major changes
-- Preserve critical data (Card and Prompt tables)
-- Use timestamped backup files: `backup-$(date +%Y-%m-%d-%H%M).db`
-- Use `npx prisma db seed` for critical data restoration
-
-**Schema Assumptions Prevention:**
-
-- Never assume field names without verification
-- Always check actual Prisma schema definitions
-- Trace data structures through the entire codebase
-- Use `grep` commands to trace field usage across codebase
-
-### Performance Monitoring
-
-- **Core Web Vitals**: Monitor LCP (<2.5s), FID (<100ms), CLS (<0.1)
-- **API Response Times**: Target <500ms average
-- **Database Queries**: Monitor slow queries via Prisma logs
-- **AI Response Times**: Track LLM provider performance
-- **Error Rates**: Monitor via Vercel analytics and custom logging

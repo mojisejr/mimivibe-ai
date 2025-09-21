@@ -10,5 +10,5 @@
 .backup
 /ui-mock
 /scripts
-/local-docs
+local-docs/
 current-focus.md
