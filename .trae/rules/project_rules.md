@@ -157,9 +157,11 @@ You are instructed to focus **ONLY** on the task described in the assigned Issue
 
 ### CONFLICT PREVENTION & BRANCH SAFETY
 
+
 **MANDATORY STAGING BRANCH SYNC**: Before any implementation (`=impl`), you **MUST** ensure the local staging branch is synchronized with remote origin. Use `git fetch origin && git checkout staging && git pull origin staging` to sync.
 
 **STAGING-FIRST WORKFLOW**: All implementations work exclusively with staging branch. **NEVER** create PRs to main branch or interact with main branch during `=impl`. The user will handle main branch merges manually.
+
 
 **FORCE PUSH RESTRICTIONS**: Only use `git push --force-with-lease` when absolutely necessary. **NEVER** use `git push --force` as it can overwrite team members' work. Always prefer clean rebasing and conflict resolution.
 
@@ -218,14 +220,18 @@ These commands are standard across all projects and streamline our communication
 
 - **`=fcs > [message]`**: Updates the `current-focus.md` file on the local machine and creates a **GitHub Context Issue** with the specified `[message]` as the title. **WARNING**: This command will only work if there are no open GitHub issues. If there are, the agent will alert you to clear the backlog before you can save a new context. To bypass this check, use the command `=fcs -f > [message]`.
 
+
 - **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. **STAGING-FIRST WORKFLOW & CONFLICT PREVENTION** - The agent will:
 
   1. **Pre-Planning Validation**:
 
+
      - **Auto-check**: Verify staging branch is up-to-date with remote
      - **Warning**: Alert if staging is behind remote origin
      - **Mandatory Sync**: Automatically sync staging before planning if needed
+
      - **PR Status Check**: Verify no conflicting open PRs exist
+
      - **Branch Status**: Check for existing feature branches and potential conflicts
 
   2. **Codebase Analysis Phase**: For non-new feature implementations (fixes, refactors, modifications):
@@ -245,7 +251,7 @@ These commands are standard across all projects and streamline our communication
      - **Staging Context Creation**: Include `staging-context.md` creation in implementation plan
 
   If an open Task Issue already exists, the agent will **update** that Issue with the latest information instead of creating a new one.
-
+  
 - **`=impl > [message]`**: **STAGING-FIRST IMPLEMENTATION WORKFLOW** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
 
   1. **Pre-Implementation Validation**:
@@ -504,7 +510,7 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 - **Pre-Implementation**: Always sync staging with main before creating feature branches
 - **Pre-Staging**: Ensure feature branch is up-to-date with staging before PR
 - **Pre-Production**: Validate staging branch is ready for main merge
-
+- 
 **Conflict Prevention**:
 
 - **Staging-First Rule**: All features go through staging before production
