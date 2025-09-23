@@ -29,6 +29,7 @@ function getPromptManager(): PromptManager {
 export const ReadingState = Annotation.Root({
   question: Annotation<string>,
   userId: Annotation<string>,
+  locale: Annotation<string>,
   isValid: Annotation<boolean>,
   validationReason: Annotation<string>,
   selectedCards: Annotation<SelectedCard[]>,
@@ -72,11 +73,12 @@ async function questionFilterNode(state: typeof ReadingState.State) {
       };
     }
 
-    // Get prompt from database
+    // Get prompt from database with locale support
     const manager = getPromptManager();
     const promptContent = await manager.getPrompt(
       "questionFilter",
-      state.userId
+      state.userId,
+      state.locale
     );
 
     if (!promptContent) {
@@ -297,7 +299,7 @@ async function questionAnalyzerNode(state: typeof ReadingState.State) {
     let promptContent: string;
 
     try {
-      promptContent = await manager.getPrompt("questionAnalysis", state.userId);
+      promptContent = await manager.getPrompt("questionAnalysis", state.userId, state.locale);
     } catch (error) {
       return {
         questionAnalysis: null,
@@ -464,7 +466,7 @@ async function readingAgentNode(state: typeof ReadingState.State) {
     let promptContent: string;
 
     try {
-      promptContent = await manager.getPrompt("readingAgent", state.userId);
+      promptContent = await manager.getPrompt("readingAgent", state.userId, state.locale);
     } catch (error) {
       return {
         reading: null,
@@ -783,7 +785,9 @@ const app = workflow.compile();
 // Export the main execution function
 export async function executeWorkflowWithDB(
   question: string,
-  cardCount: number = 3
+  cardCount: number = 3,
+  userId?: string,
+  locale: string = 'th'
 ): Promise<ReadingStructure> {
   const startTime = Date.now();
 
@@ -794,6 +798,8 @@ export async function executeWorkflowWithDB(
     const workflowPromise = app.invoke({
       question,
       cardCount,
+      userId: userId || 'anonymous',
+      locale,
     });
 
     const timeoutPromise = new Promise((_, reject) =>
@@ -834,12 +840,13 @@ export async function executeWorkflowWithDB(
 }
 
 // Wrapper function to maintain API compatibility with original workflow
-export async function generateTarotReading(question: string, userId?: string) {
+export async function generateTarotReading(question: string, userId?: string, locale: string = 'th') {
   try {
     // Execute the encrypted workflow and capture the final state
     const finalState = await app.invoke({
       question: question.trim(),
       userId: userId || "anonymous",
+      locale,
       isValid: false,
       validationReason: "",
       selectedCards: [],
