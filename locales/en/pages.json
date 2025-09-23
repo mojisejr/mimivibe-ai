@@ -1,0 +1,187 @@
+{
+  "home": {
+    "meta": {
+      "title": "MiMiVIBE - AI Tarot Reading",
+      "description": "Discover your path with AI-powered tarot readings and mystical insights"
+    },
+    "hero": {
+      "title": "Discover Your Future with Thailand's First AI Tarot! ✨",
+      "subtitle": "Connect with your inner wisdom through the power of AI that understands the spirit. Discover accurate and personal guidance for your journey",
+      "trustBadges": {
+        "accurate": "95% Accurate",
+        "instant": "Instant Response",
+        "secure": "100% Secure"
+      }
+    },
+    "features": {
+      "title": "Why Choose MiMiVIBE? 🤔",
+      "subtitle": "We use advanced AI technology combined with ancient wisdom to provide accurate and personalized divination experiences",
+      "aiPowered": {
+        "title": "AI Wisdom",
+        "description": "AI trained on over 10,000 tarot readings provides accurate guidance that understands your context"
+      },
+      "personalized": {
+        "title": "100% Personal",
+        "description": "Each reading is customized specifically for your situation and spiritual journey"
+      },
+      "available": {
+        "title": "24/7 Guidance Available",
+        "description": "Access mystical wisdom whenever you need clarity and direction in life"
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works - Super Easy ✨",
+      "subtitle": "Just 3 simple steps to get accurate guidance from Mae Moh Mimi",
+      "step1": {
+        "title": "Ask a Question",
+        "description": "Tell Mae Moh Mimi what you want to know about love, career, or important life decisions"
+      },
+      "step2": {
+        "title": "Draw Cards",
+        "description": "AI will draw tarot cards from the power of the universe and analyze their meanings deeply"
+      },
+      "step3": {
+        "title": "Receive Reading",
+        "description": "Get accurate predictions with helpful advice and encouraging messages from Mae Moh Mimi"
+      }
+    },
+    "pricing": {
+      "title": "Great Value Packages 💎",
+      "subtitle": "Choose the package that's right for you"
+    },
+    "finalCta": {
+      "title": "Ready to Discover Your Future? 🚀",
+      "subtitle": "Join over 10,000 users who have found the answers they were looking for. Start your spiritual journey today",
+      "buttons": {
+        "startReading": "Start Reading Now",
+        "startFree": "Start Free",
+        "contactUs": "Contact Us"
+      },
+      "trustBadges": {
+        "secure": "100% Secure",
+        "instant": "Instant Response",
+        "quality": "High Quality"
+      }
+    }
+  },
+  "ask": {
+    "meta": {
+      "title": "Ask Tarot - MiMiVIBE",
+      "description": "Ask your question to Mae Moh Mimi and receive accurate tarot readings"
+    },
+    "title": "Ask Mae Moh Mimi",
+    "subtitle": "Tell Mae Moh what you want to know",
+    "placeholder": "e.g., What will my love life be like in the future?",
+    "suggestions": [
+      "What will my love life be like in the future?",
+      "Will my career progress?",
+      "How should I make this decision?",
+      "What is blocking my success?",
+      "How should I prepare for next month?"
+    ],
+    "validation": {
+      "required": "Please enter your question",
+      "tooShort": "Question is too short. Please provide a clearer question",
+      "tooLong": "Question is too long (maximum 500 characters)"
+    }
+  },
+  "packages": {
+    "meta": {
+      "title": "Credit Packages - MiMiVIBE",
+      "description": "Choose the credit package that's right for you for AI tarot readings"
+    },
+    "title": "Choose Your Package",
+    "subtitle": "Credit packages for tarot readings",
+    "packages": {
+      "starter": {
+        "title": "Starter",
+        "subtitle": "Perfect for beginners",
+        "price": "99",
+        "credits": "10",
+        "features": [
+          "10 readings",
+          "Accurate AI tarot",
+          "Reading history",
+          "Customer support"
+        ]
+      },
+      "popular": {
+        "title": "Popular",
+        "subtitle": "Best value package",
+        "price": "199",
+        "credits": "25",
+        "features": [
+          "25 readings",
+          "Accurate AI tarot",
+          "Reading history",
+          "Additional question suggestions",
+          "Premium customer support"
+        ]
+      },
+      "premium": {
+        "title": "Premium",
+        "subtitle": "For heavy users",
+        "price": "399",
+        "credits": "60",
+        "features": [
+          "60 readings",
+          "Accurate AI tarot",
+          "Reading history",
+          "Additional question suggestions",
+          "VIP customer support",
+          "Special readings"
+        ]
+      }
+    }
+  },
+  "history": {
+    "meta": {
+      "title": "Reading History - MiMiVIBE",
+      "description": "View your tarot reading history"
+    },
+    "title": "Reading History",
+    "subtitle": "All your readings",
+    "empty": {
+      "title": "No reading history yet",
+      "subtitle": "Start your first reading now",
+      "button": "Ask Tarot"
+    },
+    "filters": {
+      "all": "All",
+      "recent": "Recent",
+      "favorites": "Favorites"
+    }
+  },
+  "profile": {
+    "meta": {
+      "title": "Profile - MiMiVIBE",
+      "description": "Manage your profile and settings"
+    },
+    "title": "My Profile",
+    "sections": {
+      "account": "Account Information",
+      "credits": "My Credits",
+      "settings": "Settings",
+      "language": "Language"
+    },
+    "stats": {
+      "totalReadings": "Total Readings",
+      "favoriteReadings": "Favorite Readings",
+      "memberSince": "Member Since"
+    }
+  },
+  "exchange": {
+    "meta": {
+      "title": "Exchange Coins - MiMiVIBE",
+      "description": "Exchange your coins for free credits"
+    },
+    "title": "Exchange Coins",
+    "subtitle": "Exchange coins for free points",
+    "exchangeRate": "Exchange rate: 15 coins = 1 free point",
+    "yourBalance": "Your balance",
+    "exchangeAmount": "Amount to exchange",
+    "willReceive": "Will receive",
+    "insufficient": "Insufficient coins",
+    "minimum": "Minimum 15 coins"
+  }
+}
