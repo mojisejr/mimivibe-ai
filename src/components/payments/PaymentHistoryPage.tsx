@@ -10,7 +10,10 @@ import { PaymentFilters } from "./PaymentFilters";
 import { PaymentSummary } from "./PaymentSummary";
 import { SkeletonGrid } from "@/components/common/SkeletonLoader";
 import { ErrorState, EmptyState } from "@/components/ui";
-import type { PaymentHistoryItem, PaymentFilters as PaymentFiltersType } from "@/types/payment";
+import type {
+  PaymentHistoryItem,
+  PaymentFilters as PaymentFiltersType,
+} from "@/types/payment";
 
 export default function PaymentHistoryPage() {
   const { user, isLoaded } = useUser();
@@ -26,7 +29,8 @@ export default function PaymentHistoryPage() {
     filters,
   } = usePaymentHistory();
 
-  const [selectedPayment, setSelectedPayment] = useState<PaymentHistoryItem | null>(null);
+  const [selectedPayment, setSelectedPayment] =
+    useState<PaymentHistoryItem | null>(null);
 
   // Infinite scroll setup
   const { sentinelRef } = useInfiniteScroll({
@@ -36,7 +40,6 @@ export default function PaymentHistoryPage() {
     threshold: 300,
     enabled: (paymentData?.payments.length || 0) > 0,
   });
-
 
   // Don't render until auth is loaded
   if (!isLoaded) {
@@ -85,7 +88,7 @@ export default function PaymentHistoryPage() {
       {/* Main Content */}
       <main className="content-container flex-1 pb-20 md:pb-6 pt-20">
         <div className="text-center mb-8">
-          <h1 className="heading-1 mb-4">Payment History</h1>
+          <h1 className="heading-1 mb-4">ประวัติการชำระเงิน</h1>
           <p className="body-large text-neutral-content">
             ประวัติการชำระเงินและซื้อดาวของคุณ
           </p>
@@ -97,9 +100,7 @@ export default function PaymentHistoryPage() {
         </div>
 
         {/* Summary Statistics */}
-        {summary && !isLoading && (
-          <PaymentSummary summary={summary} />
-        )}
+        {summary && !isLoading && <PaymentSummary summary={summary} />}
 
         {/* Filters */}
         {!isLoading && !error && payments.length > 0 && (
@@ -116,7 +117,10 @@ export default function PaymentHistoryPage() {
             {/* Summary skeleton */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="card bg-base-100 shadow-sm border border-base-300/50">
+                <div
+                  key={i}
+                  className="card bg-base-100 shadow-sm border border-base-300/50"
+                >
                   <div className="card-body p-4">
                     <div className="skeleton h-4 w-16 mb-2"></div>
                     <div className="skeleton h-6 w-20"></div>
@@ -186,7 +190,10 @@ export default function PaymentHistoryPage() {
             title="ยังไม่มีประวัติการชำระเงิน"
             message="เริ่มต้นซื้อดาวเพื่อใช้ในการทำนายไพ่ทาโรต์"
             actionText="ซื้อดาว"
-            onAction={() => typeof window !== 'undefined' && (window.location.href = "/packages")}
+            onAction={() =>
+              typeof window !== "undefined" &&
+              (window.location.href = "/packages")
+            }
           />
         )}
       </main>
