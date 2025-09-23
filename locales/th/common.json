@@ -1,0 +1,103 @@
+{
+  "navigation": {
+    "home": "หน้าแรก",
+    "ask": "ถามไพ่",
+    "history": "ประวัติ",
+    "profile": "โปรไฟล์",
+    "packages": "แพ็กเกจ",
+    "exchange": "แลกเปลี่ยน",
+    "payments": "การชำระเงิน",
+    "settings": "การตั้งค่า"
+  },
+  "buttons": {
+    "signIn": "เข้าสู่ระบบ",
+    "signOut": "ออกจากระบบ",
+    "startReading": "ให้แม่หมอทำนาย",
+    "beginJourney": "เริ่มต้นการเดินทาง",
+    "submit": "ส่ง",
+    "cancel": "ยกเลิก",
+    "save": "บันทึก",
+    "delete": "ลบ",
+    "edit": "แก้ไข",
+    "back": "กลับ",
+    "next": "ถัดไป",
+    "continue": "ดำเนินการต่อ",
+    "retry": "ลองใหม่",
+    "buyCredits": "ซื้อเครดิต",
+    "exchangeCoins": "แลกเปลี่ยนเหรียญ"
+  },
+  "forms": {
+    "placeholders": {
+      "askQuestion": "ถามคำถามที่อยากรู้...",
+      "email": "อีเมล",
+      "name": "ชื่อ",
+      "message": "ข้อความ"
+    },
+    "validation": {
+      "required": "กรุณาใส่ข้อมูลในช่องนี้",
+      "email": "กรุณาใส่อีเมลที่ถูกต้อง",
+      "minLength": "ต้องมีอย่างน้อย {{count}} ตัวอักษร",
+      "maxLength": "ต้องไม่เกิน {{count}} ตัวอักษร"
+    }
+  },
+  "currency": {
+    "thb": "บาท",
+    "symbol": "฿"
+  },
+  "credits": {
+    "stars": "ดาว",
+    "freePoints": "คะแนนฟรี",
+    "coins": "เหรียญ",
+    "balance": "ยอดคงเหลือ",
+    "insufficient": "เครดิตไม่เพียงพอ",
+    "exchangeRate": "15 เหรียญ = 1 คะแนนฟรี"
+  },
+  "status": {
+    "loading": "กำลังโหลด...",
+    "success": "สำเร็จ",
+    "error": "เกิดข้อผิดพลาด",
+    "pending": "กำลังดำเนินการ",
+    "completed": "เสร็จสิ้น",
+    "failed": "ล้มเหลว"
+  },
+  "common": {
+    "yes": "ใช่",
+    "no": "ไม่ใช่",
+    "ok": "ตกลง",
+    "close": "ปิด",
+    "search": "ค้นหา",
+    "filter": "กรอง",
+    "sort": "เรียง",
+    "date": "วันที่",
+    "time": "เวลา",
+    "amount": "จำนวน",
+    "total": "รวม",
+    "free": "ฟรี",
+    "premium": "พิเศษ",
+    "popular": "ยอดนิยม"
+  },
+  "time": {
+    "now": "ตอนนี้",
+    "today": "วันนี้",
+    "yesterday": "เมื่อวาน",
+    "tomorrow": "พรุ่งนี้",
+    "thisWeek": "สัปดาห์นี้",
+    "lastWeek": "สัปดาห์ที่แล้ว",
+    "thisMonth": "เดือนนี้",
+    "lastMonth": "เดือนที่แล้ว",
+    "ago": "{{time}} ที่แล้ว",
+    "in": "ใน {{time}}",
+    "minute": "นาที",
+    "minutes": "นาที",
+    "hour": "ชั่วโมง",
+    "hours": "ชั่วโมง",
+    "day": "วัน",
+    "days": "วัน",
+    "week": "สัปดาห์",
+    "weeks": "สัปดาห์",
+    "month": "เดือน",
+    "months": "เดือน",
+    "year": "ปี",
+    "years": "ปี"
+  }
+}

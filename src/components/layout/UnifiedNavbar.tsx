@@ -10,6 +10,7 @@ import {
 import { useRouter, usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { useProfile } from "@/hooks/useProfile";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 interface UnifiedNavbarProps {
   autoHide?: boolean;
@@ -139,6 +140,11 @@ export function UnifiedNavbar({
                 </div>
               </>
             ) : null}
+          </div>
+
+          {/* Desktop: Language Switcher */}
+          <div className="hidden md:block">
+            <LanguageSwitcher />
           </div>
 
           {/* Desktop: User Button */}
@@ -288,6 +294,24 @@ export function UnifiedNavbar({
                         </div>
                       </motion.button>
                     ))}
+
+                    {/* Language Switcher for Mobile */}
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: navigationLinks.length * 0.1 }}
+                      className="border-t border-base-300 pt-4 mt-4"
+                    >
+                      <div className="flex items-center space-x-3 p-3 rounded-xl bg-base-200/50">
+                        <span className="text-xl">🌐</span>
+                        <span className="font-medium text-sm text-base-content">
+                          เปลี่ยนภาษา
+                        </span>
+                        <div className="ml-auto">
+                          <LanguageSwitcher className="md:hidden" />
+                        </div>
+                      </div>
+                    </motion.div>
                   </nav>
                 </div>
 

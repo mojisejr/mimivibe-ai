@@ -1,0 +1,103 @@
+{
+  "navigation": {
+    "home": "Home",
+    "ask": "Ask Cards",
+    "history": "History",
+    "profile": "Profile",
+    "packages": "Packages",
+    "exchange": "Exchange",
+    "payments": "Payments",
+    "settings": "Settings"
+  },
+  "buttons": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "startReading": "Get Reading",
+    "beginJourney": "Begin Journey",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "retry": "Retry",
+    "buyCredits": "Buy Credits",
+    "exchangeCoins": "Exchange Coins"
+  },
+  "forms": {
+    "placeholders": {
+      "askQuestion": "Ask your question...",
+      "email": "Email",
+      "name": "Name",
+      "message": "Message"
+    },
+    "validation": {
+      "required": "This field is required",
+      "email": "Please enter a valid email",
+      "minLength": "Must be at least {{count}} characters",
+      "maxLength": "Must not exceed {{count}} characters"
+    }
+  },
+  "currency": {
+    "thb": "Baht",
+    "symbol": "฿"
+  },
+  "credits": {
+    "stars": "Stars",
+    "freePoints": "Free Points",
+    "coins": "Coins",
+    "balance": "Balance",
+    "insufficient": "Insufficient credits",
+    "exchangeRate": "15 coins = 1 free point"
+  },
+  "status": {
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error",
+    "pending": "Pending",
+    "completed": "Completed",
+    "failed": "Failed"
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "date": "Date",
+    "time": "Time",
+    "amount": "Amount",
+    "total": "Total",
+    "free": "Free",
+    "premium": "Premium",
+    "popular": "Popular"
+  },
+  "time": {
+    "now": "now",
+    "today": "today",
+    "yesterday": "yesterday",
+    "tomorrow": "tomorrow",
+    "thisWeek": "this week",
+    "lastWeek": "last week",
+    "thisMonth": "this month",
+    "lastMonth": "last month",
+    "ago": "{{time}} ago",
+    "in": "in {{time}}",
+    "minute": "minute",
+    "minutes": "minutes",
+    "hour": "hour",
+    "hours": "hours",
+    "day": "day",
+    "days": "days",
+    "week": "week",
+    "weeks": "weeks",
+    "month": "month",
+    "months": "months",
+    "year": "year",
+    "years": "years"
+  }
+}

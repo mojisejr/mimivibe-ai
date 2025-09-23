@@ -129,17 +129,29 @@ export class PromptManager {
   }
 
   /**
-   * Get active prompt by name
+   * Get active prompt by name with optional locale support
    */
-  public async getPrompt(name: string, userId?: string): Promise<string> {
+  public async getPrompt(name: string, userId?: string, locale?: string): Promise<string> {
     const startTime = Date.now();
     let success = false;
     let errorMessage: string | undefined;
 
     try {
-      const template = await this.prisma.promptTemplate.findUnique({
-        where: { name, isActive: true },
-      });
+      // Try to get localized prompt first (e.g., "questionFilter_th" or "questionFilter_en")
+      let template = null;
+      if (locale && locale !== 'th') {
+        const localizedName = `${name}_${locale}`;
+        template = await this.prisma.promptTemplate.findUnique({
+          where: { name: localizedName, isActive: true },
+        });
+      }
+
+      // Fallback to default prompt (Thai is default)
+      if (!template) {
+        template = await this.prisma.promptTemplate.findUnique({
+          where: { name, isActive: true },
+        });
+      }
 
       if (!template) {
         errorMessage = `Active prompt template '${name}' not found`;
