@@ -24,6 +24,7 @@ export function HeroSection({
   const { t } = useTranslation();
   const router = useRouter();
 
+
   useEffect(() => {
     setQuestion(initialQuestion);
   }, [initialQuestion]);
