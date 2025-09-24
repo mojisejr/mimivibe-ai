@@ -10,10 +10,12 @@ import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 import { ReferralSection } from "@/components/referral/ReferralSection";
 import { SkeletonProfile } from "@/components/common/SkeletonLoader";
+import { useTranslation } from "@/lib/i18n";
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
   const { data, loading, error, refresh } = useProfile();
+  const { t } = useTranslation();
 
   // Authentication state check for profile page
 
@@ -31,12 +33,12 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="heading-1 mb-4">Authentication Required</h1>
+          <h1 className="heading-1 mb-4">{t('common.profile.authRequired')}</h1>
           <p className="body-normal text-neutral-content mb-4">
-            Please sign in to view your profile
+            {t('common.profile.signInToView')}
           </p>
           <Link href="/sign-in" className="btn btn-primary">
-            Sign In
+            {t('common.buttons.signIn')}
           </Link>
         </div>
       </div>
@@ -51,9 +53,9 @@ export default function ProfilePage() {
       {/* Main Content */}
       <main className="content-container flex-1 pb-20 md:pb-6 pt-20">
         <div className="text-center mb-8">
-          <h1 className="heading-1 mb-4">โปรไฟล์ของคุณ</h1>
+          <h1 className="heading-1 mb-4">{t('pages.profile.title')}</h1>
           <p className="body-large text-neutral-content">
-            จัดการโชคชะตาและการตั้งค่า
+            {t('pages.profile.meta.description')}
           </p>
         </div>
 
@@ -61,10 +63,10 @@ export default function ProfilePage() {
           <SkeletonProfile />
         ) : error ? (
           <ErrorState
-            title="เกิดข้อผิดพลาด"
+            title={t('common.status.error')}
             message={error}
             onRetry={refresh}
-            retryText="โหลดข้อมูลใหม่"
+            retryText={t('common.buttons.retry')}
           />
         ) : data ? (
           <div className="max-w-2xl mx-auto space-y-6">
@@ -72,7 +74,7 @@ export default function ProfilePage() {
             <div className="card card-mystical">
               <div className="card-body">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="heading-3">Account Information</h2>
+                  <h2 className="heading-3">{t('common.profile.accountInfo')}</h2>
                   <Logo size="sm" showText={false} />
                 </div>
                 <div className="flex items-center space-x-4">
@@ -95,7 +97,7 @@ export default function ProfilePage() {
                       {user?.emailAddresses?.[0]?.emailAddress}
                     </p>
                     <p className="text-xs text-neutral-content">
-                      สมาชิกเมื่อ{" "}
+                      {t('common.profile.memberSince')}{" "}
                       {safeFormatDistanceToNow(
                         data.profile?.createdAt,
                         "ไม่ทราบวันที่"
@@ -110,7 +112,7 @@ export default function ProfilePage() {
             <div className="card card-mystical">
               <div className="card-body">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="heading-3">Reading Credits</h2>
+                  <h2 className="heading-3">{t('common.profile.readingCredits')}</h2>
                   <div className="badge badge-primary">
                     ⭐ {data.credits.totalCredits}
                   </div>
@@ -121,32 +123,31 @@ export default function ProfilePage() {
                       {data.credits.freePoint}
                     </div>
                     <div className="body-small text-neutral-content">
-                      Free Points
+                      {t('common.profile.freePoints')}
                     </div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-secondary">
                       {data.credits.stars}
                     </div>
-                    <div className="body-small text-neutral-content">Stars</div>
+                    <div className="body-small text-neutral-content">{t('common.profile.stars')}</div>
                   </div>
                 </div>
 
                 {/* Usage Info */}
                 <div className="text-xs text-neutral-content mb-4">
                   <p>
-                    Today: {data.credits.dailyUsed}/{data.credits.dailyLimit}
+                    {t('common.profile.todayUsage', { used: data.credits.dailyUsed, limit: data.credits.dailyLimit })}
                   </p>
                   <p>
-                    This month: {data.credits.monthlyUsed}/
-                    {data.credits.monthlyLimit}
+                    {t('common.profile.monthlyUsage', { used: data.credits.monthlyUsed, limit: data.credits.monthlyLimit })}
                   </p>
                 </div>
 
                 <div className="card-actions justify-end">
                   <Link href="/packages" className="btn btn-primary">
                     <span className="mr-2">💳</span>
-                    Buy More Credits
+                    {t('common.profile.buyMoreCredits')}
                   </Link>
                 </div>
               </div>
@@ -167,16 +168,16 @@ export default function ProfilePage() {
                   <div className="card card-mystical">
                     <div className="card-body">
                       <div className="flex items-center justify-between mb-4">
-                        <h2 className="heading-3">Admin Access</h2>
-                        <div className="badge badge-secondary">ADMIN</div>
+                        <h2 className="heading-3">{t('common.profile.adminAccess')}</h2>
+                        <div className="badge badge-secondary">{t('common.profile.adminRole')}</div>
                       </div>
                       <p className="body-normal text-neutral-content mb-4">
-                        You have administrative privileges to manage the system.
+                        {t('common.profile.adminDescription')}
                       </p>
                       <div className="card-actions justify-end">
                         <Link href="/meamor" className="btn btn-secondary">
                           <span className="mr-2">⚙️</span>
-                          Open Admin Dashboard
+                          {t('common.profile.openAdminDashboard')}
                         </Link>
                       </div>
                     </div>
