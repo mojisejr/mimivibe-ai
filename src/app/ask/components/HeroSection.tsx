@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { motion } from "framer-motion";
 import { AIModelIndicator } from "@/components/ui/AIModelIndicator";
+import { UnifiedCreditBadge } from "@/components/ui/UnifiedCreditBadge";
 import { useTranslation } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
 
@@ -121,33 +122,22 @@ export function HeroSection({
               {t('common.ask.whatWouldYouKnow')}
             </p>
 
-            {/* Stars Counter with Glassmorphism */}
+            {/* Credit Display with Glassmorphism */}
             <motion.div
               className="flex items-center justify-center space-x-4 mb-8"
               variants={fadeInUp}
             >
               {loading ? (
                 // Loading skeleton for credits
-                <>
-                  <div className="skeleton h-12 w-20 rounded-full"></div>
-                  <div className="skeleton h-12 w-20 rounded-full"></div>
-                </>
+                <div className="skeleton h-12 w-32 rounded-full"></div>
               ) : profileData?.credits ? (
-                // Actual credits display
-                <>
-                  <div className="flex items-center space-x-2 bg-base-100/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-xl border border-primary/20 hover:shadow-2xl transition-all duration-300">
-                    <span className="text-warning text-xl">⭐</span>
-                    <span className="font-semibold text-base-content">
-                      {profileData.credits.stars}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-base-100/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-xl border border-secondary/20 hover:shadow-2xl transition-all duration-300">
-                    <span className="text-secondary text-xl">🎁</span>
-                    <span className="font-semibold text-base-content">
-                      {profileData.credits.freePoint}
-                    </span>
-                  </div>
-                </>
+                // Unified credit display
+                <UnifiedCreditBadge
+                  stars={profileData.credits.stars}
+                  freePoints={profileData.credits.freePoint}
+                  variant="hero"
+                  showTooltip={true}
+                />
               ) : null}
             </motion.div>
           </motion.div>
