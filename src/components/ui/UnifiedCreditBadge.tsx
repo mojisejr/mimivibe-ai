@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { CreditInfoModal } from "./CreditInfoModal";
+import { CoinInfoModal } from "./CoinInfoModal";
 
 interface UnifiedCreditBadgeProps {
   stars: number;
@@ -22,6 +23,7 @@ export function UnifiedCreditBadge({
   coins,
 }: UnifiedCreditBadgeProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [coinModalOpen, setCoinModalOpen] = useState(false);
 
   const displayText = freePoints > 0 ? `⭐${stars}(+${freePoints})` : `⭐${stars}`;
 
@@ -29,6 +31,10 @@ export function UnifiedCreditBadge({
     if (showTooltip) {
       setModalOpen(true);
     }
+  };
+
+  const handleCoinClick = () => {
+    setCoinModalOpen(true);
   };
 
   const renderNavbarVariant = () => (
@@ -40,10 +46,13 @@ export function UnifiedCreditBadge({
         <span>{displayText}</span>
       </button>
       {coins !== undefined && (
-        <div className="badge badge-accent gap-1">
+        <button
+          onClick={handleCoinClick}
+          className="badge badge-accent gap-1 hover:badge-accent/80 transition-colors cursor-pointer"
+        >
           <span>🪙</span>
           <span className="text-sm font-medium">{coins}</span>
-        </div>
+        </button>
       )}
     </div>
   );
@@ -102,6 +111,14 @@ export function UnifiedCreditBadge({
         stars={stars}
         freePoints={freePoints}
       />
+
+      {coins !== undefined && (
+        <CoinInfoModal
+          isOpen={coinModalOpen}
+          onClose={() => setCoinModalOpen(false)}
+          coins={coins}
+        />
+      )}
     </>
   );
 }
