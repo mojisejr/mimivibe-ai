@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { motion } from "framer-motion";
 import { AIModelIndicator } from "@/components/ui/AIModelIndicator";
+import { useTranslation } from "@/lib/i18n";
 
 interface HeroSectionProps {
   onSubmit: (question: string) => void;
@@ -18,6 +19,7 @@ export function HeroSection({
 }: HeroSectionProps) {
   const [question, setQuestion] = useState(initialQuestion);
   const { data: profileData, loading } = useProfile();
+  const { t } = useTranslation();
 
   useEffect(() => {
     setQuestion(initialQuestion);
@@ -107,14 +109,14 @@ export function HeroSection({
           {/* Title Section */}
           <motion.div className="mb-12" variants={fadeInUp}>
             <h1 className="text-4xl md:text-4xl lg:text-6xl font-bold mb-6 leading-relaxed">
-              <span className="text-base-content">ไพ่พร้อมแล้ว 😉</span>
+              <span className="text-base-content">{t('common.ask.ready')}</span>
               <br />
               {/* <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 🪄
               </span> */}
             </h1>
             <p className="text-lg md:text-2xl text-neutral-content mb-8 font-semibold leading-relaxed">
-              บอกฉันสิ คุณอยากรู้อะไร?
+              {t('common.ask.whatWouldYouKnow')}
             </p>
 
             {/* Stars Counter with Glassmorphism */}
@@ -160,7 +162,7 @@ export function HeroSection({
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="เช่น: ความรักของฉันจะเป็นอย่างไรในช่วงนี้... (กด Enter เพื่อส่ง)"
+                  placeholder={t('common.ask.placeholder')}
                   className="textarea w-full h-32 text-lg resize-none bg-transparent border-0 focus:outline-none focus:ring-0 placeholder-neutral-content/60"
                   disabled={isLoading}
                   maxLength={180}
@@ -169,7 +171,7 @@ export function HeroSection({
               <div className={`absolute bottom-4 right-4 text-xs bg-base-100/80 backdrop-blur-sm rounded-full px-2 py-1 ${
                 question.length < 10 ? 'text-warning' : 'text-neutral-content'
               }`}>
-                {question.length}/180 {question.length < 10 && '(ต้องการอย่างน้อย 10 ตัวอักษร)'}
+                {t('common.ask.charCount', { count: question.length })} {question.length < 10 && t('common.ask.minChars')}
               </div>
             </div>
 
@@ -183,12 +185,12 @@ export function HeroSection({
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="loading loading-spinner w-5 h-5"></div>
-                  <span>กำลังเตรียมไพ่...</span>
+                  <span>{t('common.ask.preparingCards')}</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center space-x-2">
                   <span className="text-xl">🔮</span>
-                  <span>เริ่มทำนาย</span>
+                  <span>{t('common.ask.startReading')}</span>
                 </div>
               )}
             </motion.button>
@@ -211,7 +213,7 @@ export function HeroSection({
                 <div className="flex items-center space-x-2">
                   <span className="text-warning text-lg">⚠️</span>
                   <span className="font-medium text-warning-content">
-                    คุณไม่มีเครดิตเพียงพอ กรุณาเติมเครดิตหรือใช้ของฟรีประจำวัน
+                    {t('common.ask.insufficientCredits')}
                   </span>
                 </div>
               </div>
@@ -220,14 +222,9 @@ export function HeroSection({
 
           {/* Suggested Questions */}
           <motion.div className="mt-12" variants={fadeInUp}>
-            <p className="text-sm text-neutral-content mb-4">คำถามยอดนิยม:</p>
+            <p className="text-sm text-neutral-content mb-4">{t('common.ask.popularQuestions')}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                "ความรักของฉันจะเป็นอย่างไรในช่วงนี้?",
-                "งานการเงินจะดีขึ้นไหม?",
-                "ฉันควรทำอะไรดีในช่วงนี้?",
-                "สิ่งที่รอคอยจะมาถึงเมื่อไหร่?",
-              ].map((suggestedQuestion, index) => (
+              {(t('common.ask.suggestions') as string[]).map((suggestedQuestion, index) => (
                 <motion.button
                   key={index}
                   onClick={() => setQuestion(suggestedQuestion)}

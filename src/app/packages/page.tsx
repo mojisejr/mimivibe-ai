@@ -23,9 +23,11 @@ import {
   campaignAriaLabels,
   campaignSpacing,
 } from "@/utils/campaignStyles";
+import { useTranslation } from "@/lib/i18n";
 
 export default function PackagesPage() {
   const { user, isLoaded } = useUser();
+  const { t } = useTranslation();
   const {
     packages,
     selectedPackage,
@@ -122,12 +124,12 @@ export default function PackagesPage() {
         <UnifiedNavbar />
         <main className="content-container flex-1 pb-20 md:pb-6 pt-20 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="heading-1 mb-4">Authentication Required</h1>
+            <h1 className="heading-1 mb-4">{t('common.payment.authRequired')}</h1>
             <p className="body-normal text-neutral-content mb-4">
-              Please sign in to purchase credit packages
+              {t('common.payment.signInToPurchase')}
             </p>
             <Link href="/sign-in" className="btn btn-primary">
-              Sign In
+              {t('common.buttons.signIn')}
             </Link>
           </div>
         </main>
@@ -156,9 +158,9 @@ export default function PackagesPage() {
             >
               {/* Header Section */}
               <div className="text-center mb-8">
-                <h1 className="heading-1 mb-4">แพ็กเกจเครดิต</h1>
+                <h1 className="heading-1 mb-4">{t('pages.packages.title')}</h1>
                 <p className="body-large text-neutral-content">
-                  เลือกแพ็กเกจที่ใช่สำหรับเส้นทางจิตวิญญาณของคุณ
+                  {t('pages.packages.subtitle')}
                 </p>
               </div>
 
@@ -266,7 +268,7 @@ export default function PackagesPage() {
                                 campaign?.discountPercentage || 0
                               )}
                             >
-                              ลด {campaign?.discountPercentage}%
+                              {t('common.payment.discount')} {campaign?.discountPercentage}%
                             </div>
                           </div>
                         )}
@@ -312,7 +314,7 @@ export default function PackagesPage() {
                                     <div
                                       className={priceDisplayClasses.savings}
                                     >
-                                      ประหยัด ฿{formatPrice(discountAmount)}
+                                      {t('common.payment.savings')} ฿{formatPrice(discountAmount)}
                                     </div>
                                   </div>
                                 ) : (
@@ -325,14 +327,14 @@ export default function PackagesPage() {
 
                             <div className="text-center mb-4">
                               <div className="text-lg">
-                                ⭐ {pkg.creditAmount} เครดิต
+                                ⭐ {pkg.creditAmount} {t('common.payment.credits')}
                               </div>
                             </div>
 
                             {hasDiscount && (
                               <div className="alert alert-success alert-sm mb-4">
                                 <span className="text-xs">
-                                  🎁 ข้อเสนอพิเศษสำหรับสมาชิกใหม่!
+                                  🎁 {t('common.payment.specialOfferNewMember')}
                                 </span>
                               </div>
                             )}
@@ -376,12 +378,12 @@ export default function PackagesPage() {
                 transition={{ ...campaignFadeInUp.transition, delay: 0.4 }}
               >
                 <div className="card-body text-center">
-                  <h3 className="heading-3 mb-2">Current Balance</h3>
+                  <h3 className="heading-3 mb-2">{t('common.payment.currentBalance')}</h3>
                   <div className="text-2xl font-bold text-primary mb-4">
-                    {currentCredits} Credits
+                    {currentCredits} {t('common.payment.credits')}
                   </div>
                   <p className="body-small text-neutral-content">
-                    Use your credits for detailed tarot readings
+                    {t('common.payment.useCreditsFor')}
                   </p>
                 </div>
               </motion.div>
@@ -394,19 +396,18 @@ export default function PackagesPage() {
                 transition={{ delay: 0.5 }}
               >
                 <h2 className="heading-2 text-center mb-6">
-                  Frequently Asked Questions
+                  {t('common.payment.faq')}
                 </h2>
 
                 <div className="space-y-2">
                   <div className="collapse collapse-arrow bg-base-200">
                     <input type="radio" name="faq-accordion" />
                     <div className="collapse-title font-medium">
-                      How do credits work?
+                      {t('common.payment.howCreditsWork')}
                     </div>
                     <div className="collapse-content">
                       <p>
-                        Each detailed tarot reading costs 1 credit. Credits
-                        never expire and can be used anytime.
+                        {t('common.payment.creditsDescription')}
                       </p>
                     </div>
                   </div>
@@ -414,13 +415,11 @@ export default function PackagesPage() {
                   <div className="collapse collapse-arrow bg-base-200">
                     <input type="radio" name="faq-accordion" />
                     <div className="collapse-title font-medium">
-                      Is my payment information secure?
+                      {t('common.payment.paymentSecurity')}
                     </div>
                     <div className="collapse-content">
                       <p>
-                        Yes! We use Stripe for payment processing, which
-                        provides bank-level security. We never store your
-                        payment information.
+                        {t('common.payment.securityDescription')}
                       </p>
                     </div>
                   </div>
@@ -428,12 +427,11 @@ export default function PackagesPage() {
                   <div className="collapse collapse-arrow bg-base-200">
                     <input type="radio" name="faq-accordion" />
                     <div className="collapse-title font-medium">
-                      Can I get a refund?
+                      {t('common.payment.refundPolicy')}
                     </div>
                     <div className="collapse-content">
                       <p>
-                        We offer a 30-day money-back guarantee if you&apos;re
-                        not satisfied with your readings.
+                        {t('common.payment.refundDescription')}
                       </p>
                     </div>
                   </div>
@@ -441,12 +439,11 @@ export default function PackagesPage() {
                   <div className="collapse collapse-arrow bg-base-200">
                     <input type="radio" name="faq-accordion" />
                     <div className="collapse-title font-medium">
-                      Are there any hidden fees?
+                      {t('common.payment.hiddenFees')}
                     </div>
                     <div className="collapse-content">
                       <p>
-                        No hidden fees. The price you see is exactly what you
-                        pay, and credits never expire.
+                        {t('common.payment.hiddenFeesDescription')}
                       </p>
                     </div>
                   </div>
@@ -481,21 +478,20 @@ export default function PackagesPage() {
                       d="M15 19l-7-7 7-7"
                     />
                   </svg>
-                  Back to Packages
+{t('common.payment.backToPackages')}
                 </button>
 
-                <h2 className="heading-2 mb-2">Complete Your Purchase</h2>
+                <h2 className="heading-2 mb-2">{t('common.payment.completePurchase')}</h2>
                 {selectedPackage && (
                   <div className="space-y-2">
                     <p className="text-neutral-content">
                       {selectedPackage.title} - {selectedPackage.creditAmount}{" "}
-                      Credits
+                      {t('common.payment.credits')}
                     </p>
                     {campaignEligible && campaign && (
                       <div className="alert alert-success alert-sm">
                         <span className="text-sm">
-                          🎉 ข้อเสนอพิเศษ: ลด {campaign.discountPercentage}%
-                          สำหรับการซื้อครั้งแรก!
+                          🎉 {t('common.payment.specialOffer')}: {t('common.payment.firstTimeBuyer', { percentage: campaign.discountPercentage })}
                         </span>
                       </div>
                     )}

@@ -8,6 +8,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useToast } from "@/components/ui/ToastContainer";
 import { motion } from "framer-motion";
 import { PricingCards } from "@/components/landing/PricingCards";
+import { useTranslation } from '@/lib/i18n';
 
 // ===== OLD IMPLEMENTATION (COMMENTED OUT) =====
 /*
@@ -403,6 +404,7 @@ export default function HomePage() {
   const [hasProcessedReferral, setHasProcessedReferral] = useState(false);
   const [isProcessingReferral, setIsProcessingReferral] = useState(false);
   const [hasRedirected, setHasRedirected] = useState(false);
+  const { t } = useTranslation();
 
   // Helper functions for user-specific referral storage
   const getPendingReferralForUser = useCallback((currentUserId: string) => {
@@ -827,7 +829,7 @@ export default function HomePage() {
         >
           <SignInButton mode="modal">
             <button className="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-300">
-              เข้าสู่ระบบ
+              {t('common.buttons.signIn')}
             </button>
           </SignInButton>
         </motion.div>
@@ -871,13 +873,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={defaultTransition}
           >
-            <span className="text-base-content">เปิดเผยอนาคตของคุณด้วย</span>
-            <br />
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              AI ไพ่ทาโรต์
-            </span>
-            <br />
-            <span className="text-base-content">แห่งแรกของไทย! ✨</span>
+            <span className="text-base-content">{t('pages.home.hero.title')}</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -887,8 +883,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={delayedTransition(0.2)}
           >
-            เชื่อมต่อกับปัญญาภายในของคุณผ่านพลังของ AI ที่เข้าใจจิตวิญญาณ
-            ค้นพบคำแนะนำที่แม่นยำและเป็นส่วนตัวสำหรับการเดินทางของคุณ
+            {t('pages.home.hero.subtitle')}
           </motion.p>
 
           {/* Trust Indicators */}
@@ -900,15 +895,15 @@ export default function HomePage() {
           >
             <div className="badge badge-primary gap-2 text-sm">
               <span>🔮</span>
-              <span>แม่นยำ 95%</span>
+              <span>{t('pages.home.hero.trustBadges.accurate')}</span>
             </div>
             <div className="badge badge-secondary gap-2 text-sm">
               <span>⚡</span>
-              <span>ตอบทันที</span>
+              <span>{t('pages.home.hero.trustBadges.instant')}</span>
             </div>
             <div className="badge badge-accent gap-2 text-sm">
               <span>🛡️</span>
-              <span>ปลอดภัย 100%</span>
+              <span>{t('pages.home.hero.trustBadges.secure')}</span>
             </div>
           </motion.div>
 
@@ -930,7 +925,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-accent via-accent-focus to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <span className="relative z-10 flex items-center justify-center gap-3">
                     <span className="text-2xl">🔮</span>
-                    <span className="font-bold">ให้แม่หมอทำนาย</span>
+                    <span className="font-bold">{t('common.buttons.startReading')}</span>
                   </span>
                 </motion.button>
               </Link>
@@ -947,7 +942,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-accent via-accent-focus to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <span className="relative z-10 flex items-center justify-center gap-3">
                     <span className="text-2xl">🚀</span>
-                    <span className="font-bold">เริ่มต้นการเดินทาง</span>
+                    <span className="font-bold">{t('common.buttons.beginJourney')}</span>
                   </span>
                 </motion.button>
               </SignInButton>
@@ -976,11 +971,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-base-content">
-              ทำไมต้องเลือก <span className="text-primary">MiMiVIBE</span>? 🤔
+              {t('pages.home.features.title')} <span className="text-primary">MiMiVIBE</span>? 🤔
             </h2>
             <p className="text-lg text-neutral-content max-w-2xl mx-auto">
-              เราใช้เทคโนโลยี AI ล้ำสมัยผสมผสานกับภูมิปัญญาโบราณ
-              เพื่อมอบประสบการณ์การดูดวงที่แม่นยำและเป็นส่วนตัว
+              {t('pages.home.features.subtitle')}
             </p>
           </motion.div>
 
@@ -1010,11 +1004,10 @@ export default function HomePage() {
                     <span className="text-2xl">🤖</span>
                   </motion.div>
                   <h3 className="text-xl font-bold text-primary mb-4">
-                    AI ทรงปัญญา
+                    {t('pages.home.features.aiPowered.title')}
                   </h3>
                   <p className="text-base-content leading-relaxed">
-                    AI ที่เรียนรู้จากข้อมูลไพ่ทาโรต์มากกว่า 10,000 การทำนาย
-                    ให้คำแนะนำที่แม่นยำและเข้าใจบริบทของคุณ
+                    {t('pages.home.features.aiPowered.description')}
                   </p>
                 </div>
               </div>
@@ -1039,11 +1032,10 @@ export default function HomePage() {
                     <span className="text-2xl">💫</span>
                   </motion.div>
                   <h3 className="text-xl font-bold text-secondary mb-4">
-                    เป็นส่วนตัว 100%
+                    {t('pages.home.features.personalized.title')}
                   </h3>
                   <p className="text-base-content leading-relaxed">
-                    แต่ละการทำนายถูกปรับแต่งให้เหมาะกับสถานการณ์และ
-                    การเดินทางทางจิตวิญญาณของคุณโดยเฉพาะ
+                    {t('pages.home.features.personalized.description')}
                   </p>
                 </div>
               </div>
@@ -1068,11 +1060,10 @@ export default function HomePage() {
                     <span className="text-2xl">🌙</span>
                   </motion.div>
                   <h3 className="text-xl font-bold text-accent mb-4">
-                    พร้อมให้คำแนะนำ 24/7
+                    {t('pages.home.features.available.title')}
                   </h3>
                   <p className="text-base-content leading-relaxed">
-                    เข้าถึงภูมิปัญญามิสติคได้ทุกเมื่อที่คุณต้องการความชัดเจน
-                    และทิศทางในชีวิต
+                    {t('pages.home.features.available.description')}
                   </p>
                 </div>
               </div>
@@ -1092,11 +1083,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-base-content">
-              วิธีการใช้งาน <span className="text-primary">ง่ายนิดเดียว</span>{" "}
-              ✨
+              {t('pages.home.howItWorks.title')}
             </h2>
             <p className="text-lg text-neutral-content max-w-2xl mx-auto">
-              เพียง 3 ขั้นตอนง่ายๆ คุณก็จะได้คำแนะนำที่แม่นยำจากแม่หมอมีมี่
+              {t('pages.home.howItWorks.subtitle')}
             </p>
           </motion.div>
 
@@ -1123,10 +1113,9 @@ export default function HomePage() {
                   <span className="text-sm">💭</span>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-primary mb-4">ถามคำถาม</h3>
+              <h3 className="text-xl font-bold text-primary mb-4">{t('pages.home.howItWorks.step1.title')}</h3>
               <p className="text-base-content">
-                บอกแม่หมอมีมี่ว่าคุณอยากรู้อะไร เกี่ยวกับความรัก การงาน
-                หรือการตัดสินใจสำคัญในชีวิต
+                {t('pages.home.howItWorks.step1.description')}
               </p>
             </motion.div>
 
@@ -1147,11 +1136,10 @@ export default function HomePage() {
                 </div>
               </div>
               <h3 className="text-xl font-bold text-secondary mb-4">
-                หยิบไพ่ขึ้นมา
+                {t('pages.home.howItWorks.step2.title')}
               </h3>
               <p className="text-base-content">
-                AI จะหยิบไพ่ทาโรต์จากพลังของจักวาล
-                และวิเคราะห์ความหมายอย่างลึกซึ้ง
+                {t('pages.home.howItWorks.step2.description')}
               </p>
             </motion.div>
 
@@ -1171,10 +1159,9 @@ export default function HomePage() {
                   <span className="text-sm">✨</span>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-accent mb-4">รับคำทำนาย</h3>
+              <h3 className="text-xl font-bold text-accent mb-4">{t('pages.home.howItWorks.step3.title')}</h3>
               <p className="text-base-content">
-                รับคำทำนายที่แม่นยำ พร้อมคำแนะนำที่เป็นประโยชน์
-                และข้อความให้กำลังใจจากแม่หมอมีมี่
+                {t('pages.home.howItWorks.step3.description')}
               </p>
             </motion.div>
           </motion.div>
@@ -1192,10 +1179,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-base-content">
-              แพ็กเกจที่ <span className="text-primary">คุ้มค่า</span> 💎
+              {t('pages.home.pricing.title')}
             </h2>
             <p className="text-lg text-neutral-content max-w-2xl mx-auto">
-              เลือกแพ็กเกจที่เหมาะกับคุณ
+              {t('pages.home.pricing.subtitle')}
             </p>
           </motion.div>
 
@@ -1213,13 +1200,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-base-content">
-              พร้อมที่จะ <span className="text-primary">เปิดเผยอนาคต</span>{" "}
-              แล้วหรือยัง? 🚀
+              {t('pages.home.finalCta.title')}
             </h2>
             <p className="text-lg text-neutral-content mb-8 max-w-2xl mx-auto">
-              เข้าร่วมกับผู้ใช้มากกว่า 10,000
-              คนที่ได้ค้นพบคำตอบที่พวกเขากำลังมองหา
-              เริ่มต้นการเดินทางทางจิตวิญญาณของคุณวันนี้
+              {t('pages.home.finalCta.subtitle')}
             </p>
 
             <motion.div
@@ -1237,7 +1221,7 @@ export default function HomePage() {
                     whileTap={{ scale: 0.95 }}
                   >
                     <span className="text-xl mr-2">🔮</span>
-                    <span className="text-lg font-semibold">เริ่มทำนายเลย</span>
+                    <span className="text-lg font-semibold">{t('pages.home.finalCta.buttons.startReading')}</span>
                   </motion.button>
                 </Link>
               </SignedIn>
@@ -1250,7 +1234,7 @@ export default function HomePage() {
                     whileTap={{ scale: 0.95 }}
                   >
                     <span className="text-xl mr-2">🎯</span>
-                    <span className="text-lg font-semibold">เริ่มต้นฟรี</span>
+                    <span className="text-lg font-semibold">{t('pages.home.finalCta.buttons.startFree')}</span>
                   </motion.button>
                 </SignInButton>
               </SignedOut>
@@ -1261,7 +1245,7 @@ export default function HomePage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="text-lg mr-2">📞</span>
-                <span>ติดต่อเรา</span>
+                <span>{t('pages.home.finalCta.buttons.contactUs')}</span>
               </motion.button>
             </motion.div>
 
@@ -1275,15 +1259,15 @@ export default function HomePage() {
             >
               <div className="flex items-center gap-2 text-sm text-neutral-content">
                 <span>🔒</span>
-                <span>ปลอดภัย 100%</span>
+                <span>{t('pages.home.finalCta.trustBadges.secure')}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-neutral-content">
                 <span>⚡</span>
-                <span>ตอบทันที</span>
+                <span>{t('pages.home.finalCta.trustBadges.instant')}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-neutral-content">
                 <span>💎</span>
-                <span>คุณภาพสูง</span>
+                <span>{t('pages.home.finalCta.trustBadges.quality')}</span>
               </div>
             </motion.div>
           </motion.div>

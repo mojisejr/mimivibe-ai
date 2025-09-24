@@ -99,5 +99,61 @@
     "months": "months",
     "year": "year",
     "years": "years"
+  },
+  "payment": {
+    "authRequired": "Authentication Required",
+    "signInToPurchase": "Please sign in to purchase credit packages",
+    "currentBalance": "Current Balance",
+    "useCreditsFor": "Use your credits for detailed tarot readings",
+    "faq": "Frequently Asked Questions",
+    "howCreditsWork": "How do credits work?",
+    "creditsDescription": "Each detailed tarot reading costs 1 credit. Credits never expire and can be used anytime.",
+    "paymentSecurity": "Is my payment information secure?",
+    "securityDescription": "Yes! We use Stripe for payment processing, which provides bank-level security. We never store your payment information.",
+    "refundPolicy": "Can I get a refund?",
+    "refundDescription": "We offer a 30-day money-back guarantee if you're not satisfied with your readings.",
+    "hiddenFees": "Are there any hidden fees?",
+    "hiddenFeesDescription": "No hidden fees. The price you see is exactly what you pay, and credits never expire.",
+    "backToPackages": "Back to Packages",
+    "completePurchase": "Complete Your Purchase",
+    "credits": "Credits",
+    "specialOffer": "Special Offer",
+    "discount": "Save",
+    "savings": "Savings",
+    "specialOfferNewMember": "Special offer for new members!",
+    "firstTimeBuyer": "{{percentage}}% off for first-time buyers!"
+  },
+  "profile": {
+    "authRequired": "Authentication Required",
+    "signInToView": "Please sign in to view your profile",
+    "accountInfo": "Account Information",
+    "readingCredits": "Reading Credits",
+    "freePoints": "Free Points",
+    "stars": "Stars",
+    "todayUsage": "Today: {{used}}/{{limit}}",
+    "monthlyUsage": "This month: {{used}}/{{limit}}",
+    "buyMoreCredits": "Buy More Credits",
+    "adminAccess": "Admin Access",
+    "adminRole": "ADMIN",
+    "adminDescription": "You have administrative privileges to manage the system.",
+    "openAdminDashboard": "Open Admin Dashboard",
+    "memberSince": "Member since"
+  },
+  "ask": {
+    "ready": "Cards are ready 😉",
+    "whatWouldYouKnow": "Tell me, what would you like to know?",
+    "placeholder": "e.g.: How will my love life be in this period... (Press Enter to send)",
+    "charCount": "{{count}}/180",
+    "minChars": "(minimum 10 characters required)",
+    "preparingCards": "Preparing cards...",
+    "startReading": "Start Reading",
+    "insufficientCredits": "You don't have enough credits. Please add credits or use your free daily reading",
+    "popularQuestions": "Popular questions:",
+    "suggestions": [
+      "How will my love life be in this period?",
+      "Will my work and finances improve?",
+      "What should I do during this time?",
+      "When will what I'm waiting for arrive?"
+    ]
   }
 }

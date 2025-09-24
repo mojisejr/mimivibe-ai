@@ -16,6 +16,7 @@ import {
   SkeletonSearchFilters,
 } from "@/components/common/SkeletonLoader";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
+import { useTranslation } from '@/lib/i18n';
 
 interface Card {
   id: number;
@@ -57,6 +58,7 @@ interface Reading {
 
 export default function HistoryPage() {
   const { user, isLoaded } = useUser();
+  const { t } = useTranslation();
   const {
     data: historyData,
     loading: historyLoading,
