@@ -3,39 +3,41 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { MessageCircle, History, User, Package, Home } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 
 export function BottomNavigation() {
   const pathname = usePathname()
+  const { t } = useTranslation()
 
   const navItems = [
     {
       href: '/',
-      label: 'หน้าหลัก',
+      label: t('common.navigation.home'),
       icon: Home,
       isActive: pathname === '/'
     },
     // Hide Ask button on homepage to avoid overlap with Hero CTA and reduce redundancy
     ...(pathname !== '/' ? [{
       href: '/ask',
-      label: 'ถามดวง',
+      label: t('common.navigation.ask'),
       icon: MessageCircle,
       isActive: pathname === '/ask'
     }] : []),
     {
       href: '/history',
-      label: 'ประวัติ',
+      label: t('common.navigation.history'),
       icon: History,
       isActive: pathname === '/history'
     },
     {
       href: '/packages',
-      label: 'แพ็คเกจ',
+      label: t('common.navigation.packages'),
       icon: Package,
       isActive: pathname === '/packages'
     },
     {
       href: '/profile',
-      label: 'โปรไฟล์',
+      label: t('common.navigation.profile'),
       icon: User,
       isActive: pathname === '/profile'
     }

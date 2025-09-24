@@ -3,7 +3,8 @@ import thCommon from '../../locales/th/common.json';
 import enCommon from '../../locales/en/common.json';
 import thPages from '../../locales/th/pages.json';
 import enPages from '../../locales/en/pages.json';
-import { type Locale } from './i18n-config';
+import { type Locale, getLocaleFromPathname } from './i18n-config';
+import { usePathname } from 'next/navigation';
 
 export type TranslationKey = string;
 
@@ -36,7 +37,7 @@ type PageKeys = NestedKeys<typeof thPages>;
 export type AllTranslationKeys = `common.${CommonKeys}` | `pages.${PageKeys}`;
 
 // Helper function to get nested value from object
-function getNestedValue(obj: any, path: string): string | undefined {
+function getNestedValue(obj: any, path: string): any {
   return path.split('.').reduce((current, key) => current?.[key], obj);
 }
 
@@ -45,11 +46,11 @@ export function translate(
   key: AllTranslationKeys,
   locale: Locale = 'th',
   options?: { [key: string]: string | number }
-): string {
+): any {
   const [namespace, ...keyPath] = key.split('.');
   const fullKey = keyPath.join('.');
 
-  let value: string | undefined;
+  let value: any;
 
   if (namespace === 'common') {
     value = getNestedValue(resources[locale].common, fullKey);
@@ -72,8 +73,8 @@ export function translate(
     return key;
   }
 
-  // Replace variables in the translation
-  if (options) {
+  // Replace variables in the translation (only for strings)
+  if (options && typeof value === 'string') {
     Object.entries(options).forEach(([variable, replacement]) => {
       value = value!.replace(new RegExp(`{{\\s*${variable}\\s*}}`, 'g'), String(replacement));
     });
@@ -83,12 +84,15 @@ export function translate(
 }
 
 // Custom hook for translations (for client components)
-export function useTranslation(locale: Locale = 'th') {
+export function useTranslation() {
+  const pathname = usePathname();
+  const currentLocale = getLocaleFromPathname(pathname);
+
   const t = (key: AllTranslationKeys, options?: { [key: string]: string | number }) =>
-    translate(key, locale, options);
+    translate(key, currentLocale, options);
 
   return {
-    locale,
+    locale: currentLocale,
     t,
   };
 }
