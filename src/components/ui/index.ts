@@ -4,3 +4,5 @@ export { Input, Textarea } from "./Input";
 export { Logo } from "./Logo";
 export { ProfileLoadingState, HistoryLoadingState, ErrorState, EmptyState } from "./LoadingStates";
 export { AIModelIndicator } from "./AIModelIndicator";
+export { UnifiedCreditBadge } from "./UnifiedCreditBadge";
+export { CreditInfoModal } from "./CreditInfoModal";

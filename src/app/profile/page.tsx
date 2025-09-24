@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useProfile } from "@/hooks/useProfile";
 import { BottomNavigation } from "@/components/navigation/BottomNavigation";
-import { Logo, ProfileLoadingState, ErrorState } from "@/components/ui";
+import { Logo, ProfileLoadingState, ErrorState, UnifiedCreditBadge } from "@/components/ui";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 import { ReferralSection } from "@/components/referral/ReferralSection";
@@ -114,23 +114,18 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="heading-3">{t('common.profile.readingCredits')}</h2>
                   <div className="badge badge-primary">
-                    ⭐ {data.credits.totalCredits}
+                    รวม: {data.credits.totalCredits}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">
-                      {data.credits.freePoint}
-                    </div>
-                    <div className="body-small text-neutral-content">
-                      {t('common.profile.freePoints')}
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-secondary">
-                      {data.credits.stars}
-                    </div>
-                    <div className="body-small text-neutral-content">{t('common.profile.stars')}</div>
+                <div className="text-center mb-4">
+                  <UnifiedCreditBadge
+                    stars={data.credits.stars}
+                    freePoints={data.credits.freePoint}
+                    variant="profile"
+                    showTooltip={true}
+                  />
+                  <div className="body-small text-neutral-content mt-2">
+                    เครดิตของคุณ
                   </div>
                 </div>
 
