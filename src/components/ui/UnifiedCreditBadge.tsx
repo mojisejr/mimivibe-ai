@@ -43,16 +43,16 @@ export function UnifiedCreditBadge({
         <AnimatePresence>
           {tooltipVisible && (
             <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              initial={{ opacity: 0, y: -10, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.9 }}
+              exit={{ opacity: 0, y: -10, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 z-50 w-64 p-3 bg-base-100 border border-base-300 rounded-lg shadow-xl text-xs text-center"
+              className="absolute top-full mt-2 right-0 z-50 w-64 max-w-[90vw] p-3 bg-base-100 border border-base-300 rounded-lg shadow-xl text-xs"
             >
-              <div className="text-base-content">
+              <div className="text-base-content text-center">
                 ⭐ คือเหรียญที่เติมด้วยการซื้อ package และ (+{freePoints}) คือแต้มฟรีที่คุณได้รับจากกิจกรรมต่างๆ
               </div>
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-base-100"></div>
+              <div className="absolute bottom-full right-4 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-base-100"></div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -80,16 +80,16 @@ export function UnifiedCreditBadge({
         <AnimatePresence>
           {tooltipVisible && (
             <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              initial={{ opacity: 0, y: -10, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.9 }}
+              exit={{ opacity: 0, y: -10, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="absolute bottom-full mb-4 left-1/2 transform -translate-x-1/2 z-50 w-80 p-4 bg-base-100/95 backdrop-blur-sm border border-primary/20 rounded-xl shadow-2xl text-sm text-center"
+              className="absolute top-full mt-4 left-1/2 transform -translate-x-1/2 z-50 w-80 max-w-[90vw] p-4 bg-base-100/95 backdrop-blur-sm border border-primary/20 rounded-xl shadow-2xl text-sm"
             >
-              <div className="text-base-content font-medium">
+              <div className="text-base-content font-medium text-center">
                 ⭐ คือเหรียญที่เติมด้วยการซื้อ package และ (+{freePoints}) คือแต้มฟรีที่คุณได้รับจากกิจกรรมต่างๆ
               </div>
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-6 border-r-6 border-t-6 border-transparent border-t-base-100/95"></div>
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-6 border-r-6 border-b-6 border-transparent border-b-base-100/95"></div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -118,16 +118,16 @@ export function UnifiedCreditBadge({
         <AnimatePresence>
           {tooltipVisible && (
             <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              initial={{ opacity: 0, y: -10, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.9 }}
+              exit={{ opacity: 0, y: -10, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 z-50 w-72 p-3 bg-base-100 border border-base-300 rounded-lg shadow-xl text-xs text-center"
+              className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 z-50 w-72 max-w-[90vw] p-3 bg-base-100 border border-base-300 rounded-lg shadow-xl text-xs"
             >
-              <div className="text-base-content">
+              <div className="text-base-content text-center">
                 ⭐ คือเหรียญที่เติมด้วยการซื้อ package และ (+{freePoints}) คือแต้มฟรีที่คุณได้รับจากกิจกรรมต่างๆ
               </div>
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-base-100"></div>
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-base-100"></div>
             </motion.div>
           )}
         </AnimatePresence>
