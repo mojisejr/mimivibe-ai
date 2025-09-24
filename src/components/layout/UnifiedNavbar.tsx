@@ -11,6 +11,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { useProfile } from "@/hooks/useProfile";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { useTranslation } from '@/lib/i18n';
 
 interface UnifiedNavbarProps {
   autoHide?: boolean;
@@ -31,6 +32,7 @@ export function UnifiedNavbar({
   const router = useRouter();
   const pathname = usePathname();
   const { data: profileData, loading } = useProfile();
+  const { t } = useTranslation();
 
   // State-based visibility (only for /ask page)
   const shouldShowBasedOnState =
@@ -59,12 +61,12 @@ export function UnifiedNavbar({
   }
 
   const navigationLinks = [
-    { href: "/ask", label: "ถามไพ่", icon: "🔮" },
-    { href: "/history", label: "ประวัติ", icon: "📜" },
-    { href: "/payments", label: "การชำระ", icon: "💳" },
-    { href: "/exchange", label: "แลกเปลี่ยน", icon: "🪙" },
-    { href: "/profile", label: "โปรไฟล์", icon: "👤" },
-    { href: "/packages", label: "แพ็คเกจ", icon: "💎" },
+    { href: "/ask", label: t('common.navigation.ask'), icon: "🔮" },
+    { href: "/history", label: t('common.navigation.history'), icon: "📜" },
+    { href: "/payments", label: t('common.navigation.payments'), icon: "💳" },
+    { href: "/exchange", label: t('common.navigation.exchange'), icon: "🪙" },
+    { href: "/profile", label: t('common.navigation.profile'), icon: "👤" },
+    { href: "/packages", label: t('common.navigation.packages'), icon: "💎" },
   ];
 
   const isCurrentPage = (href: string) => pathname === href;

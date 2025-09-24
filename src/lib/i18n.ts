@@ -83,12 +83,28 @@ export function translate(
 }
 
 // Custom hook for translations (for client components)
-export function useTranslation(locale: Locale = 'th') {
+export function useTranslation(locale?: Locale) {
+  // Use Next.js useSearchParams to get locale from URL if not provided
+  let currentLocale: Locale = 'th'; // default
+
+  // Only use useSearchParams on client side
+  if (typeof window !== 'undefined') {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const urlLocale = searchParams.get('locale') as Locale;
+      currentLocale = locale || urlLocale || 'th';
+    } catch (error) {
+      currentLocale = locale || 'th';
+    }
+  } else {
+    currentLocale = locale || 'th';
+  }
+
   const t = (key: AllTranslationKeys, options?: { [key: string]: string | number }) =>
-    translate(key, locale, options);
+    translate(key, currentLocale, options);
 
   return {
-    locale,
+    locale: currentLocale,
     t,
   };
 }
