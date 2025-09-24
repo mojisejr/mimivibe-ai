@@ -11,6 +11,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { useProfile } from "@/hooks/useProfile";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { UnifiedCreditBadge } from "@/components/ui/UnifiedCreditBadge";
 import { useTranslation } from "@/lib/i18n";
 
 interface UnifiedNavbarProps {
@@ -121,26 +122,16 @@ export function UnifiedNavbar({
           <div className="hidden sm:flex items-center space-x-3">
             {loading ? (
               // Loading skeleton for credits
-              <>
-                <div className="skeleton h-6 w-16 rounded-full"></div>
-                <div className="skeleton h-6 w-16 rounded-full"></div>
-              </>
+              <div className="skeleton h-6 w-24 rounded-full"></div>
             ) : profileData?.credits ? (
-              // Actual credits display
-              <>
-                <div className="badge badge-warning gap-1">
-                  <span>⭐</span>
-                  <span className="text-sm font-medium">
-                    {profileData.credits.stars}
-                  </span>
-                </div>
-                <div className="badge badge-secondary gap-1">
-                  <span>🎁</span>
-                  <span className="text-sm font-medium">
-                    {profileData.credits.freePoint}
-                  </span>
-                </div>
-              </>
+              // Unified credits display
+              <UnifiedCreditBadge
+                stars={profileData.credits.stars}
+                freePoints={profileData.credits.freePoint}
+                variant="navbar"
+                showTooltip={true}
+                coins={profileData.stats?.coins}
+              />
             ) : null}
           </div>
 

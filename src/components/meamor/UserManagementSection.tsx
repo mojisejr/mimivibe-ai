@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardBody } from '@/components/ui/Card';
+import { UnifiedCreditBadge } from '@/components/ui/UnifiedCreditBadge';
 
 interface User {
   id: string;
@@ -369,8 +370,9 @@ export function UserManagementSection({ className = '' }: UserManagementSectionP
                         </td>
                         <td>
                           <div className="text-sm">
-                            <div>⭐ {user.stars}</div>
-                            <div>🎁 {user.freePoints}</div>
+                            <div className="mb-1">
+                              ⭐{user.stars}{user.freePoints > 0 ? `(+${user.freePoints})` : ''}
+                            </div>
                             <div>🪙 {user.coins}</div>
                           </div>
                         </td>
@@ -463,7 +465,7 @@ export function UserManagementSection({ className = '' }: UserManagementSectionP
                       </div>
                       <div>
                         <span className="opacity-70">Credits:</span>
-                        <div>⭐{user.stars} 🎁{user.freePoints} 🪙{user.coins}</div>
+                        <div>⭐{user.stars}{user.freePoints > 0 ? `(+${user.freePoints})` : ''} 🪙{user.coins}</div>
                       </div>
                       <div>
                         <span className="opacity-70">Activity:</span>
