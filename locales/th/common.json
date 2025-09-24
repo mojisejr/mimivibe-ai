@@ -99,5 +99,61 @@
     "months": "เดือน",
     "year": "ปี",
     "years": "ปี"
+  },
+  "payment": {
+    "authRequired": "Authentication Required",
+    "signInToPurchase": "Please sign in to purchase credit packages",
+    "currentBalance": "Current Balance",
+    "useCreditsFor": "Use your credits for detailed tarot readings",
+    "faq": "Frequently Asked Questions",
+    "howCreditsWork": "How do credits work?",
+    "creditsDescription": "Each detailed tarot reading costs 1 credit. Credits never expire and can be used anytime.",
+    "paymentSecurity": "Is my payment information secure?",
+    "securityDescription": "Yes! We use Stripe for payment processing, which provides bank-level security. We never store your payment information.",
+    "refundPolicy": "Can I get a refund?",
+    "refundDescription": "We offer a 30-day money-back guarantee if you're not satisfied with your readings.",
+    "hiddenFees": "Are there any hidden fees?",
+    "hiddenFeesDescription": "No hidden fees. The price you see is exactly what you pay, and credits never expire.",
+    "backToPackages": "Back to Packages",
+    "completePurchase": "Complete Your Purchase",
+    "credits": "Credits",
+    "specialOffer": "ข้อเสนอพิเศษ",
+    "discount": "ลด",
+    "savings": "ประหยัด",
+    "specialOfferNewMember": "ข้อเสนอพิเศษสำหรับสมาชิกใหม่!",
+    "firstTimeBuyer": "ลด {{percentage}}% สำหรับการซื้อครั้งแรก!"
+  },
+  "profile": {
+    "authRequired": "Authentication Required",
+    "signInToView": "Please sign in to view your profile",
+    "accountInfo": "Account Information",
+    "readingCredits": "Reading Credits",
+    "freePoints": "Free Points",
+    "stars": "Stars",
+    "todayUsage": "Today: {{used}}/{{limit}}",
+    "monthlyUsage": "This month: {{used}}/{{limit}}",
+    "buyMoreCredits": "Buy More Credits",
+    "adminAccess": "Admin Access",
+    "adminRole": "ADMIN",
+    "adminDescription": "You have administrative privileges to manage the system.",
+    "openAdminDashboard": "Open Admin Dashboard",
+    "memberSince": "สมาชิกเมื่อ"
+  },
+  "ask": {
+    "ready": "ไพ่พร้อมแล้ว 😉",
+    "whatWouldYouKnow": "บอกฉันสิ คุณอยากรู้อะไร?",
+    "placeholder": "เช่น: ความรักของฉันจะเป็นอย่างไรในช่วงนี้... (กด Enter เพื่อส่ง)",
+    "charCount": "{{count}}/180",
+    "minChars": "(ต้องการอย่างน้อย 10 ตัวอักษร)",
+    "preparingCards": "กำลังเตรียมไพ่...",
+    "startReading": "เริ่มทำนาย",
+    "insufficientCredits": "คุณไม่มีเครดิตเพียงพอ กรุณาเติมเครดิตหรือใช้ของฟรีประจำวัน",
+    "popularQuestions": "คำถามยอดนิยม:",
+    "suggestions": [
+      "ความรักของฉันจะเป็นอย่างไรในช่วงนี้?",
+      "งานการเงินจะดีขึ้นไหม?",
+      "ฉันควรทำอะไรดีในช่วงนี้?",
+      "สิ่งที่รอคอยจะมาถึงเมื่อไหร่?"
+    ]
   }
 }

@@ -8,7 +8,7 @@ import { AnimatedArticleDisplay } from "./AnimatedArticleDisplay";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { motion } from "framer-motion";
 import { useErrorHandler, ProcessedError } from "@/hooks/useErrorHandler";
-import type { Locale } from "@/lib/i18n-config";
+import { useTranslation } from "@/lib/i18n";
 
 type PageState = "initial" | "loading" | "result" | "error";
 
@@ -21,11 +21,8 @@ interface ErrorState {
   isValid?: boolean;
 }
 
-interface AskPageProps {
-  locale?: Locale;
-}
-
-export function AskPage({ locale = 'th' }: AskPageProps) {
+export function AskPage() {
+  const { locale: currentLocale } = useTranslation();
   const [pageState, setPageState] = useState<PageState>("initial");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [readingData, setReadingData] = useState<
@@ -46,7 +43,7 @@ export function AskPage({ locale = 'th' }: AskPageProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ question, language: locale }),
+        body: JSON.stringify({ question, language: currentLocale }),
       });
 
       const data = await response.json();

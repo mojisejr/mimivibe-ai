@@ -11,7 +11,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { useProfile } from "@/hooks/useProfile";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
-import { useTranslation } from '@/lib/i18n';
+import { useTranslation } from "@/lib/i18n";
 
 interface UnifiedNavbarProps {
   autoHide?: boolean;
