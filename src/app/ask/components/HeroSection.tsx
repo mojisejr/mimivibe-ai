@@ -5,6 +5,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { motion } from "framer-motion";
 import { AIModelIndicator } from "@/components/ui/AIModelIndicator";
 import { useTranslation } from "@/lib/i18n";
+import { useRouter } from "next/navigation";
 
 interface HeroSectionProps {
   onSubmit: (question: string) => void;
@@ -20,6 +21,7 @@ export function HeroSection({
   const [question, setQuestion] = useState(initialQuestion);
   const { data: profileData, loading } = useProfile();
   const { t } = useTranslation();
+  const router = useRouter();
 
   useEffect(() => {
     setQuestion(initialQuestion);
@@ -175,25 +177,57 @@ export function HeroSection({
               </div>
             </div>
 
-            <motion.button
-              type="submit"
-              disabled={!question.trim() || isLoading || question.length < 10}
-              className="btn btn-lg w-full py-4 px-8 text-lg font-semibold disabled:opacity-50 bg-gradient-to-r from-accent to-accent-focus text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="loading loading-spinner w-5 h-5"></div>
-                  <span>{t('common.ask.preparingCards')}</span>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center space-x-2">
-                  <span className="text-xl">🔮</span>
-                  <span>{t('common.ask.startReading')}</span>
-                </div>
-              )}
-            </motion.button>
+            {/* Conditional Button Rendering */}
+            {!loading && profileData?.credits && !profileData.credits.canRead ? (
+              // Two action buttons when no credits available
+              <div className="flex flex-col sm:flex-row gap-3 w-full">
+                <motion.button
+                  type="button"
+                  onClick={() => router.push('/packages')}
+                  className="btn btn-lg flex-1 py-4 px-6 text-lg font-semibold bg-gradient-to-r from-accent to-accent-focus text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <span className="text-xl">⭐</span>
+                    <span>เติมเครดิด stars</span>
+                  </div>
+                </motion.button>
+                <motion.button
+                  type="button"
+                  onClick={() => router.push('/exchange')}
+                  className="btn btn-lg flex-1 py-4 px-6 text-lg font-semibold bg-gradient-to-r from-secondary to-secondary-focus text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <span className="text-xl">🪙</span>
+                    <span>แลกคำถามด้วย coins</span>
+                  </div>
+                </motion.button>
+              </div>
+            ) : (
+              // Original submit button when credits are available
+              <motion.button
+                type="submit"
+                disabled={!question.trim() || isLoading || question.length < 10}
+                className="btn btn-lg w-full py-4 px-8 text-lg font-semibold disabled:opacity-50 bg-gradient-to-r from-accent to-accent-focus text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="loading loading-spinner w-5 h-5"></div>
+                    <span>{t('common.ask.preparingCards')}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center space-x-2">
+                    <span className="text-xl">🔮</span>
+                    <span>{t('common.ask.startReading')}</span>
+                  </div>
+                )}
+              </motion.button>
+            )}
 
             {/* AI Model Indicator */}
             <motion.div
