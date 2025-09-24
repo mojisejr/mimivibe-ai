@@ -1,6 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
 
 interface CreditInfoModalProps {
   isOpen: boolean;
@@ -15,7 +17,14 @@ export function CreditInfoModal({
   stars,
   freePoints,
 }: CreditInfoModalProps) {
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted || !isOpen) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -29,14 +38,14 @@ export function CreditInfoModal({
     }
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
         onClick={handleBackdropClick}
         onKeyDown={handleKeyDown}
         tabIndex={-1}
@@ -119,6 +128,7 @@ export function CreditInfoModal({
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
