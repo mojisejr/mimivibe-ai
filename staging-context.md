@@ -1,11 +1,62 @@
-# 🌐 Staging Context: Combined i18n Implementation & Animation Fixes
+# 🌐 Staging Context: Credit Button Refactor + Previous Implementations
 
-**Latest Implementation Date**: 2025-01-25 (Thailand Time)
-**Combined Features**: Complete i18n UI Integration + Hero Section Animation Fixes
+**Latest Implementation Date**: 2025-09-24 15:52:00 (Thailand Time)
+**Latest Feature**: Ask Page Credit Button System Refactor
+**Combined Features**: Credit Button UX + Complete i18n UI Integration + Hero Section Animation Fixes
 
 ---
 
-## 🚀 **Latest: Complete i18n UI Integration** ✅
+## 🎯 **Latest: Credit Button Refactor Implementation** ✅
+
+**Feature Branch**: `feature/227-ask-page-credit-buttons`
+**Issue Reference**: #227, #228
+**Pull Request**: #229 - [STAGING] Replace disabled reading button with credit action buttons
+**Status**: **READY FOR STAGING REVIEW**
+
+### 🔧 Core Implementation Details
+
+#### **1. Conditional Button Rendering System**
+- **File Modified**: `src/app/ask/components/HeroSection.tsx`
+- **Logic**: `!loading && profileData?.credits && !profileData.credits.canRead`
+- **Outcome**: Replaces disabled "เริ่มทำนาย" button with two actionable credit buttons
+
+#### **2. Credit Action Buttons**
+
+**"เติมเครดิต stars" Button** ⭐
+- **Navigation**: Routes to `/packages` page
+- **Purpose**: Stripe payment integration for star credit purchases
+- **Styling**: `bg-gradient-to-r from-accent to-accent-focus`
+
+**"แลกคำถามด้วย coins" Button** 🪙
+- **Navigation**: Routes to `/exchange` page
+- **Purpose**: Coins to freePoint conversion (15:1 ratio)
+- **Styling**: `bg-gradient-to-r from-secondary to-secondary-focus`
+
+#### **3. UX & Responsive Design**
+- **Mobile Layout**: `flex-col` (vertical stack)
+- **Desktop Layout**: `flex-row` (side-by-side)
+- **Consistent Styling**: Matches original button gradient patterns
+- **Preserved Features**: Original submit button, warning message, form validation
+
+### 📈 Implementation Metrics
+- **Duration**: ~15 minutes (following established pattern)
+- **Files Changed**: 1 (`HeroSection.tsx`)
+- **Code Changes**: +53 lines, -19 lines
+- **Build Status**: ✅ Successful (no TypeScript errors)
+- **Integration**: Uses existing credit system and navigation routes
+
+### 🧪 Staging Validation Checklist
+- [ ] Conditional rendering works with different credit scenarios
+- [ ] Navigation to `/packages` functions correctly
+- [ ] Navigation to `/exchange` functions correctly
+- [ ] Responsive design displays properly on mobile/desktop
+- [ ] Original submit button appears when credits available
+- [ ] Warning message displays appropriately
+- [ ] Hover animations and touch interactions work
+
+---
+
+## 🚀 **Previous: Complete i18n UI Integration** ✅
 
 **Feature Branch**: `feature/221-complete-i18n-ui-integration`
 **Issue Reference**: #221
