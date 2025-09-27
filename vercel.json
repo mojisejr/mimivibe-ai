@@ -1,0 +1,30 @@
+{
+  "crons": [
+    {
+      "path": "/api/readings/process",
+      "schedule": "*/2 * * * *"
+    }
+  ],
+  "functions": {
+    "src/app/api/readings/process/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/readings/submit/route.ts": {
+      "maxDuration": 30
+    },
+    "src/app/api/readings/status/[id]/route.ts": {
+      "maxDuration": 10
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/readings/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
