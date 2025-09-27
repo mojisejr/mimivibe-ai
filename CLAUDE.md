@@ -1,3 +1,8 @@
+เพื่อให้ **Implementation Agent** และ **Pull Request Agent** (ที่เราสร้างขึ้นมาใหม่) ทำงานได้อย่างมีประสิทธิภาพและสอดคล้องกับเอกสารโครงการเดิมอย่างสมบูรณ์ ผมได้ปรับปรุงส่วน **Development Workflows** และ **Shortcut Commands** ในไฟล์ `CLAUDE.md` โดยเน้นกลไก **Iteration Note (AI Diary)** และการแยกหน้าที่ PR ออกไป
+
+นี่คือไฟล์ `CLAUDE.md` ฉบับสมบูรณ์ที่ปรับปรุงแล้วครับ:
+
+````markdown
 ---
 ## Project Overview
 
@@ -25,6 +30,7 @@ Before creating a new file or saving any timestamps, you **MUST** use the follow
 ```bash
 date +"%Y-%m-%d %H:%M:%S"
 ```
+````
 
 This ensures accurate timestamp synchronization with the system clock and prevents time-related inconsistencies.
 
@@ -33,6 +39,7 @@ This ensures accurate timestamp synchronization with the system clock and preven
 - **Retrospective Files**: `session-YYYY-MM-DD-[description].md`
 - **Log Files**: `YYYY-MM-DD-[type].log`
 - **Backup Files**: `backup-YYYY-MM-DD-HHMM.sql`
+- **Iteration Notes (NEW)**: `notes/iteration_[branch_name_with_underscores].md`
 
 #### Important Notes
 
@@ -79,10 +86,10 @@ This ensures accurate timestamp synchronization with the system clock and preven
 
 ### LangGraph Workflow (4-Node State Machine)
 
-1. **Question Filter Node**: คัดกรองความเหมาะสมของคำถาม, ตรวจสอบเนื้อหาและความชัดเจน
-2. **Question Analysis Node**: วิเคราะห์อารมณ์ (mood), หัวข้อ (topic), และกรอบเวลา (period)
-3. **Card Selection Node**: สุ่มไพ่จากสำรับ Rider-Waite (78 ใบ) รองรับ 3-5 ใบ
-4. **Reading Generation Node**: สร้างการทำนายด้วยบุคลิก "แม่หมอมีมี่"
+1.  **Question Filter Node**: คัดกรองความเหมาะสมของคำถาม, ตรวจสอบเนื้อหาและความชัดเจน
+2.  **Question Analysis Node**: วิเคราะห์อารมณ์ (mood), หัวข้อ (topic), และกรอบเวลา (period)
+3.  **Card Selection Node**: สุ่มไพ่จากสำรับ Rider-Waite (78 ใบ) รองรับ 3-5 ใบ
+4.  **Reading Generation Node**: สร้างการทำนายด้วยบุคลิก "แม่หมอมีมี่"
 
 ### Multi-LLM Provider System
 
@@ -129,7 +136,7 @@ This ensures accurate timestamp synchronization with the system clock and preven
 
 ### NEVER MERGE PRS YOURSELF
 
-**DO NOT** use any commands to merge Pull Requests, such as `gh pr merge`. Your role is to create a well-documented PR and provide the link to the user.
+**DO NOT** use any commands to merge Pull Requests, such as `gh pr merge`. Your role is to create a well-documented PR and provide the link to the user (PR Agent role) or await user instructions (Impl Agent role).
 
 **ONLY** provide the PR link to the user and **WAIT** for explicit user instruction to merge. The user will review and merge when ready.
 
@@ -159,7 +166,7 @@ You are instructed to focus **ONLY** on the task described in the assigned Issue
 
 **MANDATORY STAGING BRANCH SYNC**: Before any implementation (`=impl`), you **MUST** ensure the local staging branch is synchronized with remote origin. Use `git fetch origin && git checkout staging && git pull origin staging` to sync.
 
-**STAGING-FIRST WORKFLOW**: All implementations work exclusively with staging branch. **NEVER** create PRs to main branch or interact with main branch during `=impl`. The user will handle main branch merges manually.
+**STAGING-FIRST WORKFLOW**: All implementations work exclusively with staging branch. **NEVER** create PRs to main branch or interact with main branch during implementation. The user or **PR Agent** will handle final PR creation/merge.
 
 **FORCE PUSH RESTRICTIONS**: Only use `git push --force-with-lease` when absolutely necessary. **NEVER** use `git push --force` as it can overwrite team members' work. Always prefer clean rebasing and conflict resolution.
 
@@ -173,11 +180,11 @@ You are instructed to focus **ONLY** on the task described in the assigned Issue
 
 **EMERGENCY CONFLICT RESOLUTION**: If conflicts are detected during implementation:
 
-1. **STOP** all operations immediately
-2. **ALERT** the user about the conflict
-3. **PROVIDE** clear resolution steps
-4. **WAIT** for user approval before proceeding
-5. **DOCUMENT** the resolution in commit messages
+1.  **STOP** all operations immediately
+2.  **ALERT** the user about the conflict
+3.  **PROVIDE** clear resolution steps
+4.  **WAIT** for user approval before proceeding
+5.  **DOCUMENT** the resolution in commit messages
 
 ### AUTOMATED WORKFLOW SAFETY
 
@@ -190,140 +197,58 @@ You are instructed to focus **ONLY** on the task described in the assigned Issue
 - Reference to related issue number
 - Type prefix: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`
 
-**PR CREATION REQUIREMENTS**: All Pull Requests **MUST** include:
+**PR CREATION REQUIREMENTS (PR Agent Role)**: All Pull Requests created by the PR Agent **MUST** include:
 
 - Comprehensive description of changes
 - Link to related GitHub issue
 - Testing instructions
+- Summary of the **Iteration Note (AI Diary)**
 - Breaking changes documentation (if any)
-- Conflict resolution summary (if applicable)
 
 ---
 
-## 🚀 Development Workflows
+## 🚀 Development Workflows (Agent-Driven)
 
 ### The Two-Issue Pattern
 
 This project uses a Two-Issue Pattern to separate work context from actionable plans, integrating local workflows with GitHub Issues for clarity and traceability.
 
 - **Context Issues (`=fcs`):** Used to record the current state and context of a session on GitHub.
-
-- **Task Issues (`=plan`):** Used to create a detailed and comprehensive plan of action on GitHub. The agent will use information from the latest Context Issue as a reference.
+- **Task Issues (`=plan`):** Used to create a detailed and comprehensive plan of action on GitHub.
 
 ---
 
 ### Shortcut Commands
 
-These commands are standard across all projects and streamline our communication with **AUTOMATED WORKFLOW INTEGRATION**.
+These commands are standard across all projects and streamline our communication with **AGENT-DRIVEN WORKFLOW INTEGRATION**.
 
-- **`=fcs > [message]`**: Updates the `current-focus.md` file on the local machine and creates a **GitHub Context Issue** with the specified `[message]` as the title. **WARNING**: This command will only work if there are no open GitHub issues. If there are, the agent will alert you to clear the backlog before you can save a new context. To bypass this check, use the command `=fcs -f > [message]`.
+- **`=fcs > [message]`**: Updates the `current-focus.md` file locally and creates a **GitHub Context Issue**. (Follows same open-issue checking as before).
 
-- **`=plan > [question/problem]`**: Creates a **GitHub Task Issue** with a detailed and comprehensive plan of action. **STAGING-FIRST WORKFLOW & CONFLICT PREVENTION** - The agent will:
+- **`=plan > [question/problem]`**: Creates/Updates a **GitHub Task Issue** with a detailed and comprehensive plan of action. Includes pre-planning validation, codebase analysis, and staging context creation planning.
 
-  1. **Pre-Planning Validation**:
+- **`=impl > [message]`**: **ITERATIVE IMPLEMENTATION WORKFLOW (Implementation Agent)** - Instructs the Implementation Agent to execute the plan contained in the latest **GitHub Task Issue** iteratively.
 
-     - **Auto-check**: Verify staging branch is up-to-date with remote
-     - **Warning**: Alert if staging is behind remote origin
-     - **Mandatory Sync**: Automatically sync staging before planning if needed
-     - **PR Status Check**: Verify no conflicting open PRs exist
-     - **Branch Status**: Check for existing feature branches and potential conflicts
+  1.  **Pre-Implementation**: Mandatory sync of `staging`. Checks for conflicts. **Creates feature branch** if not already on one.
+  2.  **Context Retrieval**: **Reads `notes/iteration_[branch_name].md`** to load prior session state, To-Do list, and context.
+  3.  **Implementation**: Executes the planned work based on the **Iteration Note's** remaining tasks.
+  4.  **Iteration Note Update**: **Increments Iteration number** and appends a new entry to the `Iteration Note` file with summary and **Remaining Tasks**.
+  5.  **Commit & Push**: Commits all changes (including the updated Note) with a descriptive message **on the current feature branch**.
+  6.  **User Notification**: Reports completed work and commit hash, signaling readiness for the next iteration or the PR step. **(DOES NOT CREATE PR)**
 
-  2. **Codebase Analysis Phase**: For non-new feature implementations (fixes, refactors, modifications):
+- **`=pr > [Optional User Feedback]`**: **PULL REQUEST AND INTEGRATION WORKFLOW (Pull Request Agent)** - Instructs the dedicated PR Agent to review, consolidate, and create the Pull Request.
 
-     - Search and analyze all relevant code components and dependencies
-     - Identify side effects and interconnected systems
-     - Review existing patterns, conventions, and architectural decisions
-     - Map data flow and component relationships
-     - Assess impact on related functionality
-     - **File Coordination Check**: Identify high-risk files requiring team coordination
+  1.  **Information Gathering**: Reads Task Issue, Context Issue, and the **Iteration Note** to verify completeness and review implementation decisions.
+  2.  **Quality Check**: Ensures **Remaining Tasks** in the **Iteration Note** are empty or tasks are completed/addressed. **STOPS** if work appears incomplete.
+  3.  **Issue Update**: Marks completed checklist items (`[ ]` to `[x]`) in the Task Issue.
+  4.  **Auto-PR Creation**: Creates Pull Request **TO STAGING BRANCH ONLY**. PR description includes a summary of the **Iteration Note (AI Diary)**.
+  5.  **Final Cleanup (If ALL done)**: Closes Task Issue and Context Issue.
+  6.  **User Notification**: Provides the PR link for review and merge.
 
-  3. **Plan Creation Phase**: Use all gathered information including:
-     - Current focus context from `current-focus.md`
-     - Previous conversation history
-     - Comprehensive codebase analysis results
-     - Identified dependencies and side effects
-     - **Staging Context Creation**: Include `staging-context.md` creation in implementation plan
+- **`=stage > [message]`**: **STAGING DEPLOYMENT WORKFLOW** - Deploys approved changes from feature branch to staging environment.
 
-  If an open Task Issue already exists, the agent will **update** that Issue with the latest information instead of creating a new one.
+- **`=prod > [message]`**: **PRODUCTION DEPLOYMENT WORKFLOW** - Deploys validated changes from staging to production. Includes auto-cleanup of `staging-context.md`.
 
-- **`=impl > [message]`**: **STAGING-FIRST IMPLEMENTATION WORKFLOW** - Instructs the agent to execute the plan contained in the latest **GitHub Task Issue** with full automation:
-
-  1. **Pre-Implementation Validation**:
-
-     - **MANDATORY**: Ensure currently on staging branch (`git checkout staging`)
-     - **MANDATORY**: Sync staging with remote origin (`git pull origin staging`)
-     - **MANDATORY**: Verify no existing open PRs that could conflict
-     - **MANDATORY**: Ensure clean working directory before proceeding
-     - **Conflict Detection**: Check for potential conflicts before starting
-     - **Emergency Protocol**: Activate emergency resolution if conflicts detected
-
-  2. **Auto-Branch Creation**: Creates feature branch from staging with proper naming (`feature/[issue-number]-[description]`)
-  3. **Implementation**: Executes the planned work with continuous conflict monitoring
-  4. **Enhanced Commit & Push Flow**:
-
-     - **Pre-commit Validation**: Check for conflicts before each commit
-     - **Descriptive Commits**: Atomic commits with clear, descriptive messages
-     - **Safe Push Strategy**: Force push only when necessary with `--force-with-lease`
-     - **Conflict Resolution**: Automatic conflict detection and resolution protocols
-
-  5. **Staging Context Creation**: Creates `staging-context.md` with implementation details
-  6. **Auto-PR Creation**: Creates Pull Request **TO STAGING BRANCH ONLY** with proper description and issue references
-  7. **Issue Updates**: Updates the plan issue with PR link and completion status
-  8. **User Notification**: Provides PR link for review and approval - **USER HANDLES MAIN BRANCH MERGES MANUALLY**
-
-- **`=stage > [message]`**: **STAGING DEPLOYMENT WORKFLOW** - Deploys approved changes from feature branch to staging environment:
-
-  1. **Pre-Staging Validation**:
-
-     - **Feature Branch Validation**: Ensure feature branch is ready for staging
-     - **Conflict Resolution**: Resolve any conflicts with staging branch
-     - **Test Validation**: Run automated tests before staging deployment
-
-  2. **Staging Deployment**:
-
-     - **Merge to Staging**: Merge approved feature branch to staging
-     - **Staging Context Update**: Update `staging-context.md` with deployment details
-     - **Auto-Deploy**: Trigger staging environment deployment
-     - **Health Check**: Verify staging deployment health
-
-  3. **Staging Validation**:
-
-     - **Functional Testing**: Run staging environment tests
-     - **Performance Monitoring**: Monitor staging performance metrics
-     - **User Acceptance**: Prepare for user acceptance testing
-
-  4. **Production Readiness**:
-     - **Production Context**: Create production deployment context
-     - **Rollback Plan**: Prepare rollback procedures
-     - **Notification**: Alert team of staging deployment completion
-
-- **`=prod > [message]`**: **PRODUCTION DEPLOYMENT WORKFLOW** - Deploys validated changes from staging to production:
-
-  1. **Pre-Production Validation**:
-
-     - **Staging Validation**: Ensure staging tests pass completely
-     - **Security Review**: Complete security audit checklist
-     - **Performance Baseline**: Establish performance benchmarks
-
-  2. **Production Deployment**:
-
-     - **Merge to Main**: Merge staging branch to main/production
-     - **Production Deploy**: Execute production deployment pipeline
-     - **Health Monitoring**: Monitor production health metrics
-     - **Performance Tracking**: Track production performance
-
-  3. **Post-Deployment**:
-
-     - **Cleanup Operations**: Auto-cleanup `staging-context.md`
-     - **Monitoring Setup**: Establish production monitoring
-     - **Documentation**: Update production documentation
-     - **Team Notification**: Notify team of successful production deployment
-
-  4. **Rollback Readiness**:
-     - **Rollback Procedures**: Maintain rollback capabilities
-     - **Incident Response**: Prepare incident response protocols
-
-- **`=rrr > [message]`**: Creates a daily Retrospective file in the `docs/retrospective/` folder and creates a GitHub Issue containing a summary of the work, an AI Diary, and Honest Feedback, allowing you and the team to review the session accurately.
+- **`=rrr > [message]`**: Creates a daily Retrospective file and GitHub Issue containing a summary of the work, an **AI Diary**, and Honest Feedback.
 
 ### 📋 Staging Context File Management
 
@@ -342,13 +267,6 @@ These commands are standard across all projects and streamline our communication
 - **Cleanup**: Automatically removed during `=prod` deployment completion
 - **Backup**: Context preserved in PR descriptions and commit messages
 
-**File Management Benefits**:
-
-- **Deployment Tracking**: Clear visibility of staging deployment status
-- **Context Preservation**: Implementation details available during staging phase
-- **Automatic Cleanup**: No manual file management required
-- **Conflict Prevention**: Reduces repository clutter and merge conflicts
-
 **Cleanup Triggers**:
 
 - **Successful Production Deployment**: File automatically deleted after `=prod` completion
@@ -363,7 +281,7 @@ These commands are standard across all projects and streamline our communication
 - **When completing phases**: Update the plan issue to reflect completed phases and mark them as ✅ COMPLETED
 - **Progress tracking**: Update the issue description with current status, next steps, and any blockers
 - **Phase completion**: When a phase is finished, update the plan issue immediately before moving to the next phase
-- **Never create new issues**: For ongoing multi-phase work, always update the existing plan issue (#20 for current system refactor)
+- **Never create new issues**: For ongoing multi-phase work, always update the existing plan issue (\#20 for current system refactor)
 - **Retrospective issues**: Only create retrospective issues for session summaries, not for plan updates
 
 ### 🎯 Enhanced Implementation Workflows
@@ -372,11 +290,11 @@ These commands are standard across all projects and streamline our communication
 
 **Proven 5-Phase Approach** (15-34 minute sessions):
 
-1. **Analysis & Preparation** (5-8 min): Component analysis, dependency mapping
-2. **Core Implementation** (8-15 min): Primary changes, API updates
-3. **Integration & Testing** (3-8 min): Build validation, error resolution
-4. **Documentation & PR** (2-5 min): Commits, pull requests
-5. **Cleanup & Review** (1-2 min): Final validation
+1.  **Analysis & Preparation** (5-8 min): Component analysis, dependency mapping
+2.  **Core Implementation** (8-15 min): Primary changes, API updates
+3.  **Integration & Testing** (3-8 min): Build validation, error resolution
+4.  **Documentation & PR** (2-5 min): Commits, pull requests **(PR moved to `=pr` step)**
+5.  **Cleanup & Review** (1-2 min): Final validation
 
 #### Reference Pattern Implementation
 
@@ -403,40 +321,37 @@ These commands are standard across all projects and streamline our communication
 
 The following commands now include **FULL WORKFLOW AUTOMATION**:
 
-##### `=impl` Command Enhancement
+##### `=impl` Command Enhancement (Iterative Focus)
 
 **Automated Execution Flow:**
 
 ```
 1. Parse GitHub Task Issue → Extract requirements and scope
-2. Auto-Branch Creation → feature/[issue-number]-[sanitized-description]
-3. Implementation Phase → Execute planned work with progress tracking
-4. Auto-Commit & Push → Descriptive commits with proper formatting
-5. Auto-PR Creation → Comprehensive PR with issue linking
-6. Issue Updates → Update plan issue with PR link and completion status
-7. User Notification → Provide PR URL for review and approval
+2. **Auto-Branch Creation** → feature/[issue-number]-[sanitized-description] (if needed)
+3. **Context Retrieval** → READ notes/iteration_[branch_name].md for To-Do list
+4. Implementation Phase → Execute planned work with progress tracking
+5. **Iteration Note Update** → Append Iteration X details and new Remaining Tasks
+6. **Auto-Commit & Push** → Commit updated code and Note file on current branch
+7. User Notification → Provide commit hash for review and continuation
 ```
 
 ##### TodoWrite Integration Enhancement
 
 **Performance Impact from Retrospectives**: 56% faster implementations when TodoWrite is integrated
 
-**Enhanced Implementation Flow with TodoWrite:**
+**Enhanced Implementation Flow with TodoWrite (Inside Impl Agent):**
 
 ```
 1. Parse GitHub Task Issue → Extract requirements and scope
-2. Initialize TodoWrite → Create 5-8 specific, actionable todos
-3. Auto-Branch Creation → feature/[issue-number]-[sanitized-description]
-4. Implementation Phase → Execute with real-time todo tracking
+2. Initialize TodoWrite → Create 5-8 specific, actionable todos (If starting Iteration 1)
+3. Implementation Phase → Execute with real-time todo tracking
    ├─ Mark exactly ONE todo as 'in_progress' at a time
    ├─ Complete todos immediately after finishing each step
    ├─ Update progress visibility for stakeholders
    └─ Ensure accountability for all implementation steps
+4. **Iteration Note Update** → Record TodoWrite completion status and Remaining Tasks
 5. Auto-Commit & Push → Descriptive commits with proper formatting
-6. Auto-PR Creation → Comprehensive PR with issue linking
-7. Issue Updates → Update plan issue with PR link and completion status
-8. TodoWrite Completion → Mark all todos as completed
-9. User Notification → Provide PR URL for review and approval
+6. User Notification → Provide commit hash
 ```
 
 **TodoWrite Performance Benefits:**
@@ -475,12 +390,12 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 - **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 - **Example**: `feat: implement user authentication system (#25)`
 
-##### Pull Request Automation
+##### Pull Request Automation (PR Agent Role)
 
 **Staging PRs** (Feature → Staging):
 
 - **Title**: `[STAGING] [Feature Title] (#[issue-number])`
-- **Description**: Implementation details, testing notes, staging deployment context
+- **Description**: Implementation details, testing notes, **Summary of Iteration Note (AI Diary)**
 - **Context File**: References `staging-context.md` for deployment details
 - **Issue Linking**: `Relates to #[issue-number]` (keeps issue open for production)
 
@@ -531,7 +446,7 @@ The following commands now include **FULL WORKFLOW AUTOMATION**:
 
 - **Branch Creation Failure**: Falls back to manual branch creation with user guidance
 - **Push Failure**: Provides manual push commands and troubleshooting steps
-- **PR Creation Failure**: Falls back to manual PR creation with pre-filled templates
+- **PR Creation Failure**: Provides manual PR creation commands with pre-filled templates (for PR Agent)
 - **Issue Update Failure**: Logs error and provides manual update instructions
 
 #### Quality Assurance
@@ -575,14 +490,14 @@ _Based on comprehensive security audit sessions documented in retrospectives_
 
 **8-Phase Security Audit Process** (31-minute comprehensive audits):
 
-1. **Infrastructure Analysis** (2-3 min): Environment variables, database schema, authentication
-2. **Core Endpoint Analysis** (5-8 min): Input validation, rate limiting, error handling, authorization
-3. **Data Integrity Analysis** (3-5 min): Transaction security, data flow assessment, logging
-4. **Compliance Assessment** (3-5 min): PCI DSS, GDPR, industry standards
-5. **Vulnerability Testing** (5-8 min): Injection prevention, authentication bypass, authorization
-6. **Security Implementation** (8-12 min): Rate limiting, input validation, error hardening
-7. **Build Validation** (2-3 min): TypeScript compilation, dependency validation
-8. **Documentation & Reporting** (3-5 min): Security audit report, compliance metrics
+1.  **Infrastructure Analysis** (2-3 min): Environment variables, database schema, authentication
+2.  **Core Endpoint Analysis** (5-8 min): Input validation, rate limiting, error handling, authorization
+3.  **Data Integrity Analysis** (3-5 min): Transaction security, data flow assessment, logging
+4.  **Compliance Assessment** (3-5 min): PCI DSS, GDPR, industry standards
+5.  **Vulnerability Testing** (5-8 min): Injection prevention, authentication bypass, authorization
+6.  **Security Implementation** (8-12 min): Rate limiting, input validation, error hardening
+7.  **Build Validation** (2-3 min): TypeScript compilation, dependency validation
+8.  **Documentation & Reporting** (3-5 min): Security audit report, compliance metrics
 
 ### Enterprise-Grade Security Measures
 
@@ -635,9 +550,9 @@ _Based on style refactoring and accessibility improvement sessions_
 
 **3-Phase Approach**:
 
-1. **Design System Integration**: Follow component patterns, centralized utilities (60% duplication reduction)
-2. **Accessibility Implementation**: WCAG 2.1 AA compliance (4.5:1 contrast), keyboard navigation, screen reader support, reduced motion
-3. **Performance Optimization**: 60fps animations, bundle size monitoring, critical CSS, responsive images
+1.  **Design System Integration**: Follow component patterns, centralized utilities (60% duplication reduction)
+2.  **Accessibility Implementation**: WCAG 2.1 AA compliance (4.5:1 contrast), keyboard navigation, screen reader support, reduced motion
+3.  **Performance Optimization**: 60fps animations, bundle size monitoring, critical CSS, responsive images
 
 ### Centralized Styling Architecture
 
@@ -670,10 +585,10 @@ _Based on documented performance improvements from retrospective analysis_
 
 **Speed Optimization Techniques**:
 
-1. **Pattern Recognition**: 56% faster when following proven patterns from `/docs/retrospective/`
-2. **MultiEdit**: Batch multiple edits instead of sequential single edits
-3. **Systematic Analysis**: 2-3 minute analysis of target areas and integration points
-4. **Build Validation**: `npm run build` after major changes, `npx tsc --noEmit` for type checking
+1.  **Pattern Recognition**: 56% faster when following proven patterns from `/docs/retrospective/`
+2.  **MultiEdit**: Batch multiple edits instead of sequential single edits
+3.  **Systematic Analysis**: 2-3 minute analysis of target areas and integration points
+4.  **Build Validation**: `npm run build` after major changes, `npx tsc --noEmit` for type checking
 
 #### Efficiency Factor Analysis
 
@@ -695,7 +610,7 @@ _Based on documented performance improvements from retrospective analysis_
 
 ### 🎯 High-Impact Optimization Areas
 
-#### 1. TodoWrite Integration ROI
+#### 1\. TodoWrite Integration ROI
 
 - **Setup Time**: 2-3 minutes
 - **Visibility Benefit**: Real-time progress tracking
@@ -703,19 +618,19 @@ _Based on documented performance improvements from retrospective analysis_
 - **Stakeholder Communication**: Clear progress indicators
 - **Proven Results**: 56% faster implementations documented
 
-#### 2. Reference Pattern Utilization
+#### 2\. Reference Pattern Utilization
 
 - **Pattern Documentation**: Create detailed retrospectives
 - **Pattern Library**: Maintain `/docs/retrospective/` as reference
 - **Systematic Replication**: Follow proven approaches exactly
 - **Context Adaptation**: Modify only necessary elements
 
-#### 3. Tool Optimization
+#### 3\. Tool Optimization
 
 - **Efficient Pattern**: Read (targeted) → MultiEdit (batch) → Build (validation)
 - **Avoid**: Multiple single Edits → Multiple Reads → Late build testing
 
-#### 4. Workflow Adherence
+#### 4\. Workflow Adherence
 
 - **Branch Management**: Always create feature branches
 - **Incremental Testing**: Build validation at each phase
@@ -814,10 +729,10 @@ _Lessons from 10+ development sessions in `/docs/retrospective/`_
 
 **Workflow Pattern**:
 
-1. Break into 5-12 manageable todos
-2. Mark exactly ONE todo in_progress → completed
-3. Provides real-time visibility and accountability
-4. Enables accurate time estimation
+1.  Break into 5-12 manageable todos
+2.  Mark exactly ONE todo in_progress → completed
+3.  Provides real-time visibility and accountability
+4.  Enables accurate time estimation
 
 **Proven Benefits**: 56% faster implementation, reduces context switching, prevents missing steps, ensures comprehensive testing
 
@@ -831,16 +746,17 @@ _Lessons from 10+ development sessions in `/docs/retrospective/`_
   - Phases 7-8: Build Validation & Documentation
 
 - **UI/UX Refactoring**: 4-phase centralized styling development
+
   - WCAG compliance audit → Centralized utilities → Component integration → Performance optimization
 
 ### 🔄 Pattern Replication Strategy
 
 #### Reference Implementation Approach
 
-1. **Document Successful Patterns**: Create detailed retrospectives for reusable approaches
-2. **Systematic Replication**: Use previous session files as implementation guides
-3. **Adapt, Don't Recreate**: Modify proven patterns for new contexts
-4. **Measure Efficiency**: Track implementation time improvements
+1.  **Document Successful Patterns**: Create detailed retrospectives for reusable approaches
+2.  **Systematic Replication**: Use previous session files as implementation guides
+3.  **Adapt, Don't Recreate**: Modify proven patterns for new contexts
+4.  **Measure Efficiency**: Track implementation time improvements
 
 #### Proven Pattern Examples
 
@@ -867,10 +783,10 @@ _Lessons from 10+ development sessions in `/docs/retrospective/`_
 
 #### Before Implementation Checklist
 
-1. **Verify Database Schema**: Always check actual Prisma schema definitions
-2. **Trace Data Structures**: Follow interface definitions through the codebase
-3. **Validate Field Names**: Don't assume field naming conventions
-4. **Check Relationships**: Understand model relationships before querying
+1.  **Verify Database Schema**: Always check actual Prisma schema definitions
+2.  **Trace Data Structures**: Follow interface definitions through the codebase
+3.  **Validate Field Names**: Don't assume field naming conventions
+4.  **Check Relationships**: Understand model relationships before querying
 
 #### Common Schema Pitfalls
 
@@ -905,10 +821,10 @@ _Lessons from 10+ development sessions in `/docs/retrospective/`_
 
 #### Debugging Strategy
 
-1. **Temporary Scripts**: Create debugging scripts instead of modifying main code
-2. **Isolation Testing**: Test specific database operations in isolation
-3. **Sequence Verification**: Check auto-increment sequences after data manipulation
-4. **Transaction Safety**: Use transactions for multi-step database operations
+1.  **Temporary Scripts**: Create debugging scripts instead of modifying main code
+2.  **Isolation Testing**: Test specific database operations in isolation
+3.  **Sequence Verification**: Check auto-increment sequences after data manipulation
+4.  **Transaction Safety**: Use transactions for multi-step database operations
 
 ### 📝 Documentation Standards
 
@@ -918,6 +834,7 @@ _Lessons from 10+ development sessions in `/docs/retrospective/`_
 - **Technical Details**: Specific technical implementation notes
 - **Before/After Analysis**: Impact assessment and improvement metrics
 - **Testing Validation**: Build success and functionality verification
+- **Iteration Note Summary**: Key decisions and hurdles from the AI Diary
 
 #### Retrospective Documentation
 
@@ -937,3 +854,9 @@ _From comprehensive security audit retrospectives_
 - Check patterns in `src/middleware/rate-limiter.ts`
 - API config: `{ windowMs: 15 * 60 * 1000, max: 100 }`
 - Admin config: `{ windowMs: 15 * 60 * 1000, max: 20 }`
+
+<!-- end list -->
+
+```
+
+```

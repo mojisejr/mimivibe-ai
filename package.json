@@ -32,7 +32,10 @@
     "db:sync-staging": "node scripts/sync-staging-data.js",
     "db:sync-local": "node scripts/sync-local-data.js",
     "prompt:batch-test": "tsx scripts/prompt-manager.ts batch-test",
-    "security:deploy": "tsx scripts/deploy-security-features.ts"
+    "security:deploy": "tsx scripts/deploy-security-features.ts",
+    "export:readings": "npx dotenv -e .env.local -- node scripts/export-readings-to-csv.js",
+    "export:cleanup": "node scripts/cleanup-exports.js",
+    "export:cleanup-all": "node scripts/cleanup-exports.js --all"
   },
   "dependencies": {
     "@clerk/nextjs": "^4.29.1",
@@ -48,7 +51,7 @@
     "daisyui": "^4.4.0",
     "date-fns": "^4.1.0",
     "dompurify": "^3.2.6",
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.2.2",
     "framer-motion": "^12.23.5",
     "jsdom": "^27.0.0",
     "lucide-react": "^0.263.1",
@@ -71,6 +74,7 @@
     "boxen": "^8.0.1",
     "chalk": "5.3.0",
     "cli-table3": "^0.6.5",
+    "dotenv-cli": "^10.0.0",
     "eslint": "^8.0.0",
     "eslint-config-next": "14.2.30",
     "figlet": "^1.8.2",
