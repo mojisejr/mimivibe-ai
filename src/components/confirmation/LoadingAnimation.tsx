@@ -73,7 +73,7 @@ export function LoadingAnimation() {
           ease: "easeInOut"
         }}
       >
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-400/30 to-blue-400/30 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 backdrop-blur-sm border border-base-100/20 flex items-center justify-center">
           <motion.div
             animate={{
               opacity: [0.5, 1, 0.5],
@@ -94,7 +94,7 @@ export function LoadingAnimation() {
         {[0, 1, 2, 3].map((index) => (
           <motion.div
             key={index}
-            className="absolute text-yellow-300 text-sm"
+            className="absolute text-accent text-sm"
             style={{
               top: `${Math.sin(index * Math.PI / 2) * 40 + 40}px`,
               left: `${Math.cos(index * Math.PI / 2) * 40 + 40}px`,
@@ -134,7 +134,7 @@ export function LoadingAnimation() {
         {[0, 1, 2].map((index) => (
           <motion.div
             key={index}
-            className="w-2 h-2 rounded-full bg-purple-400"
+            className="w-2 h-2 rounded-full bg-primary"
             animate={{
               scale: [1, 1.5, 1],
               opacity: [0.5, 1, 0.5],
