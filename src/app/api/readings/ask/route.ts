@@ -13,6 +13,8 @@ import {
 } from "@/lib/security/ai-protection";
 import { aiRateLimit, securityAiRateLimit } from "@/lib/rate-limiter";
 import { sanitizeString } from "@/lib/validations";
+import { createPendingReading, getEstimatedProcessingTime } from "@/lib/database/reading-status";
+import { ReadingStatus } from "@/types/reading";
 
 import { categorizeError, createCategorizedErrorResponse } from "@/lib/errors/categories";
 
@@ -46,6 +48,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { question, language = "th" } = body;
+    
+    // Check if async mode is requested
+    const url = new URL(request.url);
+    const isAsyncMode = url.searchParams.get('async') === 'true';
 
     // Validate question
     if (!question || typeof question !== "string") {
@@ -134,6 +140,120 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Handle async mode - create pending reading and return immediately
+    if (isAsyncMode) {
+      // Deduct credits first
+      const result = await prisma.$transaction(async (tx) => {
+        // Get current user state again within transaction
+        const currentUser = await tx.user.findUnique({
+          where: { id: userId },
+          select: {
+            stars: true,
+            coins: true,
+            exp: true,
+            level: true,
+            freePoint: true,
+          },
+        });
+
+        if (!currentUser) {
+          throw new Error("User not found");
+        }
+
+        // Determine credit deduction (freePoint first, then stars)
+        let deltaFreePoint = 0;
+        let deltaStars = 0;
+
+        if (currentUser.freePoint > 0) {
+          deltaFreePoint = -1;
+        } else if (currentUser.stars > 0) {
+          deltaStars = -1;
+        } else {
+          throw new Error("Insufficient credits");
+        }
+
+        // Create transaction record for credit deduction
+        const transactionId = `txn_${Date.now()}_${userId.slice(-8)}`;
+        await tx.pointTransaction.create({
+          data: {
+            id: transactionId,
+            userId,
+            eventType: "READING_SPEND",
+            deltaPoint: deltaStars,
+            deltaCoins: 5, // Reward coins
+            deltaExp: 25, // Reward EXP
+            metadata: {
+              reason: "Async tarot reading generation",
+              freePointUsed: -deltaFreePoint,
+              starsUsed: -deltaStars,
+              questionLength: sanitizedQuestion.length,
+              securityAnalysis: {
+                riskLevel: securityAnalysis.riskLevel,
+                confidence: securityAnalysis.confidence,
+                detectedPatterns: securityAnalysis.detectedPatterns,
+              },
+            },
+          },
+        });
+
+        // Update user credits and stats
+        const newExp = getSafeExpValue(currentUser.exp + 25);
+        const newLevel = getSafeLevelValue(Math.floor(newExp / 100) + 1);
+
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            freePoint: currentUser.freePoint + deltaFreePoint,
+            stars: currentUser.stars + deltaStars,
+            coins: currentUser.coins + 5, // Reward coins
+            exp: newExp,
+            level: Math.max(currentUser.level, newLevel),
+          },
+        });
+
+        return {
+          transactionId,
+          creditsUsed: {
+            freePoint: -deltaFreePoint,
+            stars: -deltaStars,
+          },
+          rewards: {
+            exp: 25,
+            coins: 5,
+          },
+        };
+      });
+
+      // Create pending reading in database
+      const pendingReading = await createPendingReading(userId, sanitizedQuestion, 'tarot');
+
+      if (!pendingReading) {
+        return NextResponse.json(
+          createCategorizedErrorResponse(
+            'DATABASE_ERROR',
+            '/api/readings/ask',
+            'Failed to create pending reading'
+          ),
+          { status: 500 }
+        );
+      }
+
+      // Get estimated processing time
+      const estimatedTime = await getEstimatedProcessingTime();
+
+      // Return async response immediately
+      return NextResponse.json({
+        success: true,
+        data: {
+          readingId: pendingReading.id,
+          status: ReadingStatus.PENDING,
+          estimatedCompletionTime: estimatedTime,
+          confirmationUrl: `/readings/${pendingReading.id}`,
+        },
+      });
+    }
+
+    // Continue with synchronous flow for non-async requests
     // Generate reading using LangGraph workflow
     let workflowResult;
     try {

@@ -131,20 +131,26 @@ model RewardConfiguration {
 }
 
 model Reading {
-  id         String        @id @default(cuid())
-  userId     String
-  question   String
-  answer     Json
-  type       String        @default("tarot")
-  isDeleted  Boolean       @default(false)
-  isReviewed Boolean       @default(false)
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  cards      ReadingCard[]
-  reviews    Review[]
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String        @id @default(cuid())
+  userId                String
+  question              String
+  answer                Json?
+  type                  String        @default("tarot")
+  isDeleted             Boolean       @default(false)
+  isReviewed            Boolean       @default(false)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  errorMessage          String?
+  processingCompletedAt DateTime?
+  processingStartedAt   DateTime?
+  status                ReadingStatus @default(COMPLETED)
+  cards                 ReadingCard[]
+  reviews               Review[]
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+  @@index([status])
+  @@index([userId, status])
   @@map("readings")
 }
 
@@ -293,6 +299,13 @@ model SecurityAlert {
   @@index([ipAddress])
   @@index([createdAt])
   @@map("security_alerts")
+}
+
+enum ReadingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 enum TransactionStatus {
