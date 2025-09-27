@@ -15,7 +15,18 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    let body: { batchSize?: number; readingId?: string } = {};
+    
+    // Handle empty request body gracefully
+    try {
+      const text = await request.text();
+      if (text.trim()) {
+        body = JSON.parse(text);
+      }
+    } catch (parseError) {
+      console.log("No JSON body provided, using defaults");
+    }
+    
     const { 
       batchSize = 5, 
       readingId 
