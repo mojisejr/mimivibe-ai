@@ -12,8 +12,8 @@ interface StatusIndicatorProps {
 export function StatusIndicator({ status, estimatedTimeRemaining, isLoading }: StatusIndicatorProps) {
   if (isLoading || !status) {
     return (
-      <div className="flex items-center justify-center space-x-2 text-gray-300">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
+      <div className="flex items-center justify-center space-x-2 text-base-content/70">
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
         <span className="text-sm">กำลังตรวจสอบสถานะ...</span>
       </div>
     );
@@ -25,41 +25,46 @@ export function StatusIndicator({ status, estimatedTimeRemaining, isLoading }: S
         return {
           icon: '⏳',
           text: 'รอการประมวลผล',
-          color: 'text-yellow-400',
-          bgColor: 'bg-yellow-400/20',
-          borderColor: 'border-yellow-400/30'
+          description: 'กำลังเตรียมการทำนาย',
+          color: 'text-base-content/70',
+          bgColor: 'bg-base-300',
+          borderColor: 'border-base-content/20',
         };
       case ReadingStatus.PROCESSING:
         return {
           icon: '🔮',
           text: 'กำลังทำนาย',
-          color: 'text-purple-400',
-          bgColor: 'bg-purple-400/20',
-          borderColor: 'border-purple-400/30'
+          description: 'แม่หมอมีมี่กำลังอ่านไพ่ให้คุณ',
+          color: 'text-warning',
+          bgColor: 'bg-warning/20',
+          borderColor: 'border-warning/30',
         };
       case ReadingStatus.COMPLETED:
         return {
-          icon: '✨',
-          text: 'ทำนายเสร็จสิ้น',
-          color: 'text-green-400',
-          bgColor: 'bg-green-400/20',
-          borderColor: 'border-green-400/30'
+          icon: '✅',
+          text: 'เสร็จสิ้น',
+          description: 'การทำนายเสร็จสมบูรณ์',
+          color: 'text-success',
+          bgColor: 'bg-success/20',
+          borderColor: 'border-success/30',
         };
       case ReadingStatus.FAILED:
         return {
           icon: '❌',
           text: 'เกิดข้อผิดพลาด',
-          color: 'text-red-400',
-          bgColor: 'bg-red-400/20',
-          borderColor: 'border-red-400/30'
+          description: 'กรุณาลองใหม่อีกครั้ง',
+          color: 'text-error',
+          bgColor: 'bg-error/20',
+          borderColor: 'border-error/30',
         };
       default:
         return {
-          icon: '❓',
-          text: 'ไม่ทราบสถานะ',
-          color: 'text-gray-400',
-          bgColor: 'bg-gray-400/20',
-          borderColor: 'border-gray-400/30'
+          icon: '⏳',
+          text: 'รอการประมวลผล',
+          description: 'กำลังเตรียมการทำนาย',
+          color: 'text-base-content/70',
+          bgColor: 'bg-base-300',
+          borderColor: 'border-base-content/20',
         };
     }
   };
@@ -87,13 +92,13 @@ export function StatusIndicator({ status, estimatedTimeRemaining, isLoading }: S
         </p>
         
         {status === ReadingStatus.PROCESSING && estimatedTimeRemaining && estimatedTimeRemaining > 0 && (
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-base-content/60 mt-1">
             เหลืออีก ~{Math.ceil(estimatedTimeRemaining / 60)} นาที
           </p>
         )}
         
         {status === ReadingStatus.PENDING && (
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-base-content/60 mt-1">
             อยู่ในคิวการประมวลผล
           </p>
         )}

@@ -27,37 +27,35 @@ export function LoadingAnimation() {
 
   return (
     <div className="flex flex-col items-center space-y-6">
-      {/* Tarot Card Animation */}
-      <div className="relative">
-        {/* Floating cards */}
-        {[0, 1, 2].map((index) => (
+      {/* Floating Tarot Cards */}
+      <div className="relative h-20 mb-8">
+        {[...Array(3)].map((_, i) => (
           <motion.div
-            key={index}
-            className="absolute w-16 h-24 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg border-2 border-gold-400 shadow-lg"
-            style={{
-              left: `${index * 20 - 20}px`,
-              zIndex: 3 - index,
-            }}
+            key={i}
             animate={{
-              y: [0, -10, 0],
-              rotate: [0, index * 5, 0],
+              y: [0, -20, 0],
+              rotate: [0, 5, 0, -5, 0],
             }}
             transition={{
-              duration: 2,
+              duration: 3,
               repeat: Infinity,
-              delay: index * 0.3,
-              ease: "easeInOut"
+              delay: i * 0.5,
+            }}
+            className="absolute w-12 h-16 bg-gradient-to-br from-primary to-secondary rounded-lg shadow-lg border border-accent"
+            style={{
+              left: `${30 + i * 20}%`,
+              top: '50%',
+              transform: 'translateY(-50%)',
             }}
           >
-            {/* Card back design */}
-            <div className="w-full h-full flex items-center justify-center">
-              <motion.div
+            <div className="absolute inset-1 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-md flex items-center justify-center">
+              <motion.span
                 animate={{ rotate: 360 }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                className="text-gold-300 text-2xl"
+                className="text-accent text-2xl"
               >
                 ✦
-              </motion.div>
+              </motion.span>
             </div>
           </motion.div>
         ))}
@@ -117,16 +115,16 @@ export function LoadingAnimation() {
         ))}
       </motion.div>
 
-      {/* Encouraging Messages */}
+      {/* Encouraging Message */}
       <motion.div
         key={currentMessage}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.5 }}
-        className="text-center mt-8"
+        className="text-center"
       >
-        <p className="text-purple-200 text-lg font-medium">
+        <p className="text-accent text-lg font-medium">
           {encouragingMessages[currentMessage]}
         </p>
       </motion.div>
