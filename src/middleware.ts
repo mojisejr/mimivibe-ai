@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export default authMiddleware({
   publicRoutes: ["/", "/sign-in", "/en", "/en/sign-in", "/en/ask", "/en/history", "/en/packages", "/en/payments", "/en/exchange", "/en/profile", "/en/meamor"],
-  ignoredRoutes: ["/api/webhooks/(.*)", "/api/health", "/api/payments/packages", "/api/payments/webhook", "/api/referrals/validate", "/api/cards", "/api/dev/set-admin", "/api/debug-auth", "/api/admin/force-session-refresh", "/api/readings/process", "/api/readings/ask", "/api/readings/test-async", "/api/readings/test-status/(.*)"],
+  ignoredRoutes: ["/api/webhooks/(.*)", "/api/health", "/api/payments/packages", "/api/payments/webhook", "/api/referrals/validate", "/api/cards", "/api/dev/set-admin", "/api/debug-auth", "/api/admin/force-session-refresh", "/api/readings/process", "/api/readings/test-async", "/api/readings/test-status/(.*)"],
 
   beforeAuth(req: NextRequest) {
     const { pathname, search } = req.nextUrl;
