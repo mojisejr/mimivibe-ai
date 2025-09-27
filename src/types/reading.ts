@@ -1,4 +1,12 @@
 // Reading types for Round 7A: Database Schema & API Overhaul
+// Updated for Async Reading System (Task #243)
+
+export enum ReadingStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING', 
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED'
+}
 
 export interface CardReading {
   id: number;
@@ -88,10 +96,38 @@ export interface ReadingRecord {
   id: string;
   userId: string;
   question: string;
-  answer: ReadingStructure; // JSON field
+  answer: ReadingStructure | null; // JSON field, nullable for pending readings
   type: string;
+  status: ReadingStatus;
+  processingStartedAt: Date | null;
+  processingCompletedAt: Date | null;
+  errorMessage: string | null;
   isDeleted: boolean;
   isReviewed: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// New interfaces for async reading system
+export interface ReadingSubmissionResponse {
+  success: true;
+  data: {
+    readingId: string;
+    status: ReadingStatus;
+    estimatedCompletionTime: number; // seconds
+    confirmationUrl: string;
+  };
+}
+
+export interface ReadingStatusResponse {
+  success: true;
+  data: {
+    readingId: string;
+    status: ReadingStatus;
+    processingStartedAt: string | null;
+    processingCompletedAt: string | null;
+    errorMessage: string | null;
+    reading?: ReadingResponse['data']; // Complete reading data when COMPLETED
+    estimatedTimeRemaining?: number; // seconds, when PROCESSING
+  };
 }
