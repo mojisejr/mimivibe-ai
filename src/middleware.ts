@@ -8,14 +8,31 @@ export default authMiddleware({
   beforeAuth(req: NextRequest) {
     const { pathname, search } = req.nextUrl;
 
-    // Skip middleware for API routes, static files, and _next
+    // Skip middleware for static files and _next, but NOT for API routes that need auth
     if (
-      pathname.startsWith('/api/') ||
       pathname.startsWith('/_next/') ||
       pathname.includes('.') ||
       pathname.startsWith('/favicon')
     ) {
       return;
+    }
+
+    // Skip middleware only for API routes that are in ignoredRoutes
+    if (pathname.startsWith('/api/')) {
+      const ignoredRoutes = ["/api/webhooks/(.*)", "/api/health", "/api/payments/packages", "/api/payments/webhook", "/api/referrals/validate", "/api/cards", "/api/dev/set-admin", "/api/debug-auth", "/api/admin/force-session-refresh", "/api/readings/process", "/api/readings/test-async", "/api/readings/test-status/(.*)"];
+      
+      const isIgnored = ignoredRoutes.some(route => {
+        if (route.includes('(.*)')) {
+          const baseRoute = route.replace('(.*)', '');
+          return pathname.startsWith(baseRoute);
+        }
+        return pathname === route;
+      });
+      
+      if (isIgnored) {
+        return;
+      }
+      // For non-ignored API routes, let Clerk middleware handle authentication
     }
 
     // Handle English locale routing
