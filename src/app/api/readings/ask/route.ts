@@ -284,7 +284,7 @@ export async function POST(request: NextRequest) {
       // Validate that we have the required reading data
       if (!workflowResult.reading) {
         const errorResponse = createCategorizedErrorResponse(
-          "TIMEOUT_ERROR", 
+          "AI_TIMEOUT", 
           "/api/readings/ask", 
           "คำขอใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง"
         );
@@ -294,16 +294,12 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       // Handle timeout error - don't deduct credits
       if (error instanceof Error && error.message.includes("Reading timeout")) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Reading timeout",
-            message: error.message,
-            timestamp: new Date().toISOString(),
-            path: "/api/readings/ask",
-          } as ReadingError,
-          { status: 408 }
-        ); // 408 Request Timeout
+        const errorResponse = createCategorizedErrorResponse(
+          "AI_TIMEOUT",
+          "/api/readings/ask",
+          error.message
+        );
+        return NextResponse.json(errorResponse, { status: 504 });
       }
       // Re-throw other errors
       throw error;
@@ -476,7 +472,7 @@ export async function POST(request: NextRequest) {
     
     const errorMessage = error instanceof Error ? error.message : "Failed to generate reading";
     const errorResponse = createCategorizedErrorResponse(
-      "SYSTEM_ERROR", 
+      "SERVER_ERROR", 
       "/api/readings/ask", 
       errorMessage
     );
