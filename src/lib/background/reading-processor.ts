@@ -9,7 +9,9 @@ import {
   getPendingReadings, 
   markReadingAsProcessing, 
   markReadingAsCompleted, 
-  markReadingAsFailed 
+  markReadingAsFailed,
+  deductCreditsForReading,
+  refundCreditsForReading
 } from '@/lib/database/reading-status';
 import { ReadingStatus } from '@/types/reading';
 import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards';
@@ -83,6 +85,23 @@ export async function processReading(readingId: string): Promise<boolean> {
         createdAt: new Date().toISOString(),
       };
 
+      // Deduct credits only when reading is successfully generated
+      console.log(`💳 [PROCESSOR] Deducting credits for successful reading: ${readingId}`);
+      try {
+        await deductCreditsForReading(
+          reading.userId,
+          readingId,
+          reading.question.length,
+          workflowResult.questionAnalysis || {}
+        );
+        console.log(`✅ [PROCESSOR] Credits deducted successfully for reading: ${readingId}`);
+      } catch (creditError) {
+        console.error(`❌ [PROCESSOR] Credit deduction failed for reading: ${readingId}`, creditError);
+        // If credit deduction fails, mark reading as failed
+        await markReadingAsFailed(readingId, "ไม่สามารถหักเครดิตได้ กรุณาลองใหม่อีกครั้ง");
+        return false;
+      }
+
       // Mark as completed with the reading data
       await markReadingAsCompleted(readingId, readingData);
 
@@ -96,6 +115,23 @@ export async function processReading(readingId: string): Promise<boolean> {
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      
+      // Check if credits were already deducted for this reading
+      console.log(`🔄 [PROCESSOR] Checking for credit refund for failed reading: ${readingId}`);
+      try {
+        const refundResult = await refundCreditsForReading(
+          reading.userId,
+          readingId,
+          `Reading failed: ${errorMessage}`
+        );
+        
+        if (refundResult) {
+          console.log(`✅ [PROCESSOR] Credits refunded for failed reading: ${readingId}`, refundResult);
+        }
+      } catch (refundError) {
+        console.error(`❌ [PROCESSOR] Failed to refund credits for reading: ${readingId}`, refundError);
+      }
+      
       await markReadingAsFailed(readingId, errorMessage);
       console.error(`❌ Reading processing failed: ${readingId} - ${errorMessage}`);
       return false;

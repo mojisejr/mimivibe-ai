@@ -54,6 +54,90 @@ export async function markReadingAsProcessing(readingId: string): Promise<Readin
   }
 }
 
+export async function deductCreditsForReading(
+  userId: string,
+  readingId: string,
+  questionLength: number,
+  securityAnalysis: any
+) {
+  console.log(`💳 [DB] Deducting credits for reading: ${readingId}, user: ${userId}`);
+  
+  try {
+    // Get current user credits
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        freePoint: true,
+        stars: true,
+        coins: true,
+      }
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Check if user still has enough credits
+    const totalCredits = user.freePoint + user.stars;
+    if (totalCredits < 1) {
+      throw new Error('Insufficient credits');
+    }
+
+    // Deduct credits in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Deduct credits (prefer freePoint first)
+      const deltaFreePoint = Math.min(1, user.freePoint);
+      const deltaStars = deltaFreePoint < 1 ? 1 : 0;
+
+      // Create transaction record
+      const transactionId = `txn_${Date.now()}_${userId.slice(-8)}`;
+      await tx.pointTransaction.create({
+        data: {
+          id: transactionId,
+          userId,
+          eventType: "READING_SPEND",
+          deltaPoint: -deltaStars,
+          deltaCoins: 0,
+          deltaExp: 0,
+          metadata: {
+            reason: "Async tarot reading completion",
+            readingId,
+            freePointUsed: -deltaFreePoint,
+            starsUsed: -deltaStars,
+            questionLength,
+            securityAnalysis,
+            async: true,
+          },
+        },
+      });
+
+      // Update user credits
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          freePoint: user.freePoint - deltaFreePoint,
+          stars: user.stars - deltaStars,
+        },
+      });
+
+      return {
+        transactionId,
+        creditsUsed: {
+          freePoint: deltaFreePoint,
+          stars: deltaStars,
+        },
+      };
+    });
+
+    console.log(`✅ [DB] Credits deducted successfully:`, result);
+    return result;
+  } catch (error) {
+    console.error(`❌ [DB] Error deducting credits:`, error);
+    throw error;
+  }
+}
+
 export async function markReadingAsCompleted(
   readingId: string,
   readingData?: any,
@@ -85,6 +169,97 @@ export async function markReadingAsCompleted(
   });
   
   return result;
+}
+
+export async function refundCreditsForReading(
+  userId: string,
+  readingId: string,
+  reason: string = "Reading failed - credit refund"
+) {
+  console.log(`🔄 [DB] Refunding credits for reading: ${readingId}, user: ${userId}`);
+  
+  try {
+    // Find the original transaction to refund
+    const originalTransaction = await prisma.pointTransaction.findFirst({
+      where: {
+        userId,
+        eventType: "READING_SPEND",
+        metadata: {
+          path: ["readingId"],
+          equals: readingId
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    if (!originalTransaction) {
+      console.log(`ℹ️ [DB] No transaction found to refund for reading: ${readingId}`);
+      return null;
+    }
+
+    const metadata = originalTransaction.metadata as any;
+    const freePointUsed = Math.abs(metadata.freePointUsed || 0);
+    const starsUsed = Math.abs(metadata.starsUsed || 0);
+
+    // Refund credits in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create refund transaction record
+      const refundTransactionId = `refund_${Date.now()}_${userId.slice(-8)}`;
+      await tx.pointTransaction.create({
+        data: {
+          id: refundTransactionId,
+          userId,
+          eventType: "READING_REFUND",
+          deltaPoint: starsUsed, // Positive value for refund
+          deltaCoins: 0,
+          deltaExp: 0,
+          metadata: {
+            reason,
+            readingId,
+            originalTransactionId: originalTransaction.id,
+            freePointRefunded: freePointUsed,
+            starsRefunded: starsUsed,
+            refundedAt: new Date().toISOString(),
+          },
+        },
+      });
+
+      // Get current user to add credits back
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { freePoint: true, stars: true }
+      });
+
+      if (!user) {
+        throw new Error('User not found for refund');
+      }
+
+      // Refund credits to user
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          freePoint: user.freePoint + freePointUsed,
+          stars: user.stars + starsUsed,
+        },
+      });
+
+      return {
+        refundTransactionId,
+        creditsRefunded: {
+          freePoint: freePointUsed,
+          stars: starsUsed,
+        },
+      };
+    });
+
+    console.log(`✅ [DB] Credits refunded successfully:`, result);
+    return result;
+  } catch (error) {
+    console.error(`❌ [DB] Error refunding credits:`, error);
+    throw error;
+  }
 }
 
 export async function markReadingAsFailed(

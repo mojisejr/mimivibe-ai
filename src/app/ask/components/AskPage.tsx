@@ -70,9 +70,9 @@ export function AskPage() {
         throw error;
       }
 
-      if (data.success && data.readingId) {
+      if (data.success && data.data?.readingId) {
         // Redirect to confirmation page for async processing
-        router.push(`/confirmation/${data.readingId}`);
+        router.push(`/confirmation/${data.data.readingId}`);
       } else {
         // Handle validation errors separately (isValid: false)
         if (data.isValid === false && data.validationReason) {
