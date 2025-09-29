@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ReadingResponse } from "@/types/reading";
 import { HeroSection } from "./HeroSection";
 import { LoadingState } from "./LoadingState";
@@ -22,6 +23,7 @@ interface ErrorState {
 }
 
 export function AskPage() {
+  const router = useRouter();
   const { locale: currentLocale } = useTranslation();
   const [pageState, setPageState] = useState<PageState>("initial");
   const [currentQuestion, setCurrentQuestion] = useState("");
@@ -38,23 +40,39 @@ export function AskPage() {
 
     let response: Response | undefined;
     try {
-      response = await fetch("/api/readings/ask", {
+      response = await fetch("/api/readings/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ question, language: currentLocale }),
+        body: JSON.stringify({ 
+          question, 
+          type: "tarot",
+          language: currentLocale 
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "การทำนายล้มเหลว");
+        // Handle specific error cases for async workflow
+        if (response.status === 400 && data.message?.includes('เครดิตไม่เพียงพอ')) {
+          // Use the error key for proper Thai message handling
+          const error = new Error("INSUFFICIENT_CREDITS");
+          error.name = "INSUFFICIENT_CREDITS";
+          throw error;
+        }
+        
+        // Use the error code from categorized error response
+        const errorCode = data.error || data.errorKey || "SUBMISSION_FAILED";
+        const error = new Error(errorCode);
+        error.name = errorCode;
+        throw error;
       }
 
-      if (data.success) {
-        setReadingData(data.data);
-        setPageState("result");
+      if (data.success && data.readingId) {
+        // Redirect to confirmation page for async processing
+        router.push(`/confirmation/${data.readingId}`);
       } else {
         // Handle validation errors separately (isValid: false)
         if (data.isValid === false && data.validationReason) {
@@ -71,10 +89,10 @@ export function AskPage() {
         }
         
         // Handle other system errors
-        throw new Error(data.error || "ไม่สามารถทำนายได้");
+        throw new Error(data.error || "ไม่สามารถส่งคำถามได้");
       }
     } catch (err) {
-      console.error("Reading error:", err);
+      console.error("Reading submission error:", err);
       const processedError = processReadingError(err, response);
       setError({
         title: processedError.title,
