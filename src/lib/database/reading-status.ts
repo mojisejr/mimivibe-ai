@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { ReadingStatus } from '@/types/reading';
+import type { Reading } from '@prisma/client';
 
 export async function createPendingReading(
   userId: string,
@@ -7,6 +8,7 @@ export async function createPendingReading(
   type: string = 'tarot'
 ) {
   try {
+    console.log(`📝 [DB] Creating pending reading for user: ${userId}`);
     const reading = await prisma.reading.create({
       data: {
         userId,
@@ -18,24 +20,38 @@ export async function createPendingReading(
       },
     });
     
+    console.log(`✅ [DB] Pending reading created successfully:`, {
+      id: reading.id,
+      userId: reading.userId,
+      status: reading.status
+    });
     return reading;
   } catch (error) {
-    console.error('Error creating pending reading:', error);
+    console.error('❌ [DB] Error creating pending reading:', error);
     return null;
   }
 }
 
-export async function markReadingAsProcessing(
-  readingId: string,
-  processingStartedAt?: Date
-) {
-  return await prisma.reading.update({
-    where: { id: readingId },
-    data: {
-      status: ReadingStatus.PROCESSING,
-      processingStartedAt: processingStartedAt || new Date(),
-    },
-  });
+export async function markReadingAsProcessing(readingId: string): Promise<Reading | null> {
+  try {
+    console.log(`🔄 [DB] Marking reading as processing: ${readingId}`);
+    const reading = await prisma.reading.update({
+      where: { id: readingId },
+      data: {
+        status: ReadingStatus.PROCESSING,
+        updatedAt: new Date()
+      }
+    });
+
+    console.log(`✅ [DB] Reading marked as processing:`, {
+      id: reading.id,
+      status: reading.status
+    });
+    return reading;
+  } catch (error) {
+    console.error('❌ [DB] Error marking reading as processing:', error);
+    return null;
+  }
 }
 
 export async function markReadingAsCompleted(
@@ -43,6 +59,9 @@ export async function markReadingAsCompleted(
   readingData?: any,
   processingCompletedAt?: Date
 ) {
+  console.log(`✅ [DB] Marking reading as completed: ${readingId}`);
+  console.log(`📊 [DB] Reading data size:`, readingData ? JSON.stringify(readingData).length : 0, 'characters');
+  
   const updateData: any = {
     status: ReadingStatus.COMPLETED,
     processingCompletedAt: processingCompletedAt || new Date(),
@@ -54,10 +73,18 @@ export async function markReadingAsCompleted(
     updateData.answer = JSON.stringify(readingData);
   }
 
-  return await prisma.reading.update({
+  const result = await prisma.reading.update({
     where: { id: readingId },
     data: updateData,
   });
+  
+  console.log(`🎉 [DB] Reading completed successfully:`, {
+    id: result.id,
+    status: result.status,
+    hasData: !!result.answer
+  });
+  
+  return result;
 }
 
 export async function markReadingAsFailed(

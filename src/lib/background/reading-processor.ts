@@ -19,19 +19,29 @@ import { getReferralRewards, toLegacyRewardFormat } from '@/lib/utils/rewards';
  */
 export async function processReading(readingId: string): Promise<boolean> {
   try {
-    console.log(`🔄 Processing reading: ${readingId}`);
+    console.log(`🔄 [PROCESSOR] Starting processing for reading: ${readingId}`);
     
     // Mark as processing
     const reading = await markReadingAsProcessing(readingId);
+    console.log(`📝 [PROCESSOR] Reading marked as processing:`, reading ? reading.id : "FAILED");
     
     if (!reading) {
-      console.error(`❌ Reading not found: ${readingId}`);
+      console.error(`❌ [PROCESSOR] Reading not found: ${readingId}`);
       return false;
     }
 
+    console.log(`📋 [PROCESSOR] Reading details:`, {
+      id: reading.id,
+      question: reading.question,
+      userId: reading.userId,
+      status: reading.status
+    });
+
     try {
       // Generate reading using LangGraph workflow
+      console.log(`🤖 [PROCESSOR] Starting AI workflow for reading: ${readingId}`);
       const workflowResult = await generateTarotReading(reading.question, reading.userId);
+      console.log(`🎯 [PROCESSOR] AI workflow completed:`, workflowResult ? "SUCCESS" : "FAILED");
 
       // Check if question validation failed
       if (workflowResult.isValid === false) {
@@ -56,6 +66,13 @@ export async function processReading(readingId: string): Promise<boolean> {
         console.error(`❌ Reading timeout: ${readingId}`);
         return false;
       }
+
+      console.log(`✨ [PROCESSOR] Generated reading content:`, {
+        readingId,
+        hasReading: !!workflowResult.reading,
+        hasCards: !!workflowResult.selectedCards,
+        cardsCount: workflowResult.selectedCards?.length || 0
+      });
 
       // Prepare reading data for storage
       const readingData = {

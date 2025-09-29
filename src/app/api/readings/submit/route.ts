@@ -164,9 +164,12 @@ export async function POST(request: NextRequest) {
     })
 
     // Create pending reading record
+    console.log("🔄 Creating pending reading for user:", userId);
     const reading = await createPendingReading(userId, sanitizedQuestion, type)
+    console.log("📝 Pending reading created:", reading ? reading.id : "FAILED");
     
     if (!reading) {
+      console.error("❌ Failed to create pending reading");
       return NextResponse.json(
         createCategorizedErrorResponse('DATABASE_ERROR', '/api/readings/submit'),
         { status: 500 }
@@ -176,6 +179,26 @@ export async function POST(request: NextRequest) {
     // Get estimated processing time
     const estimatedTime = await getEstimatedProcessingTime()
     const estimatedSeconds = Math.ceil((estimatedTime.getTime() - Date.now()) / 1000)
+
+    console.log("🚀 Triggering background processing for reading:", reading.id);
+    
+    // Trigger background processing (fire and forget)
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/readings/process`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        readingId: reading.id
+      })
+    }).then(response => {
+      console.log("📡 Background processing triggered, status:", response.status);
+      return response.json();
+    }).then(data => {
+      console.log("📊 Background processing response:", data);
+    }).catch(error => {
+      console.error("❌ Failed to trigger background processing:", error);
+    });
 
     const response: ReadingSubmissionResponse = {
       success: true,
@@ -187,6 +210,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log("✅ Reading submission completed successfully:", reading.id);
     return NextResponse.json(response)
 
   } catch (error) {
