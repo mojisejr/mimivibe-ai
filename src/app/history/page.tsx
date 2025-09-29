@@ -17,6 +17,7 @@ import {
 } from "@/components/common/SkeletonLoader";
 import { UnifiedNavbar } from "@/components/layout/UnifiedNavbar";
 import { useTranslation } from '@/lib/i18n';
+import { ReadingStatus } from "@/types/reading";
 
 interface Card {
   id: number;
@@ -50,7 +51,8 @@ interface Reading {
     topic: string;
     timeframe: string;
   };
-  answer: ReadingStructure; // Changed from 'reading: string' to full structure
+  answer: ReadingStructure | null; // Can be null for pending/processing readings
+  status: ReadingStatus; // Add reading status
   createdAt: string;
   expEarned: number;
   coinsEarned: number;

@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
           question: true,
           answer: true,
           type: true,
+          status: true,
           isReviewed: true,
           isDeleted: true,
           createdAt: true,
@@ -124,6 +125,7 @@ export async function GET(request: NextRequest) {
         question: reading.question,
         answer: readingAnswer, // Now JSON object instead of string
         type: reading.type,
+        status: reading.status,
         cards: reading.cards.map(rc => ({
           id: rc.Card.id,
           name: rc.Card.name,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { FilterOptions } from "@/components/history/SearchFilters";
+import { ReadingStatus } from "@/types/reading";
 
 interface SearchResult {
   id: string;
@@ -23,6 +24,7 @@ interface SearchResult {
     timeframe: string;
   };
   answer: any;
+  status: ReadingStatus;
   createdAt: string;
   expEarned: number;
   coinsEarned: number;

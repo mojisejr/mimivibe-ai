@@ -6,6 +6,7 @@ import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
 import { ReviewModal, ReviewData } from "@/components/modals/ReviewModal";
 import { useToast } from "@/components/ui/ToastContainer";
 import { X } from "lucide-react";
+import { ReadingStatus } from "@/types/reading";
 
 interface Card {
   id: number;
@@ -39,7 +40,8 @@ interface Reading {
     topic: string;
     timeframe: string;
   };
-  answer: ReadingStructure; // Changed from 'reading: string' to full structure
+  answer: ReadingStructure | null; // Changed from 'reading: string' to full structure, nullable for pending readings
+  status: ReadingStatus;
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
@@ -373,16 +375,28 @@ export const ReadingDetailModal = ({
           <div className="border-l-4 border-primary/50 pl-6 py-4 mb-8">
             <h3 className="heading-3 mb-4 text-base-content">การทำนาย</h3>
             <div className="prose prose-sm max-w-none">
-              {reading.answer.reading.split("\n").map(
-                (paragraph, index) =>
-                  paragraph.trim() && (
-                    <p
-                      key={index}
-                      className="body-normal mb-3 leading-relaxed text-base-content"
-                    >
-                      {paragraph.trim()}
-                    </p>
-                  )
+              {reading.answer?.reading ? (
+                reading.answer.reading.split("\n").map(
+                  (paragraph, index) =>
+                    paragraph.trim() && (
+                      <p
+                        key={index}
+                        className="body-normal mb-3 leading-relaxed text-base-content"
+                      >
+                        {paragraph.trim()}
+                      </p>
+                    )
+                )
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-4">🔮</div>
+                  <p className="text-neutral-content">
+                    การทำนายยังไม่เสร็จสมบูรณ์
+                  </p>
+                  <p className="text-sm text-neutral-content/70 mt-2">
+                    กรุณารอสักครู่ ระบบกำลังประมวลผลการทำนายของคุณ
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -408,7 +422,7 @@ export const ReadingDetailModal = ({
             )} */}
 
           {/* Final Thoughts */}
-          {reading.answer.final && (
+          {reading.answer?.final && (
             <div className="border-l-4 border-success/50 pl-6 py-4 mb-8">
               <h3 className="heading-3 mb-4 text-base-content">ข้อสรุป</h3>
               <div className="prose prose-sm max-w-none">
@@ -420,7 +434,7 @@ export const ReadingDetailModal = ({
           )}
 
           {/* End Message */}
-          {reading.answer.end && (
+          {reading.answer?.end && (
             <div className="text-center py-6 mb-8 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg">
               <div className="prose prose-sm max-w-none">
                 <p className="body-normal leading-relaxed text-base-content">
@@ -431,7 +445,7 @@ export const ReadingDetailModal = ({
           )}
 
           {/* Notice */}
-          {reading.answer.notice && (
+          {reading.answer?.notice && (
             <div className="border-l-4 border-warning/50 pl-6 py-4 mb-8">
               <h3 className="heading-3 mb-4 text-base-content">หมายเหตุ</h3>
               <div className="prose prose-sm max-w-none">
