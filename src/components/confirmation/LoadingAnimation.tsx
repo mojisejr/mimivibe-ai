@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 const encouragingMessages = [
   "🌟 กำลังเชื่อมต่อกับพลังจักรวาล...",
@@ -11,7 +11,7 @@ const encouragingMessages = [
   "💫 กำลังรวบรวมข้อมูลจากดวงดาว...",
   "🎴 กำลังเลือกไพ่ที่เหมาะสมที่สุด...",
   "🌸 กำลังถ่ายทอดพลังบวกให้คุณ...",
-  "🦋 กำลังเตรียมคำทำนายพิเศษ..."
+  "🦋 กำลังเตรียมคำทำนายพิเศษ...",
 ];
 
 export function LoadingAnimation() {
@@ -44,8 +44,8 @@ export function LoadingAnimation() {
             className="absolute w-12 h-16 bg-gradient-to-br from-primary to-secondary rounded-lg shadow-lg border border-accent"
             style={{
               left: `${30 + i * 20}%`,
-              top: '50%',
-              transform: 'translateY(-50%)',
+              top: "50%",
+              transform: "translateY(-50%)",
             }}
           >
             <div className="absolute inset-1 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-md flex items-center justify-center">
@@ -62,7 +62,7 @@ export function LoadingAnimation() {
       </div>
 
       {/* Crystal Ball Animation */}
-      <motion.div
+      {/*<motion.div
         className="relative mt-16"
         animate={{
           scale: [1, 1.05, 1],
@@ -70,7 +70,7 @@ export function LoadingAnimation() {
         transition={{
           duration: 2,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: "easeInOut",
         }}
       >
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 backdrop-blur-sm border border-base-100/20 flex items-center justify-center">
@@ -82,22 +82,22 @@ export function LoadingAnimation() {
             transition={{
               duration: 1.5,
               repeat: Infinity,
-              ease: "easeInOut"
+              ease: "easeInOut",
             }}
             className="text-3xl"
           >
             🔮
           </motion.div>
-        </div>
-        
-        {/* Sparkles around crystal ball */}
-        {[0, 1, 2, 3].map((index) => (
+        </div> */}
+
+      {/* Sparkles around crystal ball */}
+      {/*{[0, 1, 2, 3].map((index) => (
           <motion.div
             key={index}
             className="absolute text-accent text-sm"
             style={{
-              top: `${Math.sin(index * Math.PI / 2) * 40 + 40}px`,
-              left: `${Math.cos(index * Math.PI / 2) * 40 + 40}px`,
+              top: `${Math.sin((index * Math.PI) / 2) * 40 + 40}px`,
+              left: `${Math.cos((index * Math.PI) / 2) * 40 + 40}px`,
             }}
             animate={{
               opacity: [0, 1, 0],
@@ -107,13 +107,13 @@ export function LoadingAnimation() {
               duration: 2,
               repeat: Infinity,
               delay: index * 0.5,
-              ease: "easeInOut"
+              ease: "easeInOut",
             }}
           >
             ✨
           </motion.div>
         ))}
-      </motion.div>
+      </motion.div>*/}
 
       {/* Encouraging Message */}
       <motion.div
@@ -130,7 +130,7 @@ export function LoadingAnimation() {
       </motion.div>
 
       {/* Progress Dots */}
-      <div className="flex space-x-2 mt-4">
+      {/*<div className="flex space-x-2 mt-4">
         {[0, 1, 2].map((index) => (
           <motion.div
             key={index}
@@ -143,11 +143,11 @@ export function LoadingAnimation() {
               duration: 1.5,
               repeat: Infinity,
               delay: index * 0.2,
-              ease: "easeInOut"
+              ease: "easeInOut",
             }}
           />
         ))}
-      </div>
+      </div>}*/}
     </div>
   );
 }

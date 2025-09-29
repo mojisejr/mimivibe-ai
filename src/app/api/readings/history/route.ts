@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { ReadingStructure } from "@/types/reading";
+import type { ParsedReadingStructure, ReadingStructure } from "@/types/reading";
 
 // Force dynamic rendering for authentication and request.url
 export const dynamic = "force-dynamic";
@@ -125,18 +125,24 @@ export async function GET(request: NextRequest) {
     // Format readings for response
     const formattedReadings = readings.map((reading) => {
       // Parse answer from JSON string to ReadingStructure object
-      let parsedAnswer: ReadingStructure | null = null;
+      let parsedAnswer: ParsedReadingStructure | null = null;
       if (reading.answer) {
         try {
           // If answer is already an object, use it directly; if it's a string, parse it
-          parsedAnswer = typeof reading.answer === 'string' 
-            ? JSON.parse(reading.answer) 
-            : reading.answer as unknown as ReadingStructure;
+          parsedAnswer =
+            typeof reading.answer === "string"
+              ? JSON.parse(reading.answer)
+              : (reading.answer as unknown as ReadingStructure);
         } catch (error) {
-          console.error(`Failed to parse answer for reading ${reading.id}:`, error);
+          console.error(
+            `Failed to parse answer for reading ${reading.id}:`,
+            error
+          );
           parsedAnswer = null;
         }
       }
+
+      console.log("DEBUG Parsed answers: ", parsedAnswer);
 
       const review = reading.reviews?.[0] || null;
       const reviewComment = commentMap.get(reading.id) || null;
@@ -144,26 +150,26 @@ export async function GET(request: NextRequest) {
       return {
         id: reading.id,
         question: reading.question,
-        answer: parsedAnswer,
+        answer: parsedAnswer?.reading,
         type: reading.type,
         status: reading.status,
-        cards: reading.cards.map((rc) => ({
-          id: rc.Card.id,
-          name: rc.Card.name,
-          nameTh: rc.Card.displayName,
-          displayName: rc.Card.displayName,
-          imageUrl: rc.Card.imageUrl,
+        cards: parsedAnswer?.selectedCards.map((rc) => ({
+          id: rc.id,
+          name: rc.name,
+          nameTh: rc.displayName,
+          displayName: rc.displayName,
+          imageUrl: rc.imageUrl,
           position: rc.position,
-          keywords: rc.Card.keywords,
-          keywordsTh: rc.Card.keywords,
-          meaning: rc.Card.shortMeaning,
-          meaningTh: rc.Card.shortMeaning,
-          category: rc.Card.arcana,
+          keywords: rc.keywords,
+          keywordsTh: rc.keywords,
+          meaning: rc.shortMeaning,
+          meaningTh: rc.shortMeaning,
+          category: rc.arcana,
         })),
         analysis: {
-          mood: "neutral", // Default values for compatibility
-          topic: "general",
-          timeframe: "present",
+          mood: parsedAnswer?.questionAnalysis.mood, // Default values for compatibility
+          topic: parsedAnswer?.questionAnalysis.topic,
+          timeframe: parsedAnswer?.questionAnalysis.period,
         },
         createdAt: reading.createdAt.toISOString(),
         expEarned: 15, // Default values for compatibility

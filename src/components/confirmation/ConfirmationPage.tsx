@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { useReadingStatus } from '@/hooks/useReadingStatus';
-import { useTranslation } from '@/lib/i18n';
-import { StatusIndicator } from './StatusIndicator';
-import { LoadingAnimation } from './LoadingAnimation';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useReadingStatus } from "@/hooks/useReadingStatus";
+import { useTranslation } from "@/lib/i18n";
+import { StatusIndicator } from "./StatusIndicator";
+import { LoadingAnimation } from "./LoadingAnimation";
 
 interface ConfirmationPageProps {
   readingId: string;
@@ -15,7 +15,7 @@ interface ConfirmationPageProps {
 export function ConfirmationPage({ readingId }: ConfirmationPageProps) {
   const { t } = useTranslation();
   const router = useRouter();
-  
+
   const {
     data,
     error,
@@ -26,14 +26,14 @@ export function ConfirmationPage({ readingId }: ConfirmationPageProps) {
     isPending,
     estimatedTimeRemaining,
     errorMessage,
-    reading
+    reading,
   } = useReadingStatus(readingId);
 
   // Auto-redirect when completed
   useEffect(() => {
     if (isCompleted && reading) {
       // Redirect to the reading result page
-      router.push(`/history/${readingId}`);
+      router.push(`/history`);
     }
   }, [isCompleted, reading, readingId, router]);
 
@@ -48,13 +48,13 @@ export function ConfirmationPage({ readingId }: ConfirmationPageProps) {
         >
           <div className="text-error text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-base-content mb-4">
-            {t('common.status.failed')}
+            {t("common.status.failed")}
           </h2>
           <p className="text-base-content/70 mb-6">
-            {errorMessage || error?.message || 'เกิดข้อผิดพลาดในการทำนาย'}
+            {errorMessage || error?.message || "เกิดข้อผิดพลาดในการทำนาย"}
           </p>
           <button
-            onClick={() => router.push('/ask')}
+            onClick={() => router.push("/ask")}
             className="btn btn-error text-white px-6 py-3 font-semibold hover:scale-105 transition-all duration-200"
           >
             ลองใหม่อีกครั้ง
@@ -91,11 +91,11 @@ export function ConfirmationPage({ readingId }: ConfirmationPageProps) {
         <LoadingAnimation />
 
         {/* Status Indicator */}
-        <StatusIndicator
+        {/* <StatusIndicator
           status={data?.data?.status}
           estimatedTimeRemaining={estimatedTimeRemaining}
           isLoading={isLoading}
-        />
+        /> */}
 
         {/* Progress Information */}
         <motion.div
@@ -113,7 +113,9 @@ export function ConfirmationPage({ readingId }: ConfirmationPageProps) {
           {/* Estimated time */}
           {estimatedTimeRemaining && estimatedTimeRemaining > 0 && (
             <div className="bg-base-300 rounded-lg p-4 border border-primary/20">
-              <p className="text-sm text-base-content/60 mb-1">เวลาที่คาดว่าจะเสร็จ</p>
+              <p className="text-sm text-base-content/60 mb-1">
+                เวลาที่คาดว่าจะเสร็จ
+              </p>
               <p className="text-base-content text-lg">
                 ประมาณ {Math.ceil(estimatedTimeRemaining / 60)} นาที
               </p>
@@ -143,7 +145,7 @@ export function ConfirmationPage({ readingId }: ConfirmationPageProps) {
             เราจะส่งผลลัพธ์ไปยังประวัติการทำนายของคุณ
           </p>
           <button
-            onClick={() => router.push('/history')}
+            onClick={() => router.push("/history")}
             className="mt-4 text-primary hover:text-primary-focus transition-colors duration-200 text-sm underline"
           >
             ดูประวัติการทำนาย
