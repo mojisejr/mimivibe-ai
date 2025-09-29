@@ -2,10 +2,10 @@
 // Updated for Async Reading System (Task #243)
 
 export enum ReadingStatus {
-  PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING', 
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED'
+  PENDING = "PENDING",
+  PROCESSING = "PROCESSING",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
 }
 
 export interface CardReading {
@@ -16,6 +16,35 @@ export interface CardReading {
   position: number;
   shortMeaning: string;
   keywords: string;
+}
+
+export interface ParsedReadingStructure {
+  questionAnalysis: {
+    mood: string;
+    topic: string;
+    period: string;
+  };
+  cards: {
+    id: number;
+    name: string;
+    displayName: string;
+    imageUrl: string;
+    position: string;
+    shortMeaning: string;
+    keywords: string;
+  }[];
+  reading: ReadingStructure;
+  selectedCards: {
+    id: number;
+    name: string;
+    displayName: string;
+    arcana: string;
+    shortMeaning: string;
+    keywords: string;
+    imageUrl: string;
+    position: number;
+  }[];
+  createdAt: string;
 }
 
 export interface ReadingStructure {
@@ -71,9 +100,14 @@ export interface ReadingError {
   path: string;
   validationReason?: string;
   isValid?: boolean;
-  
+
   // เพิ่ม fields ใหม่ (optional เพื่อ backward compatibility)
-  category?: 'validation' | 'ai_processing' | 'rate_limit' | 'authentication' | 'system';
+  category?:
+    | "validation"
+    | "ai_processing"
+    | "rate_limit"
+    | "authentication"
+    | "system";
   isRetryable?: boolean;
 }
 
@@ -127,7 +161,7 @@ export interface ReadingStatusResponse {
     processingStartedAt: string | null;
     processingCompletedAt: string | null;
     errorMessage: string | null;
-    reading?: ReadingResponse['data']; // Complete reading data when COMPLETED
+    reading?: ReadingResponse["data"]; // Complete reading data when COMPLETED
     estimatedTimeRemaining?: number; // seconds, when PROCESSING
   };
 }

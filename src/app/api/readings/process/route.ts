@@ -15,6 +15,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: NextRequest) {
   try {
+    console.log("🎯 [PROCESS-API] Processing endpoint called");
     let body: { batchSize?: number; readingId?: string } = {};
     
     // Handle empty request body gracefully
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
       console.log("No JSON body provided, using defaults");
     }
     
+    console.log("📋 [PROCESS-API] Request body:", body);
     const { 
       batchSize = 5, 
       readingId 
@@ -34,8 +36,9 @@ export async function POST(request: NextRequest) {
 
     // Process specific reading if readingId is provided
     if (readingId) {
-      console.log(`🎯 Processing specific reading: ${readingId}`);
+      console.log(`🔍 [PROCESS-API] Processing specific reading: ${readingId}`);
       const success = await processReading(readingId);
+      console.log(`📊 [PROCESS-API] Processing result for ${readingId}:`, success);
       
       return NextResponse.json({
         success,
@@ -47,8 +50,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Process batch of pending readings
-    console.log(`🚀 Processing batch of pending readings (size: ${batchSize})`);
+    console.log(`📦 [PROCESS-API] Processing pending readings with batch size: ${batchSize}`);
     const result = await processPendingReadings(batchSize);
+    console.log(`📊 [PROCESS-API] Batch processing result:`, result);
 
     return NextResponse.json({
       success: true,
@@ -57,7 +61,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Reading processing error:", error);
+    console.error("❌ [PROCESS-API] Reading processing error:", error);
     
     return NextResponse.json({
       success: false,

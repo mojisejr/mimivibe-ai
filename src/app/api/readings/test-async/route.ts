@@ -1,7 +1,10 @@
 // Test API endpoint for async reading without authentication
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createPendingReading, getEstimatedProcessingTime } from "@/lib/database/reading-status";
+import {
+  createPendingReading,
+  getEstimatedProcessingTime,
+} from "@/lib/database/reading-status";
 import { createCategorizedErrorResponse } from "@/lib/errors/categories";
 import { ReadingStatus } from "@/types/reading";
 
@@ -12,10 +15,10 @@ export async function POST(request: NextRequest) {
   try {
     // Create or get test user
     const testUserId = "test-user-123";
-    
+
     console.log("Looking for test user:", testUserId);
     let user = await prisma.user.findUnique({
-      where: { id: testUserId }
+      where: { id: testUserId },
     });
 
     if (!user) {
@@ -33,13 +36,16 @@ export async function POST(request: NextRequest) {
             level: 1,
             exp: 0,
             updatedAt: new Date(),
-          }
+          },
         });
         console.log("Test user created successfully:", user.id);
       } catch (userCreateError) {
         console.error("Failed to create test user:", userCreateError);
         return NextResponse.json(
-          createCategorizedErrorResponse("SYSTEM_ERROR", "/api/readings/test-async"),
+          createCategorizedErrorResponse(
+            "SYSTEM_ERROR",
+            "/api/readings/test-async"
+          ),
           { status: 500 }
         );
       }
@@ -52,7 +58,10 @@ export async function POST(request: NextRequest) {
 
     if (!question || typeof question !== "string") {
       return NextResponse.json(
-        createCategorizedErrorResponse("VALIDATION_ERROR", "/api/readings/test-async"),
+        createCategorizedErrorResponse(
+          "VALIDATION_ERROR",
+          "/api/readings/test-async"
+        ),
         { status: 400 }
       );
     }
@@ -60,7 +69,10 @@ export async function POST(request: NextRequest) {
     // Check if user has enough credits
     if (user.stars < 1 && user.freePoint < 1) {
       return NextResponse.json(
-        createCategorizedErrorResponse("INSUFFICIENT_CREDITS", "/api/readings/test-async"),
+        createCategorizedErrorResponse(
+          "INSUFFICIENT_CREDITS",
+          "/api/readings/test-async"
+        ),
         { status: 402 }
       );
     }
@@ -74,18 +86,18 @@ export async function POST(request: NextRequest) {
         // Use stars first
         updatedUser = await tx.user.update({
           where: { id: user.id },
-          data: { 
-            stars: { decrement: 1 }
-          }
+          data: {
+            stars: { decrement: 1 },
+          },
         });
         creditType = "stars";
       } else {
         // Use free points
         updatedUser = await tx.user.update({
           where: { id: user.id },
-          data: { 
-            freePoint: { decrement: 1 }
-          }
+          data: {
+            freePoint: { decrement: 1 },
+          },
         });
         creditType = "freePoint";
       }
@@ -99,19 +111,23 @@ export async function POST(request: NextRequest) {
           deltaPoint: creditType === "freePoint" ? -1 : 0,
           deltaCoins: 0,
           deltaExp: 0,
-          metadata: { 
+          metadata: {
             question: question.substring(0, 50) + "...",
-            creditType 
-          }
-        }
+            creditType,
+          },
+        },
       });
 
       return updatedUser;
     });
 
     // Create pending reading
-    console.log("Creating pending reading with data:", { userId: user.id, question, type });
-    
+    console.log("Creating pending reading with data:", {
+      userId: user.id,
+      question,
+      type,
+    });
+
     let pendingReading;
     try {
       pendingReading = await createPendingReading(user.id, question, type);
@@ -119,7 +135,10 @@ export async function POST(request: NextRequest) {
     } catch (createError) {
       console.error("Error creating pending reading:", createError);
       return NextResponse.json(
-        createCategorizedErrorResponse("SYSTEM_ERROR", "/api/readings/test-async"),
+        createCategorizedErrorResponse(
+          "SYSTEM_ERROR",
+          "/api/readings/test-async"
+        ),
         { status: 500 }
       );
     }
@@ -127,7 +146,10 @@ export async function POST(request: NextRequest) {
     if (!pendingReading) {
       console.error("createPendingReading returned null/undefined");
       return NextResponse.json(
-        createCategorizedErrorResponse("SYSTEM_ERROR", "/api/readings/test-async"),
+        createCategorizedErrorResponse(
+          "SYSTEM_ERROR",
+          "/api/readings/test-async"
+        ),
         { status: 500 }
       );
     }
@@ -144,14 +166,16 @@ export async function POST(request: NextRequest) {
       user: {
         stars: result.stars,
         freePoint: result.freePoint,
-        level: result.level
-      }
+        level: result.level,
+      },
     });
-
   } catch (error) {
     console.error("Test async reading error:", error);
     return NextResponse.json(
-      createCategorizedErrorResponse("SYSTEM_ERROR", "/api/readings/test-async"),
+      createCategorizedErrorResponse(
+        "SYSTEM_ERROR",
+        "/api/readings/test-async"
+      ),
       { status: 500 }
     );
   }

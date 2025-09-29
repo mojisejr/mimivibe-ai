@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { safeFormatDistanceToNow } from "@/lib/utils/dateUtils";
+import { ReadingStatus } from "@/types/reading";
 
 interface Card {
   id: number;
@@ -35,7 +36,8 @@ interface Reading {
     topic?: string;
     timeframe?: string;
   };
-  answer: ReadingStructure; // Changed from 'reading: any' to full structure
+  answer: ReadingStructure | null; // Can be null for pending/processing readings
+  status: ReadingStatus; // Add reading status
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
@@ -112,20 +114,95 @@ export const ReadingCard = ({
     return "🔮";
   };
 
+  const getStatusDisplay = (status: ReadingStatus) => {
+    switch (status) {
+      case ReadingStatus.PENDING:
+        return {
+          text: "รอการประมวลผล",
+          emoji: "⏳",
+          color: "text-warning",
+          bgColor: "bg-warning/10",
+          borderColor: "border-warning/30",
+        };
+      case ReadingStatus.PROCESSING:
+        return {
+          text: "กำลังประมวลผล",
+          emoji: "🔮",
+          color: "text-info",
+          bgColor: "bg-info/10",
+          borderColor: "border-info/30",
+        };
+      case ReadingStatus.COMPLETED:
+        return {
+          text: "เสร็จสมบูรณ์",
+          emoji: "✅",
+          color: "text-success",
+          bgColor: "bg-success/10",
+          borderColor: "border-success/30",
+        };
+      case ReadingStatus.FAILED:
+        return {
+          text: "ประมวลผลไม่สำเร็จ",
+          emoji: "❌",
+          color: "text-error",
+          bgColor: "bg-error/10",
+          borderColor: "border-error/30",
+        };
+      default:
+        return {
+          text: "ไม่ทราบสถานะ",
+          emoji: "❓",
+          color: "text-neutral",
+          bgColor: "bg-neutral/10",
+          borderColor: "border-neutral/30",
+        };
+    }
+  };
+
+  const statusDisplay = getStatusDisplay(reading.status);
+  const isClickable = reading.status === ReadingStatus.COMPLETED;
+  const isProcessing =
+    reading.status === ReadingStatus.PROCESSING ||
+    reading.status === ReadingStatus.PENDING;
+
   return (
     <div
-      className="card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer h-full flex flex-col border border-base-300/50 hover:border-primary/30"
-      onClick={onClick}
+      className={`card bg-base-100 shadow-md transition-all duration-300 h-full flex flex-col border ${
+        isClickable
+          ? "hover:shadow-xl hover:scale-[1.02] cursor-pointer border-base-300/50 hover:border-primary/30"
+          : `cursor-not-allowed opacity-75 ${statusDisplay.borderColor}`
+      } ${statusDisplay.bgColor}`}
+      onClick={isClickable ? onClick : undefined}
     >
       <div className="card-body flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex flex-col items-start justify-between mb-3">
           <h3 className="font-semibold text-base-content line-clamp-2 flex-1 mr-3 text-sm md:text-base leading-tight">
             {reading.question}
           </h3>
-          <div className="text-xl md:text-2xl flex-shrink-0 bg-primary/10 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center">
-            {getTopicEmoji(reading.analysis?.topic)}
+          <div className="flex items-center space-x-2">
+            {reading.analysis?.topic && (
+              <div className="badge badge-primary badge-sm text-xs">
+                {reading.analysis.topic}
+              </div>
+            )}
           </div>
+          {/* <div className="text-xl md:text-2xl flex-shrink-0 bg-primary/10 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center">
+            {getTopicEmoji(reading.analysis?.topic)}
+          </div> */}
+        </div>
+
+        {/* Status Display */}
+        <div
+          className={`flex items-center justify-center mb-3 px-3 py-2 rounded-lg border ${statusDisplay.borderColor} ${statusDisplay.bgColor}`}
+        >
+          <span className="text-lg mr-2">{statusDisplay.emoji}</span>
+          <span className={`text-sm font-medium ${statusDisplay.color}`}>
+            {statusDisplay.text}
+          </span>
+          {isProcessing && (
+            <div className="ml-2 loading loading-spinner loading-xs"></div>
+          )}
         </div>
 
         {/* Cards Preview */}
@@ -155,14 +232,6 @@ export const ReadingCard = ({
               <span className="mr-1">🕐</span>
               {safeFormatDistanceToNow(reading.createdAt, "ไม่ทราบวันที่")}
             </p>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {reading.analysis?.topic && (
-              <div className="badge badge-outline badge-xs text-xs">
-                {reading.analysis.topic}
-              </div>
-            )}
           </div>
         </div>
 
@@ -213,11 +282,45 @@ export const ReadingCard = ({
             </div>
           )}
           <div className="flex gap-2 items-center justify-between">
-            <button className="btn btn-sm btn-primary flex-1 text-primary-content">
-              อ่านรายละเอียด
-            </button>
-            {/* Delete Button */}
-            {onDelete && (
+            {reading.status === ReadingStatus.COMPLETED ? (
+              <button className="btn btn-sm btn-primary flex-1 text-primary-content">
+                อ่านรายละเอียด
+              </button>
+            ) : reading.status === ReadingStatus.FAILED ? (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Navigate to ask page with the same question
+                    window.location.href = `/ask?question=${encodeURIComponent(
+                      reading.question
+                    )}`;
+                  }}
+                  className="btn btn-sm btn-warning flex-1"
+                >
+                  ลองใหม่
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onDelete) onDelete(reading.id);
+                  }}
+                  className="btn btn-sm btn-error btn-square"
+                  title="ลบการทำนาย"
+                >
+                  🗑️
+                </button>
+              </>
+            ) : (
+              <button className="btn btn-sm btn-disabled flex-1" disabled>
+                {reading.status === ReadingStatus.PENDING
+                  ? "รอการประมวลผล..."
+                  : "กำลังประมวลผล..."}
+              </button>
+            )}
+
+            {/* Delete Button for completed readings */}
+            {reading.status === ReadingStatus.COMPLETED && onDelete && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();

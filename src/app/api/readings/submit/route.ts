@@ -1,82 +1,101 @@
 /**
  * Async Reading Submission API
  * Part of Task #243: Async Reading System Implementation
- * 
+ *
  * This endpoint creates a pending reading and returns immediately,
  * allowing background processing to handle the actual reading generation.
  */
 
-import { auth } from '@clerk/nextjs'
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { createPendingReading, getEstimatedProcessingTime } from '@/lib/database/reading-status'
-import { ReadingSubmissionResponse, ReadingStatus } from '@/types/reading'
-import { comprehensiveSecurityCheck } from '@/lib/security/ai-protection'
-import { createCategorizedErrorResponse } from '@/lib/errors/categories'
+import { auth } from "@clerk/nextjs";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import {
+  createPendingReading,
+  getEstimatedProcessingTime,
+} from "@/lib/database/reading-status";
+import { ReadingSubmissionResponse, ReadingStatus } from "@/types/reading";
+import { comprehensiveSecurityCheck } from "@/lib/security/ai-protection";
+import { createCategorizedErrorResponse } from "@/lib/errors/categories";
 
 // Force dynamic rendering for authentication
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = auth()
-    
+    const { userId } = auth();
+
     if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Unauthorized',
-        message: 'Authentication required',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/submit'
-      }, { status: 401 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unauthorized",
+          message: "Authentication required",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/submit",
+        },
+        { status: 401 }
+      );
     }
 
-    const body = await request.json()
-    const { question, type = 'tarot' } = body
+    const body = await request.json();
+    const { question, type = "tarot" } = body;
 
     // Validate required fields
-    if (!question || typeof question !== 'string') {
-      return NextResponse.json({
-        success: false,
-        error: 'Bad request',
-        message: 'Question is required and must be a string',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/submit'
-      }, { status: 400 })
+    if (!question || typeof question !== "string") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bad request",
+          message: "Question is required and must be a string",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/submit",
+        },
+        { status: 400 }
+      );
     }
 
     // Sanitize and validate question
-    const sanitizedQuestion = question.trim()
+    const sanitizedQuestion = question.trim();
     if (sanitizedQuestion.length < 10) {
-      return NextResponse.json({
-        success: false,
-        error: 'Bad request',
-        message: 'Question must be at least 10 characters long',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/submit'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bad request",
+          message: "Question must be at least 10 characters long",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/submit",
+        },
+        { status: 400 }
+      );
     }
 
-    if (sanitizedQuestion.length > 500) {
-      return NextResponse.json({
-        success: false,
-        error: 'Bad request',
-        message: 'Question must be less than 500 characters',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/submit'
-      }, { status: 400 })
+    if (sanitizedQuestion.length > 180) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bad request",
+          message: "Question must be less than 180 characters",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/submit",
+        },
+        { status: 400 }
+      );
     }
 
     // Security validation
-    const securityAnalysis = comprehensiveSecurityCheck(sanitizedQuestion)
+    const securityAnalysis = comprehensiveSecurityCheck(sanitizedQuestion);
     if (securityAnalysis.isBlocked) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid question',
-        message: 'คำถามไม่เหมาะสมสำหรับการทำนาย กรุณาใช้คำถามที่สุภาพและเหมาะสม',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/submit'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid question",
+          message:
+            "คำถามไม่เหมาะสมสำหรับการทำนาย กรุณาใช้คำถามที่สุภาพและเหมาะสม",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/submit",
+        },
+        { status: 400 }
+      );
     }
 
     // Check user exists and has sufficient credits
@@ -88,94 +107,97 @@ export async function POST(request: NextRequest) {
         stars: true,
         coins: true,
         exp: true,
-        level: true
-      }
-    })
+        level: true,
+      },
+    });
 
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        error: 'User not found',
-        message: 'User account not found',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/submit'
-      }, { status: 404 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "User not found",
+          message: "User account not found",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/submit",
+        },
+        { status: 404 }
+      );
     }
 
-    // Check if user has enough credits
-    const totalCredits = user.freePoint + user.stars
+    // Check if user has enough credits (validation only, no deduction yet)
+    const totalCredits = user.freePoint + user.stars;
     if (totalCredits < 1) {
-      return NextResponse.json({
-        success: false,
-        error: 'Insufficient credits',
-        message: 'ไม่มีเครดิตเพียงพอสำหรับการทำนาย',
-        timestamp: new Date().toISOString(),
-        path: '/api/readings/submit'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Insufficient credits",
+          message: "ไม่มีเครดิตเพียงพอสำหรับการทำนาย",
+          timestamp: new Date().toISOString(),
+          path: "/api/readings/submit",
+        },
+        { status: 400 }
+      );
     }
 
-    // Create transaction and pending reading
-    const result = await prisma.$transaction(async (tx) => {
-      // Deduct credits (prefer freePoint first)
-      const deltaFreePoint = Math.min(1, user.freePoint)
-      const deltaStars = deltaFreePoint < 1 ? 1 : 0
-
-      // Create transaction record
-      const transactionId = `txn_${Date.now()}_${userId.slice(-8)}`
-      await tx.pointTransaction.create({
-        data: {
-          id: transactionId,
-          userId,
-          eventType: "READING_SPEND",
-          deltaPoint: -deltaStars,
-          deltaCoins: 0, // No immediate reward for async
-          deltaExp: 0,   // No immediate reward for async
-          metadata: {
-            reason: "Async tarot reading submission",
-            freePointUsed: -deltaFreePoint,
-            starsUsed: -deltaStars,
-            questionLength: sanitizedQuestion.length,
-            securityAnalysis: {
-              riskLevel: securityAnalysis.riskLevel,
-              confidence: securityAnalysis.confidence,
-              detectedPatterns: securityAnalysis.detectedPatterns,
-            },
-            async: true,
-          },
-        },
-      })
-
-      // Update user credits
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          freePoint: user.freePoint - deltaFreePoint,
-          stars: user.stars - deltaStars,
-        },
-      })
-
-      return {
-        transactionId,
-        creditsUsed: {
-          freePoint: deltaFreePoint,
-          stars: deltaStars,
-        },
-      }
-    })
+    console.log(
+      "💳 Credit validation passed for user:",
+      userId,
+      "Total credits:",
+      totalCredits
+    );
 
     // Create pending reading record
-    const reading = await createPendingReading(userId, sanitizedQuestion, type)
-    
+    console.log("🔄 Creating pending reading for user:", userId);
+    const reading = await createPendingReading(userId, sanitizedQuestion, type);
+    console.log("📝 Pending reading created:", reading ? reading.id : "FAILED");
+
     if (!reading) {
+      console.error("❌ Failed to create pending reading");
       return NextResponse.json(
-        createCategorizedErrorResponse('DATABASE_ERROR', '/api/readings/submit'),
+        createCategorizedErrorResponse(
+          "DATABASE_ERROR",
+          "/api/readings/submit"
+        ),
         { status: 500 }
       );
     }
 
     // Get estimated processing time
-    const estimatedTime = await getEstimatedProcessingTime()
-    const estimatedSeconds = Math.ceil((estimatedTime.getTime() - Date.now()) / 1000)
+    const estimatedTime = await getEstimatedProcessingTime();
+    const estimatedSeconds = Math.ceil(
+      (estimatedTime.getTime() - Date.now()) / 1000
+    );
+
+    console.log("🚀 Triggering background processing for reading:", reading.id);
+
+    // Trigger background processing (fire and forget)
+    fetch(
+      `${
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      }/api/readings/process`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          readingId: reading.id,
+        }),
+      }
+    )
+      .then((response) => {
+        console.log(
+          "📡 Background processing triggered, status:",
+          response.status
+        );
+        return response.json();
+      })
+      .then((data) => {
+        console.log("📊 Background processing response:", data);
+      })
+      .catch((error) => {
+        console.error("❌ Failed to trigger background processing:", error);
+      });
 
     const response: ReadingSubmissionResponse = {
       success: true,
@@ -183,21 +205,24 @@ export async function POST(request: NextRequest) {
         readingId: reading.id,
         status: ReadingStatus.PENDING,
         estimatedCompletionTime: estimatedSeconds,
-        confirmationUrl: `/readings/${reading.id}`
-      }
-    }
+        confirmationUrl: `/readings/${reading.id}`,
+      },
+    };
 
-    return NextResponse.json(response)
-
+    console.log("✅ Reading submission completed successfully:", reading.id);
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Async reading submission error:', error)
-    
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      message: 'Failed to submit reading request',
-      timestamp: new Date().toISOString(),
-      path: '/api/readings/submit'
-    }, { status: 500 })
+    console.error("Async reading submission error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Internal server error",
+        message: "Failed to submit reading request",
+        timestamp: new Date().toISOString(),
+        path: "/api/readings/submit",
+      },
+      { status: 500 }
+    );
   }
 }

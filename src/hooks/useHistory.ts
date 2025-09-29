@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from '@clerk/nextjs';
+import { ReadingStatus } from '@/types/reading';
 
 interface Card {
   id: number;
@@ -44,7 +45,8 @@ interface Reading {
     topic: string;
     timeframe: string;
   };
-  answer: ReadingStructure; // Changed from 'reading: string' to full structure
+  answer: ReadingStructure | null; // Changed from 'reading: string' to full structure, nullable for pending readings
+  status: ReadingStatus;
   createdAt: string;
   expEarned: number;
   coinsEarned: number;
@@ -136,6 +138,7 @@ export const useHistory = (initialLimit = 6) => {
             end: '',
             notice: ''
           },
+          status: reading.status, // Add missing status field mapping
           createdAt: reading.createdAt || new Date().toISOString(),
           expEarned: reading.expEarned || 15, // Use actual value or default
           coinsEarned: reading.coinsEarned || 3, // Use actual value or default
