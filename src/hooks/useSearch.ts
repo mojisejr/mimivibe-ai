@@ -35,7 +35,6 @@ interface SearchResult {
 
 interface SearchState {
   results: SearchResult[];
-  filteredResults: SearchResult[];
   loading: boolean;
   error: string | null;
   total: number;
@@ -156,7 +155,6 @@ function applyFilters(results: SearchResult[], filters: FilterOptions): SearchRe
 export function useSearch(initialData: SearchResult[] = []): UseSearchReturn {
   const [state, setState] = useState<SearchState>({
     results: [],
-    filteredResults: [],
     loading: false,
     error: null,
     total: 0,
@@ -184,15 +182,6 @@ export function useSearch(initialData: SearchResult[] = []): UseSearchReturn {
   const filteredResults = useMemo(() => {
     return applyFilters(state.results, state.filters);
   }, [state.results, state.filters]);
-
-  // Update filtered results when they change
-  useEffect(() => {
-    setState(prev => ({
-      ...prev,
-      filteredResults,
-      total: filteredResults.length
-    }));
-  }, [filteredResults]);
 
   const setFilters = useCallback((filters: FilterOptions) => {
     setState(prev => ({

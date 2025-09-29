@@ -143,7 +143,7 @@ model Reading {
   errorMessage          String?
   processingCompletedAt DateTime?
   processingStartedAt   DateTime?
-  status                ReadingStatus @default(COMPLETED)
+  status                ReadingStatus @default(PENDING)
   cards                 ReadingCard[]
   reviews               Review[]
   user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)

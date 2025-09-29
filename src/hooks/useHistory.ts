@@ -138,6 +138,7 @@ export const useHistory = (initialLimit = 6) => {
             end: '',
             notice: ''
           },
+          status: reading.status, // Add missing status field mapping
           createdAt: reading.createdAt || new Date().toISOString(),
           expEarned: reading.expEarned || 15, // Use actual value or default
           coinsEarned: reading.coinsEarned || 3, // Use actual value or default
