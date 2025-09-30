@@ -8,6 +8,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useToast } from "@/components/ui/ToastContainer";
 import { motion } from "framer-motion";
 import { PricingCards } from "@/components/landing/PricingCards";
+import { AnimatedTarotCards } from "@/components/landing/AnimatedTarotCards";
 import { useTranslation } from '@/lib/i18n';
 
 // ===== OLD IMPLEMENTATION (COMMENTED OUT) =====
@@ -865,7 +866,12 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
+        {/* Main Content Container */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center justify-between min-h-[80vh]">
+            
+            {/* Left Content Area */}
+            <div className="flex-1 lg:pr-12 text-center lg:text-left">
           {/* Main Title */}
           <motion.h1
             className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-relaxed"
@@ -957,6 +963,14 @@ export default function HomePage() {
               <span>ดูตัวอย่าง</span>
             </motion.button> */}
           </motion.div>
+            </div>
+
+            {/* Right Content Area - Animated Tarot Cards */}
+            <div className="flex-1 relative hidden lg:block">
+              <AnimatedTarotCards />
+            </div>
+
+          </div>
         </div>
       </section>
 
