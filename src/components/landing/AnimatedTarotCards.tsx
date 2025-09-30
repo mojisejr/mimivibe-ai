@@ -18,25 +18,41 @@ const tarotCards: TarotCard[] = [
     id: "ace-of-cups",
     src: "/images/hero/40_ace_of_cups.png",
     alt: "Ace of Cups Tarot Card",
-    initialX: -200,
-    initialY: -150,
-    rotation: -15,
+    initialX: -80,
+    initialY: -60,
+    rotation: -12,
   },
   {
     id: "the-star",
     src: "/images/hero/40_the_star.png",
     alt: "The Star Tarot Card",
-    initialX: 200,
-    initialY: -100,
-    rotation: 20,
+    initialX: 60,
+    initialY: -80,
+    rotation: 15,
   },
   {
     id: "wheel-of-fortune",
     src: "/images/hero/40_wheel_of_fortune.png",
     alt: "Wheel of Fortune Tarot Card",
-    initialX: -100,
-    initialY: 200,
-    rotation: 10,
+    initialX: -40,
+    initialY: 80,
+    rotation: 8,
+  },
+  {
+    id: "the-lovers",
+    src: "/images/hero/40_the_lovers.png",
+    alt: "The Lovers Tarot Card",
+    initialX: 80,
+    initialY: 60,
+    rotation: -18,
+  },
+  {
+    id: "the-sun",
+    src: "/images/hero/40_the_sun.png",
+    alt: "The Sun Tarot Card",
+    initialX: 0,
+    initialY: 0,
+    rotation: 5,
   },
 ];
 
@@ -50,7 +66,7 @@ export function AnimatedTarotCards() {
   }, []);
 
   return (
-    <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 w-full h-full  pointer-events-none">
       {tarotCards.map((card, index) => (
         <motion.div
           key={card.id}
@@ -60,7 +76,7 @@ export function AnimatedTarotCards() {
             y: card.initialY,
             rotate: card.rotation,
             opacity: 0,
-            scale: 0.5,
+            scale: 1.2,
           }}
           animate={
             isVisible
@@ -69,56 +85,60 @@ export function AnimatedTarotCards() {
                     card.initialX,
                     card.initialX + 50,
                     card.initialX + 20,
-                    card.initialX + 80,
-                    card.initialX + 40,
+                    card.initialX,
                   ],
                   y: [
                     card.initialY,
-                    card.initialY - 30,
-                    card.initialY + 20,
-                    card.initialY - 10,
+                    card.initialY - 20,
                     card.initialY + 15,
+                    card.initialY - 25,
+                    card.initialY + 10,
+                    card.initialY - 15,
+                    card.initialY,
                   ],
                   rotate: [
                     card.rotation,
+                    card.rotation + 3,
+                    card.rotation - 2,
                     card.rotation + 5,
                     card.rotation - 3,
-                    card.rotation + 8,
-                    card.rotation - 2,
+                    card.rotation + 2,
+                    card.rotation,
                   ],
-                  opacity: [0, 0.8, 0.9, 0.7, 0.85],
-                  scale: [0.5, 1, 0.95, 1.05, 1],
+                  opacity: [0, 0.7, 0.9, 0.8, 0.95, 0.85, 0.9],
+                  scale: [0.8, 1, 0.98, 1.02, 0.99, 1.01, 1],
                 }
               : {}
           }
           transition={{
-            duration: 8,
+            duration: 12,
             repeat: Infinity,
-            repeatType: "reverse",
-            ease: "easeInOut",
-            delay: index * 0.8,
+            repeatType: "loop",
+            ease: [0.4, 0.0, 0.2, 1],
+            delay: index * 1.2,
           }}
           style={{
-            left: "50%",
-            top: "50%",
+            left: "30%",
+            top: "30%",
             transform: "translate(-50%, -50%)",
           }}
         >
           {/* Card Glow Effect */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 rounded-lg blur-lg"
+            className="absolute inset-0 bg-gradient-to-r from-purple-500/30 via-blue-500/25 to-pink-500/30 rounded-lg blur-xl"
             animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.6, 0.3],
+              scale: [1, 1.3, 1.1, 1.4, 1],
+              opacity: [0.2, 0.5, 0.3, 0.6, 0.4],
+              rotate: [0, 5, -3, 8, 0],
             }}
             transition={{
-              duration: 3,
+              duration: 8,
               repeat: Infinity,
-              ease: "easeInOut",
-              delay: index * 0.5,
+              ease: [0.4, 0.0, 0.2, 1],
+              delay: index * 0.6,
             }}
           />
-          
+
           {/* Card Image */}
           <motion.div
             className="relative z-10 w-24 h-36 md:w-32 md:h-48 lg:w-36 lg:h-54 rounded-lg overflow-hidden shadow-2xl"
@@ -136,43 +156,51 @@ export function AnimatedTarotCards() {
               sizes="(max-width: 768px) 96px, (max-width: 1024px) 128px, 144px"
               priority={index === 0}
             />
-            
+
             {/* Magical Sparkle Overlay */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-transparent"
+              className="absolute inset-0 bg-gradient-to-br from-transparent via-white/15 to-transparent"
               animate={{
-                opacity: [0, 0.3, 0],
-                scale: [1, 1.05, 1],
+                opacity: [0, 0.4, 0.1, 0.5, 0],
+                scale: [1, 1.03, 1.01, 1.05, 1],
+                rotate: [0, 2, -1, 3, 0],
               }}
               transition={{
-                duration: 2,
+                duration: 6,
                 repeat: Infinity,
-                ease: "easeInOut",
-                delay: index * 0.7 + 1,
+                ease: [0.4, 0.0, 0.2, 1],
+                delay: index * 0.8 + 1,
               }}
             />
           </motion.div>
 
           {/* Floating Sparkles */}
-          {[...Array(3)].map((_, sparkleIndex) => (
+          {[...Array(4)].map((_, sparkleIndex) => (
             <motion.div
               key={`sparkle-${sparkleIndex}`}
-              className="absolute w-2 h-2 bg-accent rounded-full"
+              className={`absolute w-1.5 h-1.5 rounded-full ${
+                sparkleIndex % 3 === 0 
+                  ? 'bg-purple-400' 
+                  : sparkleIndex % 3 === 1 
+                  ? 'bg-blue-400' 
+                  : 'bg-pink-400'
+              }`}
               animate={{
-                x: [0, 20, -15, 25, 0],
-                y: [0, -25, 15, -20, 0],
-                opacity: [0, 1, 0.5, 1, 0],
-                scale: [0, 1, 0.5, 1, 0],
+                x: [0, 15, -10, 20, -5, 12, 0],
+                y: [0, -20, 12, -15, 8, -18, 0],
+                opacity: [0, 0.8, 0.4, 1, 0.6, 0.9, 0],
+                scale: [0, 1.2, 0.6, 1, 0.8, 1.1, 0],
+                rotate: [0, 180, 90, 270, 45, 315, 0],
               }}
               transition={{
-                duration: 4,
+                duration: 8,
                 repeat: Infinity,
-                ease: "easeInOut",
-                delay: index * 0.3 + sparkleIndex * 0.5,
+                ease: [0.4, 0.0, 0.2, 1],
+                delay: index * 0.4 + sparkleIndex * 0.6,
               }}
               style={{
-                left: `${20 + sparkleIndex * 30}%`,
-                top: `${10 + sparkleIndex * 20}%`,
+                left: `${15 + sparkleIndex * 25}%`,
+                top: `${8 + sparkleIndex * 18}%`,
               }}
             />
           ))}
