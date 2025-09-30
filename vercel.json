@@ -1,8 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
       "path": "/api/readings/process",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/2 * * * *"
     }
   ],
   "functions": {
@@ -32,12 +33,6 @@
           "value": "nosniff"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/readings/process",
-      "destination": "/api/readings/process"
     }
   ]
 }

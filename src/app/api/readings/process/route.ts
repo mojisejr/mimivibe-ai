@@ -73,25 +73,54 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/readings/process
- * Get processing statistics
+ * Trigger processing of pending readings (for Vercel cron jobs)
+ * Also returns processing statistics
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    console.log("🎯 [PROCESS-API-GET] Cron job triggered processing endpoint");
+    
+    // Check if this is a cron job request by looking at headers
+    const userAgent = request.headers.get('user-agent') || '';
+    const isCronJob = userAgent.includes('vercel') || userAgent.includes('cron');
+    
+    if (isCronJob) {
+      console.log("🤖 [PROCESS-API-GET] Detected Vercel cron job request");
+      
+      // Process pending readings with default batch size
+      const batchSize = 5;
+      console.log(`📦 [PROCESS-API-GET] Processing pending readings with batch size: ${batchSize}`);
+      const result = await processPendingReadings(batchSize);
+      console.log(`📊 [PROCESS-API-GET] Cron processing result:`, result);
+
+      return NextResponse.json({
+        success: true,
+        message: `Cron job processed ${result.processed} readings`,
+        stats: result,
+        cronJob: true,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // For regular GET requests, just return statistics
     const { getProcessingStats } = await import("@/lib/database/reading-status");
     const stats = await getProcessingStats();
 
     return NextResponse.json({
       success: true,
       stats,
+      cronJob: false,
+      timestamp: new Date().toISOString(),
     });
 
   } catch (error) {
-    console.error("Failed to get processing stats:", error);
+    console.error("❌ [PROCESS-API-GET] Processing error:", error);
     
     return NextResponse.json({
       success: false,
-      error: "Failed to get processing statistics",
+      error: "Failed to process readings",
       message: error instanceof Error ? error.message : "Unknown error",
+      timestamp: new Date().toISOString(),
     }, { status: 500 });
   }
 }
