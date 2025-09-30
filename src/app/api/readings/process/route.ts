@@ -6,8 +6,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processPendingReadings, processReading } from "@/lib/background/reading-processor";
 
-// Force dynamic rendering
+// Force dynamic rendering and prevent caching for cron jobs
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 /**
  * POST /api/readings/process
@@ -77,28 +78,65 @@ export async function POST(request: NextRequest) {
  * Also returns processing statistics
  */
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  const timestamp = new Date().toISOString();
+  
   try {
-    console.log("🎯 [PROCESS-API-GET] Cron job triggered processing endpoint");
+    // Enhanced logging for debugging
+    const userAgent = request.headers.get('user-agent') || '';
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const referer = request.headers.get('referer') || 'none';
+    
+    console.log(`🔍 [CRON-DEBUG] ${timestamp} - GET request received`);
+    console.log(`🔍 [CRON-DEBUG] User-Agent: ${userAgent}`);
+    console.log(`🔍 [CRON-DEBUG] IP: ${ip}`);
+    console.log(`🔍 [CRON-DEBUG] Referer: ${referer}`);
     
     // Check if this is a cron job request by looking at headers
-    const userAgent = request.headers.get('user-agent') || '';
     const isCronJob = userAgent.includes('vercel') || userAgent.includes('cron');
     
+    console.log(`🔍 [CRON-DEBUG] Is Vercel Cron: ${isCronJob}`);
+    
     if (isCronJob) {
-      console.log("🤖 [PROCESS-API-GET] Detected Vercel cron job request");
+      console.log("🤖 [CRON-START] Vercel cron job detected - starting authentication");
+      
+      // Verify CRON_SECRET for security
+      const cronSecret = request.headers.get("authorization") || 
+                        request.nextUrl.searchParams.get("secret");
+      const expectedSecret = process.env.CRON_SECRET;
+
+      console.log(`🔍 [CRON-DEBUG] CRON_SECRET configured: ${!!expectedSecret}`);
+      console.log(`🔍 [CRON-DEBUG] Secret provided: ${!!cronSecret}`);
+
+      if (!expectedSecret) {
+        console.warn("⚠️ [CRON-WARN] CRON_SECRET not configured - cron job authentication disabled");
+      } else if (cronSecret !== expectedSecret) {
+        console.error("🚫 [CRON-ERROR] Invalid CRON_SECRET provided for cron job");
+        console.error(`🚫 [CRON-ERROR] Expected length: ${expectedSecret.length}, Provided length: ${cronSecret?.length || 0}`);
+        return NextResponse.json(
+          { error: "Unauthorized - Invalid CRON_SECRET" },
+          { status: 401 }
+        );
+      }
+
+      console.log("✅ [CRON-AUTH] Authentication successful - proceeding with processing");
       
       // Process pending readings with default batch size
       const batchSize = 5;
-      console.log(`📦 [PROCESS-API-GET] Processing pending readings with batch size: ${batchSize}`);
+      console.log(`🤖 [CRON-PROCESS] Starting pending readings processing (batch size: ${batchSize})`);
       const result = await processPendingReadings(batchSize);
-      console.log(`📊 [PROCESS-API-GET] Cron processing result:`, result);
+      
+      const executionTime = Date.now() - startTime;
+      console.log(`✅ [CRON-COMPLETE] Processing completed in ${executionTime}ms`);
+      console.log(`📊 [CRON-STATS] Processed: ${result.processed}, Failed: ${result.failed}`);
 
       return NextResponse.json({
         success: true,
         message: `Cron job processed ${result.processed} readings`,
         stats: result,
         cronJob: true,
-        timestamp: new Date().toISOString(),
+        executionTime: `${executionTime}ms`,
+        timestamp: timestamp,
       });
     }
 
