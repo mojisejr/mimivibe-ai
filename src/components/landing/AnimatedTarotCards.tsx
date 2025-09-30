@@ -18,7 +18,7 @@ const tarotCards: TarotCard[] = [
     id: "ace-of-cups",
     src: "/images/hero/40_ace_of_cups.png",
     alt: "Ace of Cups Tarot Card",
-    initialX: -80,
+    initialX: -180,
     initialY: -60,
     rotation: -12,
   },
@@ -26,7 +26,7 @@ const tarotCards: TarotCard[] = [
     id: "the-star",
     src: "/images/hero/40_the_star.png",
     alt: "The Star Tarot Card",
-    initialX: 60,
+    initialX: 160,
     initialY: -80,
     rotation: 15,
   },
@@ -34,16 +34,16 @@ const tarotCards: TarotCard[] = [
     id: "wheel-of-fortune",
     src: "/images/hero/40_wheel_of_fortune.png",
     alt: "Wheel of Fortune Tarot Card",
-    initialX: -40,
-    initialY: 80,
-    rotation: 8,
+    initialX: -80,
+    initialY: 180,
+    rotation: 10,
   },
   {
     id: "the-lovers",
     src: "/images/hero/40_the_lovers.png",
     alt: "The Lovers Tarot Card",
-    initialX: 80,
-    initialY: 60,
+    initialX: 180,
+    initialY: 120,
     rotation: -18,
   },
   {
@@ -83,7 +83,10 @@ export function AnimatedTarotCards() {
               ? {
                   x: [
                     card.initialX,
-                    card.initialX + 50,
+                    card.initialX + 15,
+                    card.initialX - 10,
+                    card.initialX + 25,
+                    card.initialX - 5,
                     card.initialX + 20,
                     card.initialX,
                   ],
@@ -179,11 +182,11 @@ export function AnimatedTarotCards() {
             <motion.div
               key={`sparkle-${sparkleIndex}`}
               className={`absolute w-1.5 h-1.5 rounded-full ${
-                sparkleIndex % 3 === 0 
-                  ? 'bg-purple-400' 
-                  : sparkleIndex % 3 === 1 
-                  ? 'bg-blue-400' 
-                  : 'bg-pink-400'
+                sparkleIndex % 3 === 0
+                  ? "bg-purple-400"
+                  : sparkleIndex % 3 === 1
+                  ? "bg-blue-400"
+                  : "bg-pink-400"
               }`}
               animate={{
                 x: [0, 15, -10, 20, -5, 12, 0],
