@@ -50,7 +50,7 @@ export function AnimatedTarotCards() {
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
       {tarotCards.map((card, index) => (
         <motion.div
           key={card.id}
