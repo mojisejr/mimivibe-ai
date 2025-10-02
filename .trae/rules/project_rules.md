@@ -204,12 +204,12 @@ You are instructed to focus **ONLY** on the task described in the assigned Issue
 
 ## 🚀 Development Workflows (Agent-Driven)
 
-### The Two-Issue Pattern
+### The Local Context + Task Issue Pattern
 
-This project uses a Two-Issue Pattern to separate work context from actionable plans, integrating local workflows with GitHub Issues for clarity and traceability.
+This project uses a Local Context + Task Issue Pattern to separate work context from actionable plans, integrating local workflows with GitHub Issues for clarity and traceability.
 
-- **Context Issues (`=fcs`):** Used to record the current state and context of a session on GitHub.
-- **Task Issues (`=plan`):** Used to create a detailed and comprehensive plan of action on GitHub.
+- **Local Context (`=fcs`):** Used to record the current state and context of a session in local `current-focus.md` file with iteration-based tracking.
+- **Task Issues (`=plan`):** Used to create a detailed and comprehensive plan of action on GitHub, incorporating all context from `current-focus.md`.
 
 ---
 
@@ -217,7 +217,7 @@ This project uses a Two-Issue Pattern to separate work context from actionable p
 
 These commands are standard across all projects and streamline our communication with **AGENT-DRIVEN WORKFLOW INTEGRATION**.
 
-- **`=fcs > [message]`**: Updates the `current-focus.md` file locally and creates a **GitHub Context Issue**. (Follows same open-issue checking as before).
+- **`=fcs > [message]`**: Updates the `current-focus.md` file locally with iteration-based tracking. Each new focus is added as a numbered iteration at the top of the file with timestamp. **No GitHub issues are created**.
 
 - **`=plan > [question/problem]`**: Creates/Updates a **GitHub Task Issue** with a detailed and comprehensive plan of action. Includes pre-planning validation, codebase analysis, and staging context creation planning.
 
@@ -232,11 +232,11 @@ These commands are standard across all projects and streamline our communication
 
 - **`=pr > [Optional User Feedback]`**: **PULL REQUEST AND INTEGRATION WORKFLOW (Pull Request Agent)** - Instructs the dedicated PR Agent to review, consolidate, and create the Pull Request.
 
-  1.  **Information Gathering**: Reads Task Issue, Context Issue, and the **Iteration Note** to verify completeness and review implementation decisions.
+  1.  **Information Gathering**: Reads Task Issue, `current-focus.md`, and the **Iteration Note** to verify completeness and review implementation decisions.
   2.  **Quality Check**: Ensures **Remaining Tasks** in the **Iteration Note** are empty or tasks are completed/addressed. **STOPS** if work appears incomplete.
   3.  **Issue Update**: Marks completed checklist items (`[ ]` to `[x]`) in the Task Issue.
   4.  **Auto-PR Creation**: Creates Pull Request **TO STAGING BRANCH ONLY**. PR description includes a summary of the **Iteration Note (AI Diary)**.
-  5.  **Final Cleanup (If ALL done)**: Closes Task Issue and Context Issue.
+  5.  **Final Cleanup (If ALL done)**: Closes Task Issue and offers to clean up `current-focus.md`.
   6.  **User Notification**: Provides the PR link for review and merge.
 
 - **`=stage > [message]`**: **STAGING DEPLOYMENT WORKFLOW** - Deploys approved changes from feature branch to staging environment.
