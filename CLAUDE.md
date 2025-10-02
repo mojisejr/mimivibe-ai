@@ -24,6 +24,7 @@ Before creating a new file or saving any timestamps, you **MUST** use the follow
 ```bash
 date +"%Y-%m-%d %H:%M:%S"
 ```
+````
 
 ````
 
@@ -855,4 +856,3 @@ _From comprehensive security audit retrospectives_
 ```
 
 ```
-````
