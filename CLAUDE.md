@@ -1,9 +1,3 @@
-เพื่อให้ **Implementation Agent** และ **Pull Request Agent** (ที่เราสร้างขึ้นมาใหม่) ทำงานได้อย่างมีประสิทธิภาพและสอดคล้องกับเอกสารโครงการเดิมอย่างสมบูรณ์ ผมได้ปรับปรุงส่วน **Development Workflows** และ **Shortcut Commands** ในไฟล์ `CLAUDE.md` โดยเน้นกลไก **Iteration Note (AI Diary)** และการแยกหน้าที่ PR ออกไป
-
-นี่คือไฟล์ `CLAUDE.md` ฉบับสมบูรณ์ที่ปรับปรุงแล้วครับ:
-
-````markdown
----
 ## Project Overview
 
 **Project Name**: MiMiVibes - AI-Powered Tarot Reading Platform
@@ -30,6 +24,8 @@ Before creating a new file or saving any timestamps, you **MUST** use the follow
 ```bash
 date +"%Y-%m-%d %H:%M:%S"
 ```
+````
+
 ````
 
 This ensures accurate timestamp synchronization with the system clock and prevents time-related inconsistencies.

@@ -155,7 +155,7 @@ export function analyzeUserInput(
       type: 'AI_ABUSE',
       ip: ip || 'unknown',
       userAgent: userAgent || 'unknown',
-      url: '/api/readings/ask',
+      url: '/api/readings/submit',
       timestamp: new Date(),
       details: {
         riskLevel,

@@ -8,7 +8,8 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useToast } from "@/components/ui/ToastContainer";
 import { motion } from "framer-motion";
 import { PricingCards } from "@/components/landing/PricingCards";
-import { useTranslation } from '@/lib/i18n';
+import { AnimatedTarotCards } from "@/components/landing/AnimatedTarotCards";
+import { useTranslation } from "@/lib/i18n";
 
 // ===== OLD IMPLEMENTATION (COMMENTED OUT) =====
 /*
@@ -812,7 +813,10 @@ export default function HomePage() {
 
   // Animation transition configurations
   const defaultTransition = { duration: 0.6, ease: "easeOut" as const };
-  const delayedTransition = (delay: number) => ({ ...defaultTransition, delay });
+  const delayedTransition = (delay: number) => ({
+    ...defaultTransition,
+    delay,
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 overflow-x-hidden">
@@ -829,7 +833,7 @@ export default function HomePage() {
         >
           <SignInButton mode="modal">
             <button className="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-300">
-              {t('common.buttons.signIn')}
+              {t("common.buttons.signIn")}
             </button>
           </SignInButton>
         </motion.div>
@@ -865,90 +869,100 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
-          {/* Main Title */}
-          <motion.h1
-            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-relaxed"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={defaultTransition}
-          >
-            <span className="text-base-content">{t('pages.home.hero.title')}</span>
-          </motion.h1>
+        {/* Main Content Container */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center justify-between min-h-[80vh]">
+            {/* Left Content Area */}
+            <div className="flex-1 lg:pr-12 text-center lg:text-left">
+              {/* Main Title */}
+              <motion.h1
+                className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-relaxed"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={defaultTransition}
+              >
+                <span className="text-base-content">
+                  {t("pages.home.hero.title")}
+                </span>
+              </motion.h1>
 
-          {/* Subtitle */}
-          <motion.p
-            className="text-lg md:text-xl text-neutral-content mb-8 max-w-2xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={delayedTransition(0.2)}
-          >
-            {t('pages.home.hero.subtitle')}
-          </motion.p>
+              {/* Subtitle */}
+              <motion.p
+                className="text-lg md:text-xl text-neutral-content mb-8 max-w-2xl mx-auto leading-relaxed"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={delayedTransition(0.2)}
+              >
+                {t("pages.home.hero.subtitle")}
+              </motion.p>
 
-          {/* Trust Indicators */}
-          <motion.div
-            className="sm:flex flex-wrap justify-center items-center gap-4 mb-8 hidden"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={delayedTransition(0.4)}
-          >
-            <div className="badge badge-primary gap-2 text-sm">
-              <span>🔮</span>
-              <span>{t('pages.home.hero.trustBadges.accurate')}</span>
-            </div>
-            <div className="badge badge-secondary gap-2 text-sm">
-              <span>⚡</span>
-              <span>{t('pages.home.hero.trustBadges.instant')}</span>
-            </div>
-            <div className="badge badge-accent gap-2 text-sm">
-              <span>🛡️</span>
-              <span>{t('pages.home.hero.trustBadges.secure')}</span>
-            </div>
-          </motion.div>
+              {/* Trust Indicators */}
+              <motion.div
+                className="sm:flex flex-wrap justify-center items-center gap-4 mb-8 hidden"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={delayedTransition(0.4)}
+              >
+                <div className="badge badge-primary gap-2 text-sm">
+                  <span>🔮</span>
+                  <span>{t("pages.home.hero.trustBadges.accurate")}</span>
+                </div>
+                <div className="badge badge-secondary gap-2 text-sm">
+                  <span>⚡</span>
+                  <span>{t("pages.home.hero.trustBadges.instant")}</span>
+                </div>
+                <div className="badge badge-accent gap-2 text-sm">
+                  <span>🛡️</span>
+                  <span>{t("pages.home.hero.trustBadges.secure")}</span>
+                </div>
+              </motion.div>
 
-          {/* CTA Buttons */}
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={delayedTransition(0.6)}
-          >
-            <SignedIn>
-              <Link href="/ask">
-                <motion.button
-                  className="btn btn-lg bg-gradient-to-r from-primary via-primary-focus to-secondary text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 px-8 py-4 text-xl font-bold min-w-[280px] relative overflow-hidden group"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {/* Animated background effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-accent via-accent-focus to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <span className="relative z-10 flex items-center justify-center gap-3">
-                    <span className="text-2xl">🔮</span>
-                    <span className="font-bold">{t('common.buttons.startReading')}</span>
-                  </span>
-                </motion.button>
-              </Link>
-            </SignedIn>
+              {/* CTA Buttons */}
+              <motion.div
+                className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={delayedTransition(0.6)}
+              >
+                <SignedIn>
+                  <Link href="/ask">
+                    <motion.button
+                      className="btn btn-lg bg-gradient-to-r from-primary via-primary-focus to-secondary text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 px-8 py-4 text-xl font-bold min-w-[280px] relative overflow-hidden group"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {/* Animated background effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-accent via-accent-focus to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <span className="relative z-10 flex items-center justify-center gap-3">
+                        <span className="text-2xl">🔮</span>
+                        <span className="font-bold">
+                          {t("common.buttons.startReading")}
+                        </span>
+                      </span>
+                    </motion.button>
+                  </Link>
+                </SignedIn>
 
-            <SignedOut>
-              <SignInButton mode="modal">
-                <motion.button
-                  className="btn btn-lg bg-gradient-to-r from-primary via-primary-focus to-secondary text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 px-8 py-4 text-xl font-bold min-w-[280px] relative overflow-hidden group"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {/* Animated background effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-accent via-accent-focus to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <span className="relative z-10 flex items-center justify-center gap-3">
-                    <span className="text-2xl">🚀</span>
-                    <span className="font-bold">{t('common.buttons.beginJourney')}</span>
-                  </span>
-                </motion.button>
-              </SignInButton>
-            </SignedOut>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <motion.button
+                      className="btn btn-lg bg-gradient-to-r from-primary via-primary-focus to-secondary text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 px-8 py-4 text-xl font-bold min-w-[280px] relative overflow-hidden group"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {/* Animated background effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-accent via-accent-focus to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <span className="relative z-10 flex items-center justify-center gap-3">
+                        <span className="text-2xl">🚀</span>
+                        <span className="font-bold">
+                          {t("common.buttons.beginJourney")}
+                        </span>
+                      </span>
+                    </motion.button>
+                  </SignInButton>
+                </SignedOut>
 
-            {/* <motion.button
+                {/* <motion.button
               className="btn btn-outline btn-lg border-2 border-primary/30 hover:border-primary hover:bg-primary/10"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -956,7 +970,14 @@ export default function HomePage() {
               <span className="text-lg mr-2">▶️</span>
               <span>ดูตัวอย่าง</span>
             </motion.button> */}
-          </motion.div>
+              </motion.div>
+            </div>
+
+            {/* Right Content Area - Animated Tarot Cards */}
+            <div className="flex-1 relative hidden lg:block w-full h-full min-h-screen">
+              <AnimatedTarotCards />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -971,10 +992,11 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-base-content">
-              {t('pages.home.features.title')} <span className="text-primary">MiMiVIBE</span>? 🤔
+              {t("pages.home.features.title")}{" "}
+              <span className="text-primary">MiMiVIBE</span>? 🤔
             </h2>
             <p className="text-lg text-neutral-content max-w-2xl mx-auto">
-              {t('pages.home.features.subtitle')}
+              {t("pages.home.features.subtitle")}
             </p>
           </motion.div>
 
@@ -1004,10 +1026,10 @@ export default function HomePage() {
                     <span className="text-2xl">🤖</span>
                   </motion.div>
                   <h3 className="text-xl font-bold text-primary mb-4">
-                    {t('pages.home.features.aiPowered.title')}
+                    {t("pages.home.features.aiPowered.title")}
                   </h3>
                   <p className="text-base-content leading-relaxed">
-                    {t('pages.home.features.aiPowered.description')}
+                    {t("pages.home.features.aiPowered.description")}
                   </p>
                 </div>
               </div>
@@ -1032,10 +1054,10 @@ export default function HomePage() {
                     <span className="text-2xl">💫</span>
                   </motion.div>
                   <h3 className="text-xl font-bold text-secondary mb-4">
-                    {t('pages.home.features.personalized.title')}
+                    {t("pages.home.features.personalized.title")}
                   </h3>
                   <p className="text-base-content leading-relaxed">
-                    {t('pages.home.features.personalized.description')}
+                    {t("pages.home.features.personalized.description")}
                   </p>
                 </div>
               </div>
@@ -1060,10 +1082,10 @@ export default function HomePage() {
                     <span className="text-2xl">🌙</span>
                   </motion.div>
                   <h3 className="text-xl font-bold text-accent mb-4">
-                    {t('pages.home.features.available.title')}
+                    {t("pages.home.features.available.title")}
                   </h3>
                   <p className="text-base-content leading-relaxed">
-                    {t('pages.home.features.available.description')}
+                    {t("pages.home.features.available.description")}
                   </p>
                 </div>
               </div>
@@ -1083,10 +1105,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-base-content">
-              {t('pages.home.howItWorks.title')}
+              {t("pages.home.howItWorks.title")}
             </h2>
             <p className="text-lg text-neutral-content max-w-2xl mx-auto">
-              {t('pages.home.howItWorks.subtitle')}
+              {t("pages.home.howItWorks.subtitle")}
             </p>
           </motion.div>
 
@@ -1113,9 +1135,11 @@ export default function HomePage() {
                   <span className="text-sm">💭</span>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-primary mb-4">{t('pages.home.howItWorks.step1.title')}</h3>
+              <h3 className="text-xl font-bold text-primary mb-4">
+                {t("pages.home.howItWorks.step1.title")}
+              </h3>
               <p className="text-base-content">
-                {t('pages.home.howItWorks.step1.description')}
+                {t("pages.home.howItWorks.step1.description")}
               </p>
             </motion.div>
 
@@ -1136,10 +1160,10 @@ export default function HomePage() {
                 </div>
               </div>
               <h3 className="text-xl font-bold text-secondary mb-4">
-                {t('pages.home.howItWorks.step2.title')}
+                {t("pages.home.howItWorks.step2.title")}
               </h3>
               <p className="text-base-content">
-                {t('pages.home.howItWorks.step2.description')}
+                {t("pages.home.howItWorks.step2.description")}
               </p>
             </motion.div>
 
@@ -1159,9 +1183,11 @@ export default function HomePage() {
                   <span className="text-sm">✨</span>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-accent mb-4">{t('pages.home.howItWorks.step3.title')}</h3>
+              <h3 className="text-xl font-bold text-accent mb-4">
+                {t("pages.home.howItWorks.step3.title")}
+              </h3>
               <p className="text-base-content">
-                {t('pages.home.howItWorks.step3.description')}
+                {t("pages.home.howItWorks.step3.description")}
               </p>
             </motion.div>
           </motion.div>
@@ -1179,10 +1205,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-base-content">
-              {t('pages.home.pricing.title')}
+              {t("pages.home.pricing.title")}
             </h2>
             <p className="text-lg text-neutral-content max-w-2xl mx-auto">
-              {t('pages.home.pricing.subtitle')}
+              {t("pages.home.pricing.subtitle")}
             </p>
           </motion.div>
 
@@ -1200,10 +1226,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-base-content">
-              {t('pages.home.finalCta.title')}
+              {t("pages.home.finalCta.title")}
             </h2>
             <p className="text-lg text-neutral-content mb-8 max-w-2xl mx-auto">
-              {t('pages.home.finalCta.subtitle')}
+              {t("pages.home.finalCta.subtitle")}
             </p>
 
             <motion.div
@@ -1221,7 +1247,9 @@ export default function HomePage() {
                     whileTap={{ scale: 0.95 }}
                   >
                     <span className="text-xl mr-2">🔮</span>
-                    <span className="text-lg font-semibold">{t('pages.home.finalCta.buttons.startReading')}</span>
+                    <span className="text-lg font-semibold">
+                      {t("pages.home.finalCta.buttons.startReading")}
+                    </span>
                   </motion.button>
                 </Link>
               </SignedIn>
@@ -1234,7 +1262,9 @@ export default function HomePage() {
                     whileTap={{ scale: 0.95 }}
                   >
                     <span className="text-xl mr-2">🎯</span>
-                    <span className="text-lg font-semibold">{t('pages.home.finalCta.buttons.startFree')}</span>
+                    <span className="text-lg font-semibold">
+                      {t("pages.home.finalCta.buttons.startFree")}
+                    </span>
                   </motion.button>
                 </SignInButton>
               </SignedOut>
@@ -1245,7 +1275,7 @@ export default function HomePage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="text-lg mr-2">📞</span>
-                <span>{t('pages.home.finalCta.buttons.contactUs')}</span>
+                <span>{t("pages.home.finalCta.buttons.contactUs")}</span>
               </motion.button>
             </motion.div>
 
@@ -1259,15 +1289,15 @@ export default function HomePage() {
             >
               <div className="flex items-center gap-2 text-sm text-neutral-content">
                 <span>🔒</span>
-                <span>{t('pages.home.finalCta.trustBadges.secure')}</span>
+                <span>{t("pages.home.finalCta.trustBadges.secure")}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-neutral-content">
                 <span>⚡</span>
-                <span>{t('pages.home.finalCta.trustBadges.instant')}</span>
+                <span>{t("pages.home.finalCta.trustBadges.instant")}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-neutral-content">
                 <span>💎</span>
-                <span>{t('pages.home.finalCta.trustBadges.quality')}</span>
+                <span>{t("pages.home.finalCta.trustBadges.quality")}</span>
               </div>
             </motion.div>
           </motion.div>

@@ -12,5 +12,8 @@
 /scripts
 local-docs/
 notes/
+docs/
 exports/
 current-focus.md
+.vercel
+
