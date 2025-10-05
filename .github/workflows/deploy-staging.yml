@@ -92,7 +92,7 @@ jobs:
           port: 22
           script: |
             # Navigate to project directory
-            cd /opt/mimivibe-staging
+            cd /app/mimivibe-backend
 
             # Pull latest changes
             git fetch origin
