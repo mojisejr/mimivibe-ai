@@ -133,15 +133,6 @@ jobs:
             # Clean up old images
             docker image prune -f
 
-      - name: Deploy Frontend to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod --env NEXT_PUBLIC_API_URL=https://${{ secrets.DO_HOST_STAGING }}:3001'
-          working-directory: ./
-
       # Slack notification disabled - SLACK_WEBHOOK not configured
       # - name: Notify deployment status
       #   if: always()
