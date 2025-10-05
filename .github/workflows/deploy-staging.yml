@@ -133,13 +133,14 @@ jobs:
             # Clean up old images
             docker image prune -f
 
-      # Slack notification disabled - SLACK_WEBHOOK not configured
-      # - name: Notify deployment status
-      #   if: always()
-      #   uses: 8398a7/action-slack@v3
-      #   with:
-      #     status: ${{ job.status }}
-      #     channel: '#deployments'
-      #     webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Notify deployment status to Discord
+        if: always()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          title: "Staging Deployment"
+          description: "MiMiVibes Backend deployment to staging environment"
+          color: 0x0099ff
+          username: "GitHub Actions"
+          avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"

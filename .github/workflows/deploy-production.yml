@@ -167,15 +167,17 @@ jobs:
           curl -f https://mimivibe-ai.vercel.app/health || exit 1
           curl -f https://${{ secrets.DO_HOST_PRODUCTION }}:3001/health || exit 1
 
-      - name: Notify deployment status
+      - name: Notify deployment status to Discord
         if: always()
-        uses: 8398a7/action-slack@v3
+        uses: sarisia/actions-status-discord@v1
         with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
-          channel: '#deployments'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          title: "Production Deployment"
+          description: "MiMiVibes Backend deployment to production environment"
+          color: 0x00ff00
+          username: "GitHub Actions"
+          avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
 
       - name: Create GitHub Release
         if: success()
