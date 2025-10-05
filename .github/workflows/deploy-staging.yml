@@ -20,8 +20,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: "18"
+          cache: "npm"
 
       - name: Install dependencies
         run: |
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     environment: staging
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -56,8 +56,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: "18"
+          cache: "npm"
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -93,43 +93,44 @@ jobs:
           script: |
             # Navigate to project directory
             cd /opt/mimivibe-staging
-            
+
             # Pull latest changes
             git fetch origin
             git checkout staging
             git pull origin staging
-            
+
             # Create environment file
             cat > .env << EOF
             NODE_ENV=staging
-            DATABASE_URL=${{ secrets.DATABASE_URL_STAGING }}
+            DATABASE_URL=${{ secrets.POSTGRES_PRISMA_URL_STAGING }}
+            DIRECT_URL=${{ secrets.POSTGRES_URL_NON_POOLING_STAGING }}
             REDIS_URL=redis://localhost:6379
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
             PROMPT_ENCRYPTION_KEY=${{ secrets.PROMPT_ENCRYPTION_KEY }}
-            ALLOWED_ORIGINS=https://mimivibe-ai-staging.vercel.app
+            ALLOWED_ORIGINS=https://mimivibe-ai-git-staging-nons-projects-2ee1d9ee.vercel.app
             LOG_LEVEL=debug
             EOF
-            
+
             # Pull latest Docker image
             echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
             docker pull mojisejr/mimivibe-backend:staging
-            
+
             # Stop existing containers
             docker-compose down || true
-            
+
             # Start services
             docker-compose up -d redis backend worker
-            
+
             # Wait for services to be healthy
             sleep 30
-            
+
             # Run database migrations
             docker-compose exec -T backend npm run db:migrate
-            
+
             # Health check
             curl -f http://localhost:3001/health || exit 1
-            
+
             # Clean up old images
             docker image prune -f
 
