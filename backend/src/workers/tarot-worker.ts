@@ -2,7 +2,7 @@ import { Worker, Job } from 'bullmq';
 import { Redis } from 'ioredis';
 import { prisma } from '@/lib/prisma';
 import { processReading } from '@/lib/background/reading-processor';
-import { TarotReadingJob, TarotReadingJobResult } from '@shared/types/queue';
+import { TarotReadingJob, TarotReadingJobResult } from '../../../shared/types/queue';
 
 // Redis connection configuration
 const redis = new Redis({
@@ -63,11 +63,11 @@ async function processTarotReading(job: Job<TarotReadingJob>): Promise<TarotRead
       }
     });
     
-    if (!reading || !reading.readingData) {
+    if (!reading || !reading.answer) {
       throw new Error('Reading not found or incomplete');
     }
     
-    const readingData = reading.readingData as any;
+    const readingData = reading.answer as any;
     
     return {
       success: true,

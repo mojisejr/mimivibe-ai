@@ -1,39 +1,42 @@
-import { Request, Response } from 'express';
-import { Redis } from 'ioredis';
-import { PrismaClient } from '@prisma/client';
-import { Queue } from 'bullmq';
-import { HealthCheckResponse, QueueStats } from '@shared/types/queue';
+import { Request, Response } from "express";
+import { Redis } from "ioredis";
+import { PrismaClient } from "@prisma/client";
+import { Queue } from "bullmq";
+import { HealthCheckResponse, QueueStats } from "../../../shared/types/queue";
 
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 const prisma = new PrismaClient();
-const tarotQueue = new Queue('tarot-readings', { connection: redis });
+const tarotQueue = new Queue("tarot-readings", { connection: redis });
 
 export async function healthCheck(req: Request, res: Response) {
   const startTime = Date.now();
-  
+
   try {
     // Check Redis connection
-    let redisStatus: 'up' | 'down' = 'down';
+    let redisStatus: "up" | "down" = "down";
     try {
       await redis.ping();
-      redisStatus = 'up';
+      redisStatus = "up";
     } catch (error) {
-      console.error('Redis health check failed:', error);
+      console.error("Redis health check failed:", error);
     }
 
     // Check Database connection
-    let databaseStatus: 'up' | 'down' = 'down';
+    let databaseStatus: "up" | "down" = "down";
     try {
       await prisma.$queryRaw`SELECT 1`;
-      databaseStatus = 'up';
+      databaseStatus = "up";
     } catch (error) {
-      console.error('Database health check failed:', error);
+      console.error("Database health check failed:", error);
     }
 
     // Check AI services (basic check)
-    let aiStatus: 'up' | 'down' = 'up';
-    if (!process.env.OPENAI_API_KEY && !process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      aiStatus = 'down';
+    let aiStatus: "up" | "down" = "up";
+    if (
+      !process.env.OPENAI_API_KEY &&
+      !process.env.GOOGLE_GENERATIVE_AI_API_KEY
+    ) {
+      aiStatus = "down";
     }
 
     // Get queue statistics
@@ -56,7 +59,7 @@ export async function healthCheck(req: Request, res: Response) {
         paused: 0, // BullMQ doesn't have getPaused method
       };
     } catch (error) {
-      console.error('Queue stats failed:', error);
+      console.error("Queue stats failed:", error);
       queueStats = {
         waiting: 0,
         active: 0,
@@ -68,16 +71,23 @@ export async function healthCheck(req: Request, res: Response) {
     }
 
     // Determine overall status
-    const allServicesUp = redisStatus === 'up' && databaseStatus === 'up' && aiStatus === 'up';
-    const someServicesDown = redisStatus === 'down' || databaseStatus === 'down' || aiStatus === 'down';
-    
-    let overallStatus: 'healthy' | 'unhealthy' | 'degraded';
+    const allServicesUp =
+      redisStatus === "up" && databaseStatus === "up" && aiStatus === "up";
+    const someServicesDown =
+      redisStatus === "down" ||
+      databaseStatus === "down" ||
+      aiStatus === "down";
+
+    let overallStatus: "healthy" | "unhealthy" | "degraded";
     if (allServicesUp) {
-      overallStatus = 'healthy';
-    } else if (someServicesDown && (redisStatus === 'up' || databaseStatus === 'up')) {
-      overallStatus = 'degraded';
+      overallStatus = "healthy";
+    } else if (
+      someServicesDown &&
+      (redisStatus === "up" || databaseStatus === "up")
+    ) {
+      overallStatus = "degraded";
     } else {
-      overallStatus = 'unhealthy';
+      overallStatus = "unhealthy";
     }
 
     const response: HealthCheckResponse = {
@@ -89,28 +99,31 @@ export async function healthCheck(req: Request, res: Response) {
         ai: aiStatus,
       },
       queue: queueStats,
-      version: process.env.npm_package_version || '1.0.0',
+      version: process.env.npm_package_version || "1.0.0",
       uptime: process.uptime(),
     };
 
     const responseTime = Date.now() - startTime;
-    
+
     // Set appropriate HTTP status code
-    const httpStatus = overallStatus === 'healthy' ? 200 : 
-                      overallStatus === 'degraded' ? 200 : 503;
+    const httpStatus =
+      overallStatus === "healthy"
+        ? 200
+        : overallStatus === "degraded"
+        ? 200
+        : 503;
 
     res.status(httpStatus).json({
       ...response,
       responseTime,
     });
-
   } catch (error) {
-    console.error('Health check error:', error);
-    
+    console.error("Health check error:", error);
+
     res.status(503).json({
-      status: 'unhealthy',
+      status: "unhealthy",
       timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
       responseTime: Date.now() - startTime,
     });
   }
@@ -121,16 +134,16 @@ export async function readiness(req: Request, res: Response) {
     // Check if all critical services are ready
     await redis.ping();
     await prisma.$queryRaw`SELECT 1`;
-    
+
     res.status(200).json({
-      status: 'ready',
+      status: "ready",
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     res.status(503).json({
-      status: 'not ready',
+      status: "not ready",
       timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }
@@ -138,7 +151,7 @@ export async function readiness(req: Request, res: Response) {
 export async function liveness(req: Request, res: Response) {
   // Simple liveness check - just return 200 if the process is running
   res.status(200).json({
-    status: 'alive',
+    status: "alive",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });

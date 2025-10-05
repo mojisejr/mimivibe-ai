@@ -31,6 +31,7 @@ export async function markReadingAsProcessing(readingId: string) {
       where: { id: readingId },
       data: {
         status: ReadingStatus.PROCESSING,
+        processingStartedAt: new Date(),
         updatedAt: new Date(),
       },
     });
@@ -49,8 +50,8 @@ export async function markReadingAsCompleted(readingId: string, readingData: any
       where: { id: readingId },
       data: {
         status: ReadingStatus.COMPLETED,
-        readingData: readingData,
-        completedAt: new Date(),
+        answer: readingData,
+        processingCompletedAt: new Date(),
         updatedAt: new Date(),
       },
     });
