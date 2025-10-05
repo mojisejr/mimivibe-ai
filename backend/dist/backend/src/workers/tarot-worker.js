@@ -53,10 +53,10 @@ async function processTarotReading(job) {
                 }
             }
         });
-        if (!reading || !reading.readingData) {
+        if (!reading || !reading.answer) {
             throw new Error('Reading not found or incomplete');
         }
-        const readingData = reading.readingData;
+        const readingData = reading.answer;
         return {
             success: true,
             reading: {

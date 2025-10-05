@@ -19,20 +19,20 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "outDir": "./dist",
-    "rootDir": ".",
-    "resolveJsonModule": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@shared/*": ["./shared/*"]
-    },
+  "rootDir": "..",
+  "resolveJsonModule": true,
+  "experimentalDecorators": true,
+  "emitDecoratorMetadata": true,
+  "baseUrl": "..",
+  "paths": {
+    "@/*": ["./backend/src/*"],
+    "@shared/*": ["./shared/*"]
+  },
     "types": ["node", "jest"]
   },
   "include": [
-    "src/**/*",
-    "shared/**/*"
+    "./src/**/*",
+    "../shared/**/*"
   ],
   "exclude": [
     "node_modules",
