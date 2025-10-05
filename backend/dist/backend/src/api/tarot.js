@@ -6,8 +6,8 @@ exports.getQueueStats = getQueueStats;
 const bullmq_1 = require("bullmq");
 const ioredis_1 = require("ioredis");
 const zod_1 = require("zod");
-const redis = new ioredis_1.Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-const tarotQueue = new bullmq_1.Queue('tarot-readings', { connection: redis });
+const redis = new ioredis_1.Redis(process.env.REDIS_URL || "redis://localhost:6379");
+const tarotQueue = new bullmq_1.Queue("tarot-readings", { connection: redis });
 // Validation schema for tarot reading submission
 const submitReadingSchema = zod_1.z.object({
     userId: zod_1.z.string().min(1),
@@ -28,10 +28,10 @@ async function submitTarotReading(req, res) {
             timestamp: new Date().toISOString(),
         };
         // Add job to queue with options
-        const job = await tarotQueue.add('process-tarot-reading', jobData, {
+        const job = await tarotQueue.add("process-tarot-reading", jobData, {
             attempts: 3,
             backoff: {
-                type: 'exponential',
+                type: "exponential",
                 delay: 2000,
             },
             removeOnComplete: 50, // Keep last 50 completed jobs
@@ -40,26 +40,26 @@ async function submitTarotReading(req, res) {
         const response = {
             success: true,
             jobId: job.id,
-            message: 'Tarot reading job submitted successfully',
+            message: "Tarot reading job submitted successfully",
             estimatedWaitTime: 30, // seconds
         };
         res.status(202).json(response);
         return;
     }
     catch (error) {
-        console.error('Submit tarot reading error:', error);
+        console.error("Submit tarot reading error:", error);
         if (error instanceof zod_1.z.ZodError) {
             res.status(400).json({
                 success: false,
-                error: 'Validation error',
+                error: "Validation error",
                 details: error.errors,
             });
             return;
         }
         res.status(500).json({
             success: false,
-            error: 'Failed to submit tarot reading job',
-            message: error instanceof Error ? error.message : 'Unknown error',
+            error: "Failed to submit tarot reading job",
+            message: error instanceof Error ? error.message : "Unknown error",
         });
         return;
     }
@@ -70,7 +70,7 @@ async function getJobStatus(req, res) {
         if (!jobId) {
             res.status(400).json({
                 success: false,
-                error: 'Job ID is required',
+                error: "Job ID is required",
             });
             return;
         }
@@ -79,7 +79,7 @@ async function getJobStatus(req, res) {
         if (!job) {
             res.status(404).json({
                 success: false,
-                error: 'Job not found',
+                error: "Job not found",
             });
             return;
         }
@@ -90,29 +90,29 @@ async function getJobStatus(req, res) {
         const failedReason = job.failedReason;
         let status;
         switch (state) {
-            case 'waiting':
-            case 'delayed':
-                status = 'pending';
+            case "waiting":
+            case "delayed":
+                status = "pending";
                 break;
-            case 'active':
-                status = 'processing';
+            case "active":
+                status = "processing";
                 break;
-            case 'completed':
-                status = 'completed';
+            case "completed":
+                status = "completed";
                 break;
-            case 'failed':
-                status = 'failed';
+            case "failed":
+                status = "failed";
                 break;
             default:
-                status = 'pending';
+                status = "pending";
         }
         const response = {
             success: true,
             jobId,
             status,
-            progress: typeof progress === 'number' ? progress : 0,
-            result: status === 'completed' ? result : undefined,
-            error: status === 'failed' ? failedReason : undefined,
+            progress: typeof progress === "number" ? progress : 0,
+            result: status === "completed" ? result : undefined,
+            error: status === "failed" ? failedReason : undefined,
             createdAt: new Date(job.timestamp).toISOString(),
             updatedAt: new Date(job.processedOn || job.timestamp).toISOString(),
         };
@@ -120,11 +120,11 @@ async function getJobStatus(req, res) {
         return;
     }
     catch (error) {
-        console.error('Get job status error:', error);
+        console.error("Get job status error:", error);
         res.status(500).json({
             success: false,
-            error: 'Failed to get job status',
-            message: error instanceof Error ? error.message : 'Unknown error',
+            error: "Failed to get job status",
+            message: error instanceof Error ? error.message : "Unknown error",
         });
         return;
     }
@@ -166,11 +166,11 @@ async function getQueueStats(req, res) {
         return;
     }
     catch (error) {
-        console.error('Get queue stats error:', error);
+        console.error("Get queue stats error:", error);
         res.status(500).json({
             success: false,
-            error: 'Failed to get queue statistics',
-            message: error instanceof Error ? error.message : 'Unknown error',
+            error: "Failed to get queue statistics",
+            message: error instanceof Error ? error.message : "Unknown error",
         });
         return;
     }

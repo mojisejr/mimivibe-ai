@@ -36,6 +36,7 @@ async function markReadingAsProcessing(readingId) {
             where: { id: readingId },
             data: {
                 status: reading_1.ReadingStatus.PROCESSING,
+                processingStartedAt: new Date(),
                 updatedAt: new Date(),
             },
         });
@@ -54,8 +55,8 @@ async function markReadingAsCompleted(readingId, readingData) {
             where: { id: readingId },
             data: {
                 status: reading_1.ReadingStatus.COMPLETED,
-                readingData: readingData,
-                completedAt: new Date(),
+                answer: readingData,
+                processingCompletedAt: new Date(),
                 updatedAt: new Date(),
             },
         });

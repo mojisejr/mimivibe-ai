@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GeminiProvider = void 0;
 const google_genai_1 = require("@langchain/google-genai");
-const messages_1 = require("@langchain/core/messages");
 class GeminiProvider {
     name = 'gemini';
     model;
@@ -10,26 +9,18 @@ class GeminiProvider {
     constructor(config) {
         this.model = config.model;
         this.client = new google_genai_1.ChatGoogleGenerativeAI({
-            modelName: config.model,
+            model: config.model,
             apiKey: config.apiKey,
             temperature: config.temperature,
             maxOutputTokens: config.maxTokens,
         });
     }
     async invoke(messages) {
-        // Convert our LLMMessage format to LangChain format
-        const langChainMessages = messages.map(msg => {
-            switch (msg.role) {
-                case 'system':
-                    return new messages_1.SystemMessage(msg.content);
-                case 'user':
-                    return new messages_1.HumanMessage(msg.content);
-                case 'assistant':
-                    return new messages_1.AIMessage(msg.content);
-                default:
-                    return new messages_1.HumanMessage(msg.content);
-            }
-        });
+        // Convert our LLMMessage format to simple message objects
+        const langChainMessages = messages.map(msg => ({
+            role: msg.role === 'assistant' ? 'assistant' : msg.role === 'system' ? 'system' : 'user',
+            content: msg.content
+        }));
         const response = await this.client.invoke(langChainMessages);
         return {
             content: response.content,

@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OpenAIProvider = void 0;
 const openai_1 = require("@langchain/openai");
-const messages_1 = require("@langchain/core/messages");
 class OpenAIProvider {
     name = 'openai';
     model;
@@ -10,26 +9,18 @@ class OpenAIProvider {
     constructor(config) {
         this.model = config.model;
         this.client = new openai_1.ChatOpenAI({
-            modelName: config.model,
+            model: config.model,
             openAIApiKey: config.apiKey,
             temperature: config.temperature,
             maxTokens: config.maxTokens,
         });
     }
     async invoke(messages) {
-        // Convert our LLMMessage format to LangChain format
-        const langChainMessages = messages.map(msg => {
-            switch (msg.role) {
-                case 'system':
-                    return new messages_1.SystemMessage(msg.content);
-                case 'user':
-                    return new messages_1.HumanMessage(msg.content);
-                case 'assistant':
-                    return new messages_1.AIMessage(msg.content);
-                default:
-                    return new messages_1.HumanMessage(msg.content);
-            }
-        });
+        // Convert our LLMMessage format to simple message objects
+        const langChainMessages = messages.map(msg => ({
+            role: msg.role === 'assistant' ? 'assistant' : msg.role === 'system' ? 'system' : 'user',
+            content: msg.content
+        }));
         const response = await this.client.invoke(langChainMessages);
         return {
             content: response.content,
