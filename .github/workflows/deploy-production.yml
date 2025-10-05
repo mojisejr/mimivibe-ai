@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/backend
+  REGISTRY: docker.io
+  IMAGE_NAME: mojisejr/mimivibe-backend
 
 jobs:
   test:
@@ -64,23 +64,21 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Log in to Container Registry
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
             type=raw,value=latest
             type=raw,value=production
+            type=sha,prefix=production-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -134,8 +132,8 @@ jobs:
             EOF
             
             # Pull latest Docker image
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:production
+            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+            docker pull mojisejr/mimivibe-backend:production
             
             # Rolling update strategy
             # Start new containers with different names

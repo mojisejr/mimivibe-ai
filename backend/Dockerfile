@@ -1,6 +1,6 @@
 # backend/Dockerfile
 # Stage 1: Prisma Generation
-FROM node:18-slim as prisma-stage
+FROM node:18-slim AS prisma-stage
 WORKDIR /app
 COPY prisma/ ./prisma/
 COPY package.json package-lock.json ./
