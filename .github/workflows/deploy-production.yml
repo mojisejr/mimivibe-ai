@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/backend
+  REGISTRY: docker.io
+  IMAGE_NAME: mojisejr/mimivibe-backend
 
 jobs:
   test:
@@ -64,23 +64,21 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Log in to Container Registry
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
             type=raw,value=latest
             type=raw,value=production
+            type=sha,prefix=production-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -134,8 +132,8 @@ jobs:
             EOF
             
             # Pull latest Docker image
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:production
+            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+            docker pull mojisejr/mimivibe-backend:production
             
             # Rolling update strategy
             # Start new containers with different names
@@ -160,15 +158,6 @@ jobs:
             # Clean up old images
             docker image prune -f
 
-      - name: Deploy Frontend to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod --env NEXT_PUBLIC_API_URL=https://${{ secrets.DO_HOST_PRODUCTION }}:3001'
-          working-directory: ./
-
       - name: Run smoke tests
         run: |
           # Wait for deployment to be ready
@@ -178,15 +167,17 @@ jobs:
           curl -f https://mimivibe-ai.vercel.app/health || exit 1
           curl -f https://${{ secrets.DO_HOST_PRODUCTION }}:3001/health || exit 1
 
-      - name: Notify deployment status
+      - name: Notify deployment status to Discord
         if: always()
-        uses: 8398a7/action-slack@v3
+        uses: sarisia/actions-status-discord@v1
         with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
-          channel: '#deployments'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          title: "Production Deployment"
+          description: "MiMiVibes Backend deployment to production environment"
+          color: 0x00ff00
+          username: "GitHub Actions"
+          avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
 
       - name: Create GitHub Release
         if: success()

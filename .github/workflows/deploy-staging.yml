@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/backend
+  REGISTRY: docker.io
+  IMAGE_NAME: mojisejr/mimivibe-backend
 
 jobs:
   test:
@@ -59,22 +59,20 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Log in to Container Registry
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
             type=raw,value=staging
+            type=sha,prefix=staging-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -114,8 +112,8 @@ jobs:
             EOF
             
             # Pull latest Docker image
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:staging
+            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+            docker pull mojisejr/mimivibe-backend:staging
             
             # Stop existing containers
             docker-compose down || true
@@ -135,22 +133,14 @@ jobs:
             # Clean up old images
             docker image prune -f
 
-      - name: Deploy Frontend to Vercel
-        uses: amondnet/vercel-action@v25
+      - name: Notify deployment status to Discord
+        if: always()
+        uses: sarisia/actions-status-discord@v1
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod --env NEXT_PUBLIC_API_URL=https://${{ secrets.DO_HOST_STAGING }}:3001'
-          working-directory: ./
-
-      # Slack notification disabled - SLACK_WEBHOOK not configured
-      # - name: Notify deployment status
-      #   if: always()
-      #   uses: 8398a7/action-slack@v3
-      #   with:
-      #     status: ${{ job.status }}
-      #     channel: '#deployments'
-      #     webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          title: "Staging Deployment"
+          description: "MiMiVibes Backend deployment to staging environment"
+          color: 0x0099ff
+          username: "GitHub Actions"
+          avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
