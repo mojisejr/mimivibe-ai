@@ -92,12 +92,7 @@ jobs:
           port: 22
           script: |
             # Navigate to project directory
-            cd /app/mimivibe-backend
-
-            # Pull latest changes
-            git fetch origin
-            git checkout staging
-            git pull origin staging
+            cd /home/non/app/mimivibe-backend
 
             # Create environment file
             cat > .env << EOF
@@ -117,16 +112,16 @@ jobs:
             docker pull mojisejr/mimivibe-backend:staging
 
             # Stop existing containers
-            docker-compose down || true
+            docker compose -f docker-compose.staging.yml down || true
 
-            # Start services
-            docker-compose up -d redis backend worker
+            # Start services using staging compose file
+            docker compose -f docker-compose.staging.yml up -d redis backend worker
 
             # Wait for services to be healthy
             sleep 30
 
             # Run database migrations
-            docker-compose exec -T backend npm run db:migrate
+            docker compose -f docker-compose.staging.yml exec -T backend npm run db:migrate
 
             # Health check
             curl -f http://localhost:3001/health || exit 1
