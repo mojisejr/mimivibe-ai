@@ -92,7 +92,7 @@ jobs:
           port: 22
           script: |
             # Navigate to project directory
-            cd /app/mimivibe-backend
+            cd /home/non/app/mimivibe-backend
 
             # Create environment file
             cat > .env << EOF
