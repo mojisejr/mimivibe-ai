@@ -17,4 +17,5 @@ docs/
 exports/
 current-focus.md
 .vercel
+docker-compose.local.yml
 
