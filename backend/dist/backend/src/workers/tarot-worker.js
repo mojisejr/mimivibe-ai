@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+require("module-alias/register");
 const bullmq_1 = require("bullmq");
 const ioredis_1 = require("ioredis");
 const prisma_1 = require("@/lib/prisma");
