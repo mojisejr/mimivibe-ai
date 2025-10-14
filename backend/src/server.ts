@@ -1,4 +1,6 @@
+import "module-alias/register";
 import express from "express";
+// @ts-ignore
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";

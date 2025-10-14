@@ -1,3 +1,4 @@
+import 'module-alias/register';
 import { Worker, Job } from 'bullmq';
 import { Redis } from 'ioredis';
 import { prisma } from '@/lib/prisma';

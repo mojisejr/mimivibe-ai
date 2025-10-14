@@ -1,3 +1,4 @@
+import 'module-alias/register';
 import { Worker } from 'bullmq';
 import { TarotReadingJob, TarotReadingJobResult } from '../../../shared/types/queue';
 declare const tarotWorker: Worker<TarotReadingJob, TarotReadingJobResult, string>;
