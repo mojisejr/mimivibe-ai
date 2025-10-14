@@ -144,7 +144,7 @@
     "whatWouldYouKnow": "Tell me, what would you like to know?",
     "placeholder": "e.g.: How will my love life be in this period... (Press Enter to send)",
     "charCount": "{{count}}/180",
-    "minChars": "(minimum 10 characters required)",
+    "minChars": "(minimum 5 characters required)",
     "preparingCards": "Preparing cards...",
     "startReading": "Start Reading",
     "insufficientCredits": "You don't have enough credits. Please add credits or use your free daily reading",
