@@ -62,10 +62,10 @@ async function questionFilterNode(state: typeof ReadingState.State) {
       };
     }
 
-    if (state.question.length > 500) {
+    if (state.question.length > 180) {
       return {
         isValid: false,
-        validationReason: "คำถามยาวเกินไป (สูงสุด 500 ตัวอักษร)",
+        validationReason: "คำถามยาวเกินไป (สูงสุด 180 ตัวอักษร)",
         error: "Question exceeds maximum length",
         hasError: true,
         errorSource: "questionFilter",

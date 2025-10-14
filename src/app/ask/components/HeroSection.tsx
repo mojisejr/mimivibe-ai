@@ -31,7 +31,7 @@ export function HeroSection({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (question.trim() && !isLoading && question.length >= 10) {
+    if (question.trim() && !isLoading && question.length >= 5) {
       onSubmit(question.trim());
     }
   };
@@ -39,7 +39,7 @@ export function HeroSection({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (question.trim() && !isLoading && question.length >= 10) {
+      if (question.trim() && !isLoading && question.length >= 5) {
         onSubmit(question.trim());
       }
     }
@@ -162,7 +162,7 @@ export function HeroSection({
                 />
               </div>
               <div className={`absolute bottom-4 right-4 text-xs bg-base-100/80 backdrop-blur-sm rounded-full px-2 py-1 ${
-                question.length < 10 ? 'text-warning' : 'text-neutral-content'
+                question.length < 5 ? 'text-warning' : 'text-neutral-content'
               }`}>
                 {t('common.ask.charCount', { count: question.length })} {question.length < 10 && t('common.ask.minChars')}
               </div>
@@ -201,7 +201,7 @@ export function HeroSection({
               // Original submit button when credits are available
               <motion.button
                 type="submit"
-                disabled={!question.trim() || isLoading || question.length < 10}
+                disabled={!question.trim() || isLoading || question.length < 5}
                 className="btn btn-lg w-full py-4 px-8 text-lg font-semibold disabled:opacity-50 bg-gradient-to-r from-accent to-accent-focus text-white border-0 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

@@ -188,13 +188,13 @@ export function validateTarotQuestion(question: string): {
   const issues: string[] = []
   
   // Check minimum length
-  if (question.trim().length < 10) {
-    issues.push('Question is too short (minimum 10 characters)')
+  if (question.trim().length < 5) {
+    issues.push('Question is too short (minimum 5 characters)')
   }
   
   // Check maximum length
-  if (question.length > 500) {
-    issues.push('Question is too long (maximum 500 characters)')
+  if (question.length > 180) {
+    issues.push('Question is too long (maximum 180 characters)')
   }
   
   // Check for question marks or question words (English and Thai)
@@ -218,7 +218,7 @@ export function validateTarotQuestion(question: string): {
     }
   })
   
-  const sanitizedQuestion = sanitizeString(question, 500)
+  const sanitizedQuestion = sanitizeString(question, 180)
   const isValid = issues.length === 0
   
   return {
