@@ -12,12 +12,12 @@ RUN apt-get update && apt-get install -y \
 # Copy package files and install dependencies
 COPY package*.json ./
 COPY backend/package*.json ./backend/
-RUN npm ci
+RUN npm ci --include=dev
 
-# Copy source code from current directory context (backend/Dockerfile -> project root)
-COPY ../prisma/ ./prisma/
-COPY ../shared/ ./shared/
-COPY . ./backend/
+# Copy source code from project root
+COPY ./prisma/ ./prisma/
+COPY ./shared/ ./shared/
+COPY ./backend/ ./backend/
 
 # Generate Prisma client
 WORKDIR /app
@@ -38,10 +38,10 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 COPY --from=builder /app/backend/dist ./dist
-COPY --from=builder /app/backend/node_modules ./node_modules
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/backend/package.json .
 # Copy prisma schema and generated client
-COPY --from=builder /app/backend/prisma ./prisma
+COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma/client ./node_modules/.prisma/client
 
 # Ensure logs directory exists

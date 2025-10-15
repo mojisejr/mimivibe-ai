@@ -27,7 +27,7 @@
       "@/*": ["./src/*"],
       "@shared/*": ["../shared/*"]
     },
-    "types": ["node", "jest"]
+    "types": ["node"]
   },
   "include": [
     "src/**/*",
