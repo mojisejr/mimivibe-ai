@@ -8,7 +8,7 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
@@ -19,7 +19,7 @@ services:
 
   # Backend API (using pre-built image from Docker Hub)
   backend:
-    image: mojisejr/mimivibe-backend:staging
+    image: mojisejr/mimivibe-backend:staging-fixed
     container_name: mimivibe-backend
     restart: unless-stopped
     ports:
@@ -59,7 +59,7 @@ services:
 
   # Queue Worker (using same pre-built image)
   worker:
-    image: mojisejr/mimivibe-backend:staging
+    image: mojisejr/mimivibe-backend:staging-fixed
     container_name: mimivibe-worker
     restart: unless-stopped
     environment:
