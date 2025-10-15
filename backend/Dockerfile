@@ -38,11 +38,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 COPY --from=builder /app/backend/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/backend/node_modules ./node_modules
 COPY --from=builder /app/backend/package.json .
-# Copy prisma schema and generated client
+# Copy prisma schema and generate client in final image
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma/client ./node_modules/.prisma/client
+RUN npx prisma generate
 
 # Ensure logs directory exists
 RUN mkdir -p /app/logs && chown -R node:node /app/logs
@@ -64,4 +64,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/health/liveness', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Start the application
-CMD ["node", "dist/src/server.js"]
+CMD ["node", "dist/server.js"]
