@@ -73,7 +73,8 @@
     "typescript": "^5.3.3"
   },
   "_moduleAliases": {
-    "@": "./dist/backend/src"
+    "@": "./dist",
+    "@shared": "./dist/shared"
   },
   "engines": {
     "node": ">=18.0.0",
