@@ -6,9 +6,7 @@ import { processReading } from '@/lib/background/reading-processor';
 import { TarotReadingJob, TarotReadingJobResult } from '../../../shared/types/queue';
 
 // Redis connection configuration
-const redis = new Redis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
   maxRetriesPerRequest: 3,
   enableReadyCheck: false,
   lazyConnect: true,

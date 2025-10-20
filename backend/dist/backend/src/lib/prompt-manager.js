@@ -1,15 +1,13 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PromptManager = void 0;
 const client_1 = require("@prisma/client");
 const prompt_encryption_1 = require("./prompt-encryption");
 const prompt_security_monitor_1 = require("./security/prompt-security-monitor");
-const chalk_1 = __importDefault(require("chalk"));
-const boxen_1 = __importDefault(require("boxen"));
-const ora_1 = __importDefault(require("ora"));
+const chalk = require("chalk");
+const ora = require("ora");
+const boxen = require("boxen");
+const figlet = require("figlet");
 /**
  * PromptManager - Manages encrypted prompts with version control
  */
@@ -34,7 +32,7 @@ class PromptManager {
                 // Skipping prompt with no content
                 continue;
             }
-            const spinner = (0, ora_1.default)(`Processing ${name}...`).start();
+            const spinner = ora(`Processing ${name}...`).start();
             const existing = await this.prisma.promptTemplate.findUnique({
                 where: { name },
             });
@@ -59,15 +57,15 @@ class PromptManager {
                         },
                     },
                 });
-                spinner.succeed(chalk_1.default.green(`✅ Initialized ${name} (${content.length} chars)`));
+                spinner.succeed(chalk.green(`✅ Initialized ${name} (${content.length} chars)`));
                 initialized++;
             }
             else {
-                spinner.succeed(chalk_1.default.yellow(`⏭️  Skipped ${name} (already exists)`));
+                spinner.succeed(chalk.yellow(`⏭️  Skipped ${name} (already exists)`));
                 skipped++;
             }
         }
-        console.log(chalk_1.default.blue((0, boxen_1.default)(`🔐 Prompt Initialization Complete\n\n` +
+        console.log(chalk.blue(boxen(`🔐 Prompt Initialization Complete\n\n` +
             `✅ Initialized: ${initialized} prompts\n` +
             `⏭️  Skipped: ${skipped} prompts\n` +
             `📊 Total: ${initialized + skipped} prompts processed`, { padding: 1, borderColor: "blue", borderStyle: "round" })));
@@ -200,7 +198,7 @@ class PromptManager {
                             updatedAt: new Date(),
                         },
                     });
-                    console.log(chalk_1.default.green(`✅ Updated prompt '${name}' to version ${nextVersion}`));
+                    console.log(chalk.green(`✅ Updated prompt '${name}' to version ${nextVersion}`));
                     return nextVersion;
                 }, {
                     // Transaction options for better error handling
@@ -222,7 +220,7 @@ class PromptManager {
                 // Exponential backoff: wait 100ms, 200ms, 400ms
                 const delay = 100 * Math.pow(2, attempt - 1);
                 await new Promise((resolve) => setTimeout(resolve, delay));
-                console.warn(chalk_1.default.yellow(`⚠️  Attempt ${attempt} failed for updatePrompt('${name}'): ${error.message}. Retrying in ${delay}ms...`));
+                console.warn(chalk.yellow(`⚠️  Attempt ${attempt} failed for updatePrompt('${name}'): ${error.message}. Retrying in ${delay}ms...`));
             }
         }
         throw lastError;
@@ -262,7 +260,7 @@ class PromptManager {
                 updatedAt: new Date(),
             },
         });
-        console.log(chalk_1.default.green(`✅ Activated version ${version} for prompt '${name}'`));
+        console.log(chalk.green(`✅ Activated version ${version} for prompt '${name}'`));
     }
     /**
      * Deactivate prompt
@@ -272,7 +270,7 @@ class PromptManager {
             where: { name },
             data: { isActive: false },
         });
-        console.log(chalk_1.default.yellow(`⏸️  Deactivated prompt '${name}'`));
+        console.log(chalk.yellow(`⏸️  Deactivated prompt '${name}'`));
     }
     /**
      * List all prompts with versions
@@ -322,7 +320,7 @@ class PromptManager {
                 aiProvider: result.aiProvider,
             },
         });
-        console.log(chalk_1.default.blue(`📊 Saved test result for template ${result.templateId} v${result.version} (${result.executionTimeMs}ms, ${result.tokenUsage} tokens)`));
+        console.log(chalk.blue(`📊 Saved test result for template ${result.templateId} v${result.version} (${result.executionTimeMs}ms, ${result.tokenUsage} tokens)`));
     }
     /**
      * Get performance analytics for a prompt
@@ -377,7 +375,7 @@ class PromptManager {
             }
             : best, { version: 0, successRate: 0 });
         const recommendations = this.generateRecommendations(versions);
-        console.log(chalk_1.default.cyan(`📈 Performance analytics for '${name}': ${versions.length} versions analyzed, best performing: v${bestPerforming.version} (${(bestPerforming.successRate * 100).toFixed(1)}% success)`));
+        console.log(chalk.cyan(`📈 Performance analytics for '${name}': ${versions.length} versions analyzed, best performing: v${bestPerforming.version} (${(bestPerforming.successRate * 100).toFixed(1)}% success)`));
         return { versions, bestPerforming, recommendations };
     }
     /**
