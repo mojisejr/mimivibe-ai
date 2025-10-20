@@ -153,12 +153,12 @@ function analyzeUserInput(input, userAgent, ip) {
 function validateTarotQuestion(question) {
     const issues = [];
     // Check minimum length
-    if (question.trim().length < 10) {
-        issues.push('Question is too short (minimum 10 characters)');
+    if (question.trim().length < 5) {
+        issues.push('Question is too short (minimum 5 characters)');
     }
     // Check maximum length
-    if (question.length > 500) {
-        issues.push('Question is too long (maximum 500 characters)');
+    if (question.length > 180) {
+        issues.push('Question is too long (maximum 180 characters)');
     }
     // Check for question marks or question words (English and Thai)
     // Note: Thai doesn't use word boundaries like English, so we don't use \b for Thai patterns
@@ -178,7 +178,7 @@ function validateTarotQuestion(question) {
             issues.push('Question contains inappropriate content');
         }
     });
-    const sanitizedQuestion = (0, validations_1.sanitizeString)(question, 500);
+    const sanitizedQuestion = (0, validations_1.sanitizeString)(question, 180);
     const isValid = issues.length === 0;
     return {
         isValid,
