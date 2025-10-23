@@ -25,6 +25,11 @@ const nextConfig = {
   experimental: {
     esmExternals: 'loose',
   },
+  typescript: {
+    ignoreBuildErrors: false,
+    // Exclude backend directory from TypeScript compilation
+    tsconfigPath: './tsconfig.json',
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {

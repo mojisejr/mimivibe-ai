@@ -1,10 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { PromptEncryption } from "./prompt-encryption";
 import { promptSecurityMonitor } from "./security/prompt-security-monitor";
-import chalk from "chalk";
-import figlet from "figlet";
-import boxen from "boxen";
-import ora from "ora";
+const chalk = require("chalk");
+const ora = require("ora");
+const boxen = require("boxen");
+const figlet = require("figlet");
 
 export interface PromptTestResult {
   templateId: number;
